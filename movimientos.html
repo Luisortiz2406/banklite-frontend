@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#26474E">
+    <title>Movimientos | Banklite</title>
+
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%232CCED2'/%3E%3Ctext x='32' y='44' font-family='Arial' font-size='34' font-weight='800' text-anchor='middle' fill='%2326474E'%3EB%3C/text%3E%3C/svg%3E">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+    <script>
+        // Modo oscuro: se aplica antes de pintar para que no parpadee
+        try {
+            var blTheme = localStorage.getItem("bankliteTheme");
+            if (blTheme === "dark" || (blTheme === "auto" && matchMedia("(prefers-color-scheme: dark)").matches)) {
+                document.documentElement.dataset.theme = "dark";
+                document.documentElement.style.background = "#0D1B1E";
+            }
+        } catch (e) {}
+    </script>
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="app">
+
+    <header class="app-header">
+        <a class="brand" href="dashboard.html" aria-label="Banklite, inicio">
+            <span class="logo">B</span>
+            <span>banklite</span>
+        </a>
+        <a class="back" href="dashboard.html"><span aria-hidden="true">←</span>&nbsp;Volver al inicio</a>
+    </header>
+
+
+    <main class="movement-page">
+
+        <div class="page-title movement-title">
+            <div>
+                <span class="eyebrow">Historial de operaciones</span>
+                <h1>Mis movimientos</h1>
+                <p>Consulta, filtra y revisa el detalle de tus operaciones.</p>
+            </div>
+
+            <div class="movement-actions">
+                <button class="btn primary" id="openStatement" type="button">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>
+                    Extracto PDF
+                </button>
+            <button class="btn soft" id="exportMovements" type="button">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+                Excel (CSV)
+            </button>
+            </div>
+        </div>
+
+
+        <!-- Resumen del mes -->
+        <div class="movement-summary">
+            <div class="summary-tile">
+                <span>Saldo disponible</span>
+                <strong id="sumBalance">$ 0</strong>
+            </div>
+            <div class="summary-tile">
+                <span>Entradas del mes</span>
+                <strong class="positive" id="sumIncome">$ 0</strong>
+            </div>
+            <div class="summary-tile">
+                <span>Salidas del mes</span>
+                <strong class="negative" id="sumExpense">$ 0</strong>
+            </div>
+        </div>
+
+
+        <div class="panel table-panel">
+
+            <div class="movement-toolbar">
+                <div class="filters" role="group" aria-label="Filtrar movimientos">
+                    <button class="filter active" type="button" data-filter="all">Todos</button>
+                    <button class="filter" type="button" data-filter="in">Entradas</button>
+                    <button class="filter" type="button" data-filter="out">Salidas</button>
+                    <button class="filter" type="button" data-filter="transfer">Transferencias</button>
+                </div>
+
+                <label class="movement-search">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+                    <input id="movementSearch" type="search" autocomplete="off" placeholder="Buscar por concepto o últimos 4 dígitos" aria-label="Buscar movimientos">
+                </label>
+            </div>
+
+            <div id="fullMovements"><div class="movement-empty"><strong>Cargando…</strong></div></div>
+            <div class="load-more"><button class="btn soft" type="button" id="loadMoreMovements" hidden>Cargar más movimientos</button></div>
+
+        </div>
+
+    </main>
+
+
+    <!-- Detalle -->
+    <div id="movementModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+        <div class="modal-card">
+            <button class="modal-close" type="button" aria-label="Cerrar">×</button>
+            <span class="modal-icon" id="detailIcon" aria-hidden="true">↔</span>
+            <span class="eyebrow">Detalle de operación</span>
+            <h2 id="detailTitle">Movimiento</h2>
+            <div class="confirm-box" id="detailBody"></div>
+            <div class="modal-actions">
+                <button class="btn soft" id="detailReceipt" type="button">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+                    Comprobante
+                </button>
+                <button class="btn primary" id="detailOk" type="button">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Extracto mensual -->
+    <div class="modal" id="statementModal" role="dialog" aria-modal="true" aria-labelledby="statementTitle">
+        <div class="modal-card">
+            <button class="modal-close" data-close type="button" aria-label="Cerrar">×</button>
+            <span class="modal-icon" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/></svg>
+            </span>
+            <span class="eyebrow">Documentos</span>
+            <h2 id="statementTitle">Extracto mensual</h2>
+            <p class="modal-hint">Incluye tu saldo inicial y final, el total de entradas y salidas, y cada movimiento del mes con su saldo.</p>
+            <form id="statementForm" class="form-stack" novalidate>
+                <label>Mes
+                    <select id="statementMonth"></select>
+                </label>
+                <button class="btn primary full" type="submit">Descargar extracto (PDF)</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="genericModal" role="dialog" aria-modal="true" aria-labelledby="genericTitle" aria-describedby="genericText">
+        <div class="modal-card">
+            <button class="modal-close" data-close type="button" aria-label="Cerrar">×</button>
+            <span class="modal-icon" aria-hidden="true">i</span>
+            <h2 id="genericTitle">Banklite</h2>
+            <p id="genericText"></p>
+            <button class="btn primary full" data-close type="button">Entendido</button>
+        </div>
+    </div>
+
+    <script src="java.js"></script>
+    <script src="api.js"></script>
+    <script src="comprobantes.js"></script>
+    <script src="movimientos.js"></script>
+
+</body>
+
+</html>

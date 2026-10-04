@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#26474E">
+    <title>Pagos y recargas | Banklite</title>
+
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%232CCED2'/%3E%3Ctext x='32' y='44' font-family='Arial' font-size='34' font-weight='800' text-anchor='middle' fill='%2326474E'%3EB%3C/text%3E%3C/svg%3E">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+    <script>
+        // Modo oscuro: se aplica antes de pintar para que no parpadee
+        try {
+            var blTheme = localStorage.getItem("bankliteTheme");
+            if (blTheme === "dark" || (blTheme === "auto" && matchMedia("(prefers-color-scheme: dark)").matches)) {
+                document.documentElement.dataset.theme = "dark";
+                document.documentElement.style.background = "#0D1B1E";
+            }
+        } catch (e) {}
+    </script>
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="app">
+
+    <header class="app-header">
+        <a class="brand" href="dashboard.html" aria-label="Banklite, inicio">
+            <span class="logo">B</span>
+            <span>banklite</span>
+        </a>
+        <a class="back" href="dashboard.html"><span aria-hidden="true">←</span>&nbsp;Volver al inicio</a>
+    </header>
+
+
+    <!-- Esta función todavía no tiene servicio en el backend: no se muestran datos de ejemplo. -->
+    <main class="panel soon-page">
+        <span class="soon-chip">Próximamente</span>
+        <span class="modal-icon" aria-hidden="true">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l3-2 3 2 2-2 2 2 3-2 3 2V2l-3 2-3-2-2 2-2-2-3 2ZM8 9h8M8 13h6"/></svg>
+        </span>
+        <span class="eyebrow">Pagos y recargas</span>
+        <h1>Pagos y recargas</h1>
+        <p>Muy pronto podrás pagar tus facturas y recargar tu celular desde Banklite.</p>
+        <ul class="soon-list">
+            <li>Servicios públicos, internet y administración</li>
+            <li>Recargas de celular</li>
+            <li>Comprobante en PDF de cada pago</li>
+        </ul>
+        <div class="modal-actions">
+            <a class="btn soft" href="dashboard.html">Volver al inicio</a>
+            <a class="btn primary" href="transferir.html">Transferir</a>
+        </div>
+    </main>
+
+    <script src="java.js"></script>
+
+</body>
+
+</html>

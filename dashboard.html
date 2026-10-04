@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#26474E">
+    <title>Inicio | Banklite</title>
+
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%232CCED2'/%3E%3Ctext x='32' y='44' font-family='Arial' font-size='34' font-weight='800' text-anchor='middle' fill='%2326474E'%3EB%3C/text%3E%3C/svg%3E">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+    <script>
+        // Modo oscuro: se aplica antes de pintar para que no parpadee
+        try {
+            var blTheme = localStorage.getItem("bankliteTheme");
+            if (blTheme === "dark" || (blTheme === "auto" && matchMedia("(prefers-color-scheme: dark)").matches)) {
+                document.documentElement.dataset.theme = "dark";
+                document.documentElement.style.background = "#0D1B1E";
+            }
+        } catch (e) {}
+    </script>
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="app">
+
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
+
+    <header class="app-header">
+
+        <a class="brand" href="dashboard.html" aria-label="Banklite, inicio">
+            <span class="logo">B</span>
+            <span>banklite</span>
+        </a>
+
+        <div class="header-user">
+            <button class="notification" id="notifications" type="button" aria-label="Notificaciones">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+                <i></i>
+            </button>
+            <span class="avatar" id="avatar">·</span>
+            <b id="headerName">…</b>
+            <button id="logout" class="logout" type="button">Salir</button>
+        </div>
+
+    </header>
+
+
+    <div class="layout">
+
+        <!-- =================================================
+             MENÚ LATERAL
+        ================================================== -->
+
+        <aside class="sidebar" aria-label="Menú">
+
+            <a class="side active" href="#inicio" data-spy="inicio" aria-current="page">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
+                <span>Inicio</span>
+            </a>
+
+            <!-- Grupos desplegables: solo uno abierto a la vez -->
+            <div class="side-group" data-group="dinero">
+                <button type="button" class="side side-toggle" aria-expanded="false" aria-controls="side-dinero">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3l4 4-4 4"/><path d="M3 7h18"/><path d="M7 21l-4-4 4-4"/><path d="M21 17H3"/></svg>
+                    <span>Mover dinero</span>
+                    <svg class="side-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+                <div class="side-sub" id="side-dinero">
+                    <div class="side-sub-inner">
+                        <a class="side" href="transferir.html">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+                            <span>Transferir</span>
+                        </a>
+                        <a class="side" href="pagos.html">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2v20l3-2 3 2 2-2 2 2 3-2 3 2V2l-3 2-3-2-2 2-2-2-3 2Z"/><path d="M8 9h8M8 13h6"/></svg>
+                            <span>Pagos</span>
+                        </a>
+                        <a class="side" href="qr.html">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3M21 14v.01M14 21h7v-4M17 21v-.01"/></svg>
+                            <span>Pagar con QR</span>
+                        </a>
+                        <a class="side" href="llaves.html">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="7.5" cy="15.5" r="4.5"/><path d="m10.7 12.3 9.3-9.3M16 7l3 3M14 9l2 2"/></svg>
+                            <span>Llaves Bre-B</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="side-group" data-group="ahorro">
+                <button type="button" class="side side-toggle" aria-expanded="false" aria-controls="side-ahorro">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 9a7 7 0 0 0-7-4H9a6 6 0 0 0-6 6c0 2 1 3.7 2.5 4.8L6 20h3l1-2h3l1 2h3l.6-3.2A6 6 0 0 0 20 14h1v-4h-1.2a7 7 0 0 0-.8-1Z"/><path d="M16 11h.01"/></svg>
+                    <span>Ahorrar</span>
+                    <svg class="side-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+                <div class="side-sub" id="side-ahorro">
+                    <div class="side-sub-inner">
+                        <a class="side" href="#ahorro" data-spy="ahorro">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>
+                            <span>Metas de ahorro</span>
+                        </a>
+                        <a class="side" href="inversiones.html">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 6-6"/><path d="M15 8h5v5"/></svg>
+                            <span>Bolsillos y CDT</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="side-group" data-group="cuenta">
+                <button type="button" class="side side-toggle" aria-expanded="false" aria-controls="side-cuenta">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0 0 4h14a2 2 0 0 1 2 2v4h-4a2 2 0 0 0 0 4h4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5"/></svg>
+                    <span>Mis finanzas</span>
+                    <svg class="side-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+                </button>
+                <div class="side-sub" id="side-cuenta">
+                    <div class="side-sub-inner">
+                        <a class="side" href="movimientos.html">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 16-4 4-4-4"/><path d="M17 20V4"/><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/></svg>
+                            <span>Movimientos</span>
+                        </a>
+                        <a class="side" href="#tarjetas" data-spy="tarjetas">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+                            <span>Tarjetas</span>
+                        </a>
+                        <a class="side" href="#suscripciones" data-spy="suscripciones">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="15" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M8 14h3"/></svg>
+                            <span>Suscripciones</span>
+                        </a>
+                        <a class="side" href="puntos.html">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 3 7h7l-5.5 4.5 2 7.5-6.5-4.5L5.5 21l2-7.5L2 9h7z"/></svg>
+                            <span>Mis puntos</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="side-space"></div>
+
+            <a class="side" href="#perfil" id="openMyProfile">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+                <span>Mi perfil</span>
+            </a>
+
+            <a class="side" href="#configuracion" id="openSettings">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                <span>Configuración</span>
+            </a>
+
+        </aside>
+
+
+        <!-- =================================================
+             CONTENIDO
+        ================================================== -->
+
+        <main class="dashboard">
+
+            <!-- Bienvenida -->
+            <div class="welcome" data-view="inicio">
+                <div>
+                    <span class="eyebrow" id="today">HOY</span>
+                    <h1>Hola, <span id="helloName">…</span></h1>
+                    <p>Este es el resumen de tus productos y operaciones.</p>
+                </div>
+
+                <div class="welcome-actions">
+                    <!-- Clave dinámica (GET /auth/dynamic-key): se pide al transferir -->
+                    <div data-dynamic-key></div>
+                    <a class="btn primary" href="transferir.html">
+                        Enviar dinero
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg>
+                    </a>
+                </div>
+            </div>
+
+
+            <div class="dash-grid" data-view="inicio">
+
+                <!-- Saldo (GET /accounts, /ledger/accounts/:id/balance, /accounts/:id/limits) -->
+                <section class="panel balance" aria-labelledby="balanceLabel">
+
+                    <div class="panel-top">
+                        <span id="balanceLabel">Saldo disponible</span>
+                        <button id="toggleBalance" type="button" aria-label="Mostrar u ocultar saldo y número de cuenta">
+                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12"/><circle cx="12" cy="12" r="3"/></svg>
+                        </button>
+                    </div>
+
+                    <strong id="balanceValue">—</strong>
+
+                    <div class="account" id="accountInfo">
+                        <span class="account-line">Cuenta Banklite <b id="accountNumberShown">—</b></span>
+                        <span class="account-type-chip" id="accountType">—</span>
+                    </div>
+                    <p class="account-limits" id="accountLimits" hidden>
+                        Límite diario <b id="dailyLimit">—</b> · Límite mensual <b id="monthlyLimit">—</b>
+                    </p>
+                    <p class="account-status-note" id="accountStatusNote" hidden></p>
+
+                    <!-- Sin cuenta: se abre desde aquí (POST /accounts/create) -->
+                    <div class="no-account" id="noAccountBox" hidden>
+                        <p>Todavía no tienes una cuenta Banklite.</p>
+                        <button class="btn primary" type="button" id="openAccountBtn">Abrir mi cuenta</button>
+                    </div>
+
+                </section>
+
+
+                <!-- Resumen mensual: salidas del mes calculadas con /ledger -->
+                <section class="panel spending" aria-labelledby="spendingTitle">
+
+                    <div class="panel-top">
+                        <b id="spendingTitle">Resumen mensual</b>
+                        <span class="panel-chip" id="spendingMonth">Este mes</span>
+                    </div>
+
+                    <div class="donut" id="spendingDonut" role="img" aria-label="Salidas del mes">
+                        <div>
+                            <b id="spentValue">—</b>
+                            <small>Salidas</small>
+                        </div>
+                    </div>
+
+                    <div class="legend">
+                        <span><i class="dot dot-1"></i>Transferencias <b id="spentTransfer">—</b></span>
+                        <span><i class="dot dot-2"></i>Pagos y cargos <b id="spentDebit">—</b></span>
+                        <span><i class="dot dot-3"></i>Entradas <b id="spentIncome">—</b></span>
+                    </div>
+
+                </section>
+
+            </div>
+
+
+
+
+            <!-- =================================================
+                 SERVICIOS
+            ================================================== -->
+
+            <section class="services" id="pagos" data-view="inicio">
+
+                <h2>¿Qué necesitas hacer?</h2>
+
+                <div class="service-grid">
+                    <a href="transferir.html">
+                        <span>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+                        </span>
+                        <b>Transferir</b>
+                        <small>A cuentas Banklite</small>
+                    </a>
+                    <a href="movimientos.html">
+                        <span>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 16-4 4-4-4"/><path d="M17 20V4"/><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/></svg>
+                        </span>
+                        <b>Movimientos</b>
+                        <small>Extracto y comprobantes</small>
+                    </a>
+                    <a href="#tarjetas">
+                        <span>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+                        </span>
+                        <b>Mi tarjeta</b>
+                        <small>Emitir, ver y congelar</small>
+                    </a>
+                    <a href="pagos.html">
+                        <span>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2v20l3-2 3 2 2-2 2 2 3-2 3 2V2l-3 2-3-2-2 2-2-2-3 2Z"/><path d="M8 9h8M8 13h6"/></svg>
+                        </span>
+                        <b>Pagos y recargas</b>
+                        <small>Próximamente</small>
+                    </a>
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 CARRUSEL DE FUNCIONES
+            ================================================== -->
+
+            <section class="feature-carousel" data-view="inicio" aria-roledescription="carrusel" aria-label="Funciones de Banklite">
+                <div class="fc-track" id="fcTrack"></div>
+                <div class="fc-controls">
+                    <button class="fc-arrow" id="fcPrev" type="button" aria-label="Anterior">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+                    </button>
+                    <div class="fc-dots" id="fcDots" role="tablist" aria-label="Elegir función"></div>
+                    <button class="fc-arrow" id="fcNext" type="button" aria-label="Siguiente">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                    </button>
+                </div>
+            </section>
+
+
+            <!-- Cuentas a las que más has enviado (solo últimos 4 dígitos: es lo que da /ledger) -->
+            <section class="frequent-contacts" id="frequentContacts" data-view="inicio" hidden>
+                <div class="section-heading">
+                    <div>
+                        <span class="eyebrow">Tus envíos</span>
+                        <h2>Cuentas frecuentes</h2>
+                    </div>
+                    <a class="text-btn" href="transferir.html">Transferir <span aria-hidden="true">→</span></a>
+                </div>
+                <div class="frequent-list" id="frequentList"></div>
+            </section>
+
+
+            <!-- =================================================
+                 TARJETA (GET/POST /cards, /cards/:id/reveal, PATCH /cards/:id/status)
+            ================================================== -->
+
+            <section class="bank-card-section" id="tarjetas" data-view="tarjetas">
+
+                <div class="section-heading">
+                    <div>
+                        <span class="eyebrow">Producto</span>
+                        <h2>Tarjeta débito virtual</h2>
+                    </div>
+                    <button class="btn soft" id="toggleCardNumber" type="button" hidden>Mostrar número</button>
+                </div>
+
+                <!-- Sin tarjeta -->
+                <div class="panel no-card" id="noCardBox" hidden>
+                    <p id="noCardText">Todavía no tienes tarjeta. Emítela gratis y úsala de inmediato.</p>
+                    <button class="btn primary" type="button" id="issueCardBtn">Emitir tarjeta virtual</button>
+                </div>
+
+                <div class="card-layout" id="cardLayout" hidden>
+                    <div>
+                        <div class="real-card" id="realCard">
+                            <span class="card-locked-badge" aria-hidden="true"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>CONGELADA</span>
+                            <div class="card-top">
+                                <div>
+                                    banklite
+                                    <span>DÉBITO VIRTUAL</span>
+                                </div>
+                            </div>
+
+                            <div class="card-mid">
+                                <div class="chip"></div>
+                            </div>
+
+                            <div class="card-number" id="cardNumber">•••• •••• •••• ••••</div>
+
+                            <div class="card-bottom">
+                                <div>
+                                    <small>TITULAR</small>
+                                    <strong id="cardHolder">—</strong>
+                                </div>
+                                <div>
+                                    <small>VENCE</small>
+                                    <strong id="cardExp">--/--</strong>
+                                </div>
+                                <div>
+                                    <small>CVV</small>
+                                    <strong id="cardCvv">•••</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <p class="card-note" id="cardStatusNote">El CVV solo se muestra al emitir la tarjeta y no se guarda.</p>
+                    </div>
+
+                    <!-- Control de la tarjeta -->
+                    <div class="panel card-controls" aria-labelledby="cardControlsTitle">
+                        <div class="panel-top">
+                            <b id="cardControlsTitle">Control de la tarjeta</b>
+                            <span class="panel-chip" id="cardStateChip">—</span>
+                        </div>
+
+                        <div class="control-row">
+                            <span class="control-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
+                            <span class="control-text">
+                                <strong>Congelar tarjeta</strong>
+                                <small>Nadie podrá usarla hasta que la descongeles.</small>
+                            </span>
+                            <label class="switch">
+                                <input type="checkbox" id="cardLockSwitch" aria-label="Congelar tarjeta">
+                                <span></span>
+                            </label>
+                        </div>
+
+                        <div class="control-row is-soon">
+                            <span class="control-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18"/><path d="M12 3a14 14 0 0 0 0 18"/></svg></span>
+                            <span class="control-text">
+                                <strong>Compras por internet y límite de compras</strong>
+                                <small>Próximamente.</small>
+                            </span>
+                            <span class="soon-chip">Próximamente</span>
+                        </div>
+
+                        <p class="card-account" id="cardAccount"></p>
+                    </div>
+                </div>
+
+            </section>
+
+
+            <!-- =================================================
+                 SUSCRIPCIONES Y METAS: sin backend todavía
+            ================================================== -->
+
+            <section class="subs-section" id="suscripciones-vista" data-view="suscripciones">
+                <div class="section-heading">
+                    <div>
+                        <span class="eyebrow">Tu tarjeta débito</span>
+                        <h2>Mis suscripciones</h2>
+                    </div>
+                </div>
+                <!-- Suscripciones reales (card-service /cards/subscriptions) -->
+                <div class="panel subs-panel" id="suscripciones" aria-labelledby="subsTitle">
+                    <div class="panel-top">
+                        <div>
+                            <b id="subsTitle">Servicios inscritos</b>
+                            <small class="subs-count" id="subsCount">Cargando…</small>
+                        </div>
+                        <span class="panel-chip" id="subsTotal">$ 0 al mes</span>
+                    </div>
+                    <div id="subsList"><p class="pay-empty">Cargando…</p></div>
+                    <div class="subs-actions">
+                        <button class="btn soft" type="button" id="addSub">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                            Agregar suscripción
+                        </button>
+                    </div>
+                    <p class="subs-note">Cobramos cada mes a tu tarjeta el día en que te inscribiste y te avisamos 3 días antes. Si un cobro falla, lo reintentamos los 3 días siguientes; después la suscripción se suspende. Para darte de baja del servicio, hazlo también en su app.</p>
+                </div>
+            </section>
+
+            <section class="goals-section" data-view="ahorro">
+                <div class="section-heading">
+                    <div>
+                        <span class="eyebrow">Ahorro</span>
+                        <h2>Mis metas</h2>
+                    </div>
+                </div>
+                <div class="panel soon-panel" id="ahorro">
+                    <span class="soon-chip">Próximamente</span>
+                    <p>Pronto podrás crear metas de ahorro y separar dinero para cada una.</p>
+                </div>
+            </section>
+
+        </main>
+
+    </div>
+
+
+    <!-- =====================================================
+         MODALES
+    ====================================================== -->
+
+    
+    <!-- Cambiar clave: código por correo o WhatsApp (POST /auth/password-recovery/*) -->
+    <div class="modal" id="pinModal" role="dialog" aria-modal="true" aria-labelledby="pinModalTitle">
+        <div class="modal-card flow-box">
+            <button class="modal-close" data-close type="button" aria-label="Cerrar">×</button>
+            <div class="flow-progress" aria-hidden="true"><span class="on"></span><span></span></div>
+
+            <form class="flow-step" data-step="send" novalidate>
+                <span class="eyebrow">Seguridad</span>
+                <h2 id="pinModalTitle">Cambiar clave</h2>
+                <p class="flow-text">Te enviaremos un código para confirmar que eres tú.</p>
+                <div class="channel-options" role="radiogroup" aria-label="Recibir el código por">
+                    <label class="channel-option">
+                        <input type="radio" name="pinChannel" value="email" checked>
+                        <span><strong>Correo</strong><small id="pinEmailHint">Al correo registrado</small></span>
+                    </label>
+                    <label class="channel-option">
+                        <input type="radio" name="pinChannel" value="whatsapp">
+                        <span><strong>WhatsApp</strong><small>A tu celular registrado</small></span>
+                    </label>
+                </div>
+                <button class="btn primary full" type="submit">Enviar código</button>
+            </form>
+
+            <form class="flow-step" data-step="reset" hidden novalidate>
+                <span class="eyebrow">Seguridad</span>
+                <h2>Crea tu nueva clave</h2>
+                <p class="flow-text">Escribe el código de 6 dígitos y tu nueva clave de 4 dígitos.</p>
+                <div class="pin-boxes code" id="pinCode" data-length="6" data-visible role="group" aria-label="Código de verificación"></div>
+                <div class="code-meta" id="pinTimer"><span>El código vence en <b>05:00</b></span></div>
+                <div class="form-stack">
+                    <div>
+                        <div class="pin-row"><label id="pinNewLabel">Clave nueva</label></div>
+                        <div class="pin-boxes" data-pin-for="pinNew" data-length="4" role="group" aria-labelledby="pinNewLabel"></div>
+                        <input type="hidden" id="pinNew">
+                    </div>
+                    <div>
+                        <div class="pin-row"><label id="pinNewConfirmLabel">Confirmar clave</label></div>
+                        <div class="pin-boxes" data-pin-for="pinNewConfirm" data-length="4" role="group" aria-labelledby="pinNewConfirmLabel"></div>
+                        <input type="hidden" id="pinNewConfirm">
+                    </div>
+                </div>
+                <button class="btn primary full" type="submit">Guardar clave</button>
+                <button class="flow-link" type="button" id="pinResend" disabled>Reenviar código</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="confirmModal" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle" aria-describedby="confirmText">
+        <div class="modal-card">
+            <span class="modal-icon is-alert" aria-hidden="true">!</span>
+            <h2 id="confirmTitle">¿Estás seguro?</h2>
+            <p id="confirmText"></p>
+            <div class="modal-actions">
+                <button class="btn soft" data-close type="button">Cancelar</button>
+                <button class="btn primary" id="confirmAccept" type="button">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notificaciones (GET /notifications/:idUser, PUT /notifications/:id/read) -->
+    <div class="modal" id="notifModal" role="dialog" aria-modal="true" aria-labelledby="notifTitle">
+        <div class="modal-card">
+            <button class="modal-close" data-close type="button" aria-label="Cerrar">×</button>
+            <span class="eyebrow">Centro de avisos</span>
+            <h2 id="notifTitle">Notificaciones</h2>
+            <ul class="notif-list" id="notifList"></ul>
+            <button class="btn primary full" data-close type="button">Listo</button>
+        </div>
+    </div>
+
+    <!-- Mi perfil -->
+    <div class="modal" id="myProfileModal" role="dialog" aria-modal="true" aria-labelledby="myProfileTitle">
+        <div class="modal-card settings-modal">
+            <button class="modal-close" data-close type="button" aria-label="Cerrar">×</button>
+            <span class="eyebrow">Tu cuenta</span>
+            <h2 id="myProfileTitle">Mi perfil</h2>
+
+            <div class="me-card">
+                <span class="me-avatar" id="meAvatar">--</span>
+                <div>
+                    <strong id="meName">—</strong>
+                    <small id="meLine">—</small>
+                </div>
+            </div>
+
+            <div class="settings-group">
+                <small>Seguridad y datos</small>
+                <div class="settings-list config">
+                    <button id="changePin" type="button">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+                        Cambiar clave
+                    </button>
+                    <button id="openProfile" type="button">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+                        Mis datos
+                    </button>
+                </div>
+            </div>
+
+            <div class="settings-group" id="certGroup" hidden>
+                <small>Documentos</small>
+                <div class="settings-list">
+                    <button class="settings-link" type="button" id="openAccountCert">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 15l2 2 4-4"/></svg>
+                        <span>Certificado de cuenta</span>
+                        <span aria-hidden="true">→</span>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Abrir cuenta (solo si el cliente no tiene): POST /accounts/create -->
+    <div class="modal" id="accountTypeModal" role="dialog" aria-modal="true" aria-labelledby="accountTypeTitle">
+        <div class="modal-card">
+            <button class="modal-close" data-close type="button" aria-label="Cerrar">×</button>
+            <span class="eyebrow">Tu producto</span>
+            <h2 id="accountTypeTitle">Abre tu cuenta</h2>
+            <p class="modal-hint">Elige el tipo de cuenta y la moneda. Queda activa en cuanto tu identidad está verificada.</p>
+            <div class="acct-options" role="radiogroup" aria-labelledby="accountTypeTitle">
+                <label class="acct-option">
+                    <input type="radio" name="dashAccountType" value="savings" checked>
+                    <span class="acct-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 5c-1.5 0-2.8 1.4-3 2-3.5-1.5-11-.3-11 5 0 1.8 0 3 2 4.5V20h4v-2h3v2h4v-4c1-.5 1.7-1 2-2h2v-4h-2c0-1-.5-1.5-1-2V5z"/><path d="M2 9v1c0 1.1.9 2 2 2h1M16 11h.01"/></svg></span>
+                    <span class="acct-body">
+                        <strong>Ahorros</strong>
+                        <small>Para guardar tu dinero y moverlo cuando lo necesites.</small>
+                    </span>
+                </label>
+                <label class="acct-option">
+                    <input type="radio" name="dashAccountType" value="checking">
+                    <span class="acct-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/></svg></span>
+                    <span class="acct-body">
+                        <strong>Corriente</strong>
+                        <small>Para quien hace muchos pagos y movimientos.</small>
+                    </span>
+                </label>
+            </div>
+            <label class="form-stack">Moneda
+                <select id="accountCurrency">
+                    <option value="COP">COP — Peso colombiano</option>
+                    <option value="USD">USD — Dólar</option>
+                </select>
+            </label>
+            <button class="btn primary full" type="button" id="createAccountBtn">Abrir cuenta</button>
+        </div>
+    </div>
+
+    <!-- Certificado de cuenta (datos reales de /accounts y /kyc) -->
+    <div class="modal" id="accountCertModal" role="dialog" aria-modal="true" aria-labelledby="accountCertTitle">
+        <div class="modal-card cert-modal">
+            <button class="modal-close" data-close type="button" aria-label="Cerrar">×</button>
+            <span class="eyebrow">Documentos</span>
+            <h2 id="accountCertTitle">Certificado de cuenta</h2>
+
+            <div class="cert-paper">
+                <div class="cert-head">
+                    <span class="cert-logo">B</span>
+                    <div>
+                        <b>banklite</b>
+                        <small>Certificación bancaria</small>
+                    </div>
+                    <span class="cert-status"><i></i><span id="certStatusChip">—</span></span>
+                </div>
+                <p class="cert-text">Banklite certifica que <b id="certName">—</b>, identificado(a) con <b id="certDoc">—</b>, tiene con nosotros el siguiente producto:</p>
+                <dl class="cert-grid">
+                    <div><dt>Producto</dt><dd id="certType">—</dd></div>
+                    <div><dt>Número de cuenta</dt><dd id="certAccount">—</dd></div>
+                    <div><dt>Estado</dt><dd id="certStatus">—</dd></div>
+                    <div><dt>Fecha de apertura</dt><dd id="certOpened">—</dd></div>
+                    <div><dt>Moneda</dt><dd id="certCurrency">—</dd></div>
+                    <div class="cert-balance" hidden><dt>Saldo disponible</dt><dd id="certBalance">—</dd></div>
+                </dl>
+                <div class="cert-sign">
+                    <img data-signature alt="Firma de la Gerencia de Operaciones">
+                    <b>Gerencia de Operaciones</b>
+                    <small>Banklite</small>
+                </div>
+                <p class="cert-foot">Expedido el <span id="certToday">—</span> · Código <span id="certCode">—</span></p>
+            </div>
+
+            <label class="cert-check">
+                <input type="checkbox" id="certIncludeBalance">
+                <span>Incluir el saldo disponible</span>
+            </label>
+
+            <button class="btn primary full" type="button" id="downloadAccountCert">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+                Descargar certificado (PDF)
+            </button>
+            <p class="cert-note">Documento de ejemplo de un proyecto académico. No tiene validez ante ninguna entidad.</p>
+        </div>
+    </div>
+
+    <!-- Configuración -->
+    <div class="modal" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+        <div class="modal-card settings-modal">
+            <button class="modal-close" data-close type="button" aria-label="Cerrar">×</button>
+            <span class="eyebrow">Tu cuenta</span>
+            <h2 id="settingsTitle">Configuración</h2>
+
+            <div class="settings-group">
+                <small>Apariencia</small>
+                <div class="theme-picker" role="radiogroup" aria-label="Tema de la página">
+                    <button type="button" role="radio" data-theme-choice="light" aria-checked="false">
+                        <span class="theme-swatch" aria-hidden="true"></span>
+                        Claro
+                    </button>
+                    <button type="button" role="radio" data-theme-choice="dark" aria-checked="false">
+                        <span class="theme-swatch is-dark" aria-hidden="true"></span>
+                        Oscuro
+                    </button>
+                    <button type="button" role="radio" data-theme-choice="auto" aria-checked="false">
+                        <span class="theme-swatch is-auto" aria-hidden="true"></span>
+                        Automático
+                    </button>
+                </div>
+            </div>
+
+            <div class="settings-group">
+                <small>Ayuda</small>
+                <div class="settings-list">
+                    <a class="settings-link" href="ayuda.html">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/></svg>
+                        <span>Centro de ayuda</span>
+                        <span aria-hidden="true">→</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="settings-group">
+                <small>Documentos legales</small>
+                <div class="settings-list">
+                    <a class="settings-link" href="terminos.html" target="_blank" rel="noopener">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg>
+                        <span>Términos y condiciones</span>
+                        <span aria-hidden="true">↗</span>
+                    </a>
+                    <a class="settings-link" href="privacidad.html" target="_blank" rel="noopener">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></svg>
+                        <span>Política de privacidad</span>
+                        <span aria-hidden="true">↗</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mis datos (solo lectura: vienen de la verificación de identidad, GET /kyc/:idUser) -->
+    <div class="modal" id="profileModal" role="dialog" aria-modal="true" aria-labelledby="profileTitle">
+        <div class="modal-card profile-modal">
+            <button class="modal-close" data-close type="button" aria-label="Cerrar">×</button>
+
+            <div class="profile-head">
+                <span class="avatar" id="profileAvatar">·</span>
+                <div>
+                    <h2 id="profileTitle">Mis datos</h2>
+                    <p id="profileSubtitle">Verificados con tu documento</p>
+                </div>
+            </div>
+
+            <div class="account-box" id="profileData"></div>
+            <p class="modal-hint">Para actualizar tu correo o tu celular, comunícate con soporte.</p>
+        </div>
+    </div>
+
+    <!-- Agregar suscripción: se cobra el primer mes de inmediato -->
+    <div class="modal" id="subModal" role="dialog" aria-modal="true" aria-labelledby="subTitle">
+        <div class="modal-card sub-modal">
+            <button class="modal-close" data-close type="button" aria-label="Cerrar">×</button>
+            <span class="eyebrow">Tarjeta débito</span>
+            <h2 id="subTitle">Agregar suscripción</h2>
+            <p class="modal-hint">Elige el servicio. Pagas el primer mes ahora y luego se cobra solo cada mes.</p>
+            <form id="subForm" class="form-stack" novalidate>
+                <div class="sub-options" id="subServices"></div>
+                <label>Tarjeta
+                    <select id="subCard"></select>
+                </label>
+                <p class="modal-hint" id="subSummary">Elige un servicio.</p>
+                <button class="btn primary full" type="submit" id="subSubmit">Inscribir</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Historial de cobros de una suscripción -->
+    <div class="modal" id="subHistoryModal" role="dialog" aria-modal="true" aria-labelledby="subHistoryTitle">
+        <div class="modal-card">
+            <button class="modal-close" data-close type="button" aria-label="Cerrar">×</button>
+            <span class="eyebrow">Suscripción</span>
+            <h2 id="subHistoryTitle">Cobros</h2>
+            <ul class="sub-charges" id="subHistoryList"></ul>
+            <button class="btn primary full" data-close type="button">Entendido</button>
+        </div>
+    </div>
+
+    <div class="modal" id="genericModal" role="dialog" aria-modal="true" aria-labelledby="genericTitle" aria-describedby="genericText">
+        <div class="modal-card">
+            <button class="modal-close" data-close type="button" aria-label="Cerrar">×</button>
+            <span class="modal-icon" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+            </span>
+            <h2 id="genericTitle">Banklite</h2>
+            <p id="genericText"></p>
+            <button class="btn primary full" data-close type="button">Entendido</button>
+        </div>
+    </div>
+
+    <script src="java.js"></script>
+    <script src="api.js"></script>
+    <script src="comprobantes.js"></script>
+    <script src="dynamic-key.js"></script>
+    <script src="dashboard.js"></script>
+    <script src="subscriptions.js"></script>
+
+</body>
+
+</html>

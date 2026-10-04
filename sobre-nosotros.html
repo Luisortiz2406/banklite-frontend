@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#26474E">
+    <title>Sobre nosotros | Banklite</title>
+
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%232CCED2'/%3E%3Ctext x='32' y='44' font-family='Arial' font-size='34' font-weight='800' text-anchor='middle' fill='%2326474E'%3EB%3C/text%3E%3C/svg%3E">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+    <script>
+        // Modo oscuro: se aplica antes de pintar para que no parpadee
+        try {
+            var blTheme = localStorage.getItem("bankliteTheme");
+            if (blTheme === "dark" || (blTheme === "auto" && matchMedia("(prefers-color-scheme: dark)").matches)) {
+                document.documentElement.dataset.theme = "dark";
+                document.documentElement.style.background = "#0D1B1E";
+            }
+        } catch (e) {}
+    </script>
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="about-body">
+
+    <header class="app-header">
+        <a class="brand" href="index.html" aria-label="Banklite, inicio">
+            <span class="logo">B</span>
+            <span>banklite</span>
+        </a>
+        <a class="back" href="index.html"><span aria-hidden="true">←</span>&nbsp;Volver a Banklite</a>
+    </header>
+
+    <main class="about-page" id="aboutPage">
+
+        <!-- PORTADA -->
+        <section class="about-hero">
+            <div class="about-hero-text">
+                <span class="eyebrow">Sobre nosotros</span>
+                <h1>Hacemos que el banco quepa en tu bolsillo</h1>
+                <p>Banklite nació en un salón de clase con una pregunta sencilla: ¿por qué abrir una cuenta, pagar una factura o mandarle plata a alguien tiene que ser complicado? Esta página cuenta quiénes somos y cómo lo construimos.</p>
+                <div class="about-hero-actions">
+                    <a href="registro.html" class="btn primary">Abrir mi cuenta</a>
+                    <a href="#equipo" class="btn about-ghost">Conocer al equipo</a>
+                </div>
+            </div>
+            <div class="about-hero-card" aria-hidden="true">
+                <span class="logo">B</span>
+                <b>banklite</b>
+                <small>Banca digital, sencilla y segura</small>
+                <div class="about-hero-chips">
+                    <span>Bre-B</span><span>QR</span><span>CDT</span><span>Puntos</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- CIFRAS -->
+        <section class="about-stats" aria-label="Banklite en cifras">
+            <div class="about-stat"><b data-count="4">0</b><span>integrantes en el equipo</span></div>
+            <div class="about-stat"><b data-count="8">0</b><span>microservicios en el backend</span></div>
+            <div class="about-stat"><b data-count="15">0</b><span>páginas en la web</span></div>
+            <div class="about-stat"><b data-count="100" data-suffix="%">0</b><span>digital, sin filas ni papeles</span></div>
+        </section>
+
+        <!-- MISIÓN Y VISIÓN -->
+        <section class="about-section" aria-labelledby="missionTitle">
+            <div class="about-head">
+                <span class="eyebrow">Nuestro propósito</span>
+                <h2 id="missionTitle">Por qué existe Banklite</h2>
+            </div>
+            <div class="about-mv">
+                <article class="about-mv-card reveal">
+                    <span class="about-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg></span>
+                    <h3>Misión</h3>
+                    <p>Ofrecer una banca digital clara y segura, donde cualquier persona pueda manejar su dinero desde el celular sin letra pequeña ni trámites innecesarios.</p>
+                </article>
+                <article class="about-mv-card reveal">
+                    <span class="about-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></span>
+                    <h3>Visión</h3>
+                    <p>Ser el banco digital preferido por los jóvenes en Colombia, reconocido por su cercanía, su diseño y por poner la tecnología al servicio de las personas.</p>
+                </article>
+            </div>
+        </section>
+
+        <!-- VALORES -->
+        <section class="about-section" aria-labelledby="valuesTitle">
+            <div class="about-head">
+                <span class="eyebrow">Lo que nos mueve</span>
+                <h2 id="valuesTitle">Nuestros valores</h2>
+            </div>
+            <div class="about-values">
+                <article class="about-value reveal">
+                    <span class="about-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
+                    <h3>Seguridad</h3>
+                    <p>Clave de 4 dígitos, códigos de verificación por correo y WhatsApp, cierre por inactividad y congelamiento de tu tarjeta.</p>
+                </article>
+                <article class="about-value reveal">
+                    <span class="about-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"/></svg></span>
+                    <h3>Cercanía</h3>
+                    <p>Hablamos claro y estamos disponibles: Banki responde tus dudas a cualquier hora.</p>
+                </article>
+                <article class="about-value reveal">
+                    <span class="about-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg></span>
+                    <h3>Transparencia</h3>
+                    <p>Cada movimiento tiene comprobante y puedes descargar tus extractos cuando quieras.</p>
+                </article>
+                <article class="about-value reveal">
+                    <span class="about-icon" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z"/></svg></span>
+                    <h3>Innovación</h3>
+                    <p>Bre-B, pagos con QR, puntos y bolsillos: probamos ideas nuevas para que ahorrar sea fácil.</p>
+                </article>
+            </div>
+        </section>
+
+        <!-- HISTORIA -->
+        <section class="about-section" aria-labelledby="storyTitle">
+            <div class="about-head">
+                <span class="eyebrow">Nuestra historia</span>
+                <h2 id="storyTitle">Cómo construimos Banklite</h2>
+            </div>
+            <ol class="about-timeline">
+                <li class="reveal">
+                    <span class="about-step">1</span>
+                    <div>
+                        <b>La idea</b>
+                        <p>Como proyecto académico decidimos crear un banco digital desde cero: nombre, logo y la paleta turquesa que nos identifica.</p>
+                    </div>
+                </li>
+                <li class="reveal">
+                    <span class="about-step">2</span>
+                    <div>
+                        <b>El diseño</b>
+                        <p>Dibujamos las pantallas y armamos la web en HTML, CSS y JavaScript: inicio, registro, ingreso y el panel de la cuenta.</p>
+                    </div>
+                </li>
+                <li class="reveal">
+                    <span class="about-step">3</span>
+                    <div>
+                        <b>Los microservicios</b>
+                        <p>El equipo de backend separó el banco en servicios independientes: usuarios, cuentas, transferencias, pagos y más.</p>
+                    </div>
+                </li>
+                <li class="reveal">
+                    <span class="about-step">4</span>
+                    <div>
+                        <b>Las funciones</b>
+                        <p>Llegaron las transferencias, los pagos y recargas, los bolsillos y CDT, las llaves Bre-B, el QR y los Puntos Banklite.</p>
+                    </div>
+                </li>
+                <li class="reveal">
+                    <span class="about-step">5</span>
+                    <div>
+                        <b>Hoy</b>
+                        <p>Banklite tiene modo oscuro, centro de ayuda con Banki, certificados y suscripciones. Y seguimos mejorando.</p>
+                    </div>
+                </li>
+            </ol>
+        </section>
+
+        <!-- EQUIPO -->
+        <section class="about-section" id="equipo" aria-labelledby="teamTitle">
+            <div class="about-head">
+                <span class="eyebrow">El equipo</span>
+                <h2 id="teamTitle">Las personas detrás de Banklite</h2>
+                <p>Somos cuatro: dos construimos la página y su diseño, y dos construyeron los microservicios que la respaldan.</p>
+            </div>
+
+            <!-- CAMBIA AQUÍ: escribe el nombre real en data-name y en <h3>. Las iniciales del círculo se calculan solas. -->
+            <div class="about-team">
+                <article class="about-member reveal" data-name="Integrante Uno">
+                    <span class="about-avatar" aria-hidden="true"></span>
+                    <h3>Integrante Uno</h3>
+                    <span class="about-role">Diseño y desarrollo web</span>
+                    <p>Interfaz, estilos y experiencia de usuario de la página.</p>
+                </article>
+                <article class="about-member reveal" data-name="Integrante Dos">
+                    <span class="about-avatar" aria-hidden="true"></span>
+                    <h3>Integrante Dos</h3>
+                    <span class="about-role">Diseño y desarrollo web</span>
+                    <p>Funciones de la web en JavaScript, modo oscuro y accesibilidad.</p>
+                </article>
+                <article class="about-member reveal is-back" data-name="Integrante Tres">
+                    <span class="about-avatar" aria-hidden="true"></span>
+                    <h3>Integrante Tres</h3>
+                    <span class="about-role">Microservicios</span>
+                    <p>Servicios de usuarios, cuentas y autenticación.</p>
+                </article>
+                <article class="about-member reveal is-back" data-name="Integrante Cuatro">
+                    <span class="about-avatar" aria-hidden="true"></span>
+                    <h3>Integrante Cuatro</h3>
+                    <span class="about-role">Microservicios</span>
+                    <p>Servicios de transferencias, pagos y notificaciones.</p>
+                </article>
+            </div>
+        </section>
+
+        <!-- CTA -->
+        <section class="about-cta">
+            <div>
+                <h2>¿Listo para probar Banklite?</h2>
+                <p>Abre tu cuenta en minutos, recibe tu tarjeta débito y empieza a transferir.</p>
+            </div>
+            <div class="about-hero-actions">
+                <a href="registro.html" class="btn primary">Abrir cuenta</a>
+                <a href="ayuda.html" class="btn about-ghost">Centro de ayuda</a>
+            </div>
+        </section>
+
+        <p class="about-note">Banklite es un proyecto académico. No es una entidad financiera real.</p>
+
+    </main>
+
+    <div class="modal" id="genericModal" role="dialog" aria-modal="true" aria-labelledby="genericTitle" aria-describedby="genericText">
+        <div class="modal-card">
+            <button class="modal-close" data-close type="button" aria-label="Cerrar">×</button>
+            <span class="modal-icon" aria-hidden="true">i</span>
+            <h2 id="genericTitle">Banklite</h2>
+            <p id="genericText"></p>
+            <button class="btn primary full" data-close type="button">Entendido</button>
+        </div>
+    </div>
+
+    <script src="java.js"></script>
+
+</body>
+
+</html>

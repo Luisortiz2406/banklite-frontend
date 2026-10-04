@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Abre tu cuenta Banklite en minutos, 100% digital y sin cuota de manejo.">
+  <meta name="theme-color" content="#26474E">
+  <title>Abrir cuenta | Banklite</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%232CCED2'/%3E%3Ctext x='32' y='44' font-family='Arial' font-size='34' font-weight='800' text-anchor='middle' fill='%2326474E'%3EB%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+    <script>
+        // Modo oscuro: se aplica antes de pintar para que no parpadee
+        try {
+            var blTheme = localStorage.getItem("bankliteTheme");
+            if (blTheme === "dark" || (blTheme === "auto" && matchMedia("(prefers-color-scheme: dark)").matches)) {
+                document.documentElement.dataset.theme = "dark";
+                document.documentElement.style.background = "#0D1B1E";
+            }
+        } catch (e) {}
+    </script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="register-page">
+
+  <!-- =====================================================
+       PANEL VISUAL IZQUIERDO
+       ===================================================== -->
+  <aside class="register-visual">
+    <a class="register-brand" href="index.html" aria-label="Volver a Banklite">
+      <span class="register-brand-mark">B</span>
+      <span>banklite</span>
+    </a>
+
+    <div class="register-visual-content">
+      <div class="register-photo" aria-hidden="true"></div>
+
+      <div class="register-slogan">
+        <span id="regHeroKicker">Apertura 100% digital</span>
+        <strong id="regHeroTitle">Tu banco digital, sin filas ni papeleo</strong>
+        <p id="regHeroSub">Abre tu cuenta 100% en línea, en minutos y desde donde estés.</p>
+        <div class="reg-hero-steps" aria-hidden="true"><i class="on" data-hero-step></i><i data-hero-step></i><i data-hero-step></i></div>
+      </div>
+
+      <ul class="register-perks">
+        <li><span aria-hidden="true">✓</span> Sin cuota de manejo</li>
+        <li><span aria-hidden="true">✓</span> Tarjeta débito incluida</li>
+        <li><span aria-hidden="true">✓</span> Lista en menos de 5 minutos</li>
+      </ul>
+    </div>
+
+    <div class="register-visual-footer">
+      <span>Seguridad</span>
+      <span aria-hidden="true">•</span>
+      <span>Control</span>
+      <span aria-hidden="true">•</span>
+      <span>Simplicidad</span>
+    </div>
+  </aside>
+
+  <!-- =====================================================
+       FORMULARIO DE REGISTRO
+       ===================================================== -->
+  <main class="register-main">
+    <div class="register-container">
+      <div class="register-topbar">
+        <a class="mobile-register-brand" href="index.html" aria-label="Banklite, inicio">
+          <span class="register-brand-mark">B</span>
+          <span>banklite</span>
+        </a>
+
+        <p>¿Ya tienes cuenta? <a href="login.html">Ingresar</a></p>
+      </div>
+
+      <section class="register-content reveal">
+
+        <!-- Progreso: 1 datos, 2 verificación, 3 acceso -->
+        <div class="reg-progress" aria-hidden="true"><span class="on" data-progress></span><span data-progress></span><span data-progress></span></div>
+        <p class="reg-progress-label" id="regProgressLabel">Paso 1 de 3 · Tus datos</p>
+
+        <div id="registerForm" class="reg-flow">
+
+          <!-- 1. Datos personales -->
+          <form class="reg-screen is-active" data-screen="info" novalidate>
+            <h1>Cuéntanos quién eres</h1>
+            <p class="reg-hint">Datos de tu identidad para abrir tu cuenta.</p>
+
+            <div class="reg-grid">
+              <div class="register-field">
+                <label for="regName">Nombres</label>
+                <input id="regName" type="text" autocomplete="given-name" required placeholder="Ej. Laura">
+              </div>
+              <div class="register-field">
+                <label for="regLastName">Apellidos</label>
+                <input id="regLastName" type="text" autocomplete="family-name" required placeholder="Ej. Gómez">
+              </div>
+              <div class="register-field">
+                <label for="regDocType">Tipo de documento</label>
+                <select id="regDocType" required>
+                  <option value="CC">Cédula de ciudadanía</option>
+                  <option value="CE">Cédula de extranjería</option>
+                  <option value="PA">Pasaporte</option>
+                </select>
+              </div>
+              <div class="register-field">
+                <label for="regDoc">Número de identificación</label>
+                <input id="regDoc" type="text" inputmode="numeric" maxlength="10" autocomplete="off" required placeholder="Ej. 1020304050">
+              </div>
+              <div class="register-field">
+                <label for="regBirth">Fecha de nacimiento</label>
+                <input id="regBirth" type="date" autocomplete="bday" required>
+              </div>
+              <div class="register-field">
+                <label for="regIssue">Fecha de expedición</label>
+                <input id="regIssue" type="date" autocomplete="off" required>
+              </div>
+            </div>
+
+            <div class="reg-alert" data-alert hidden></div>
+            <button class="btn primary register-button" type="submit">Continuar</button>
+          </form>
+
+          <!-- 2. Verificación de identidad -->
+          <form class="reg-screen" data-screen="identity" novalidate hidden>
+            <button class="reg-back" type="button" data-go="info">← Atrás</button>
+            <h1>Verificación de identidad</h1>
+            <p class="reg-hint">Comprobaremos tus datos de identificación antes de crear tu acceso a Banklite.</p>
+
+            <div class="reg-card">
+              <div class="reg-row"><span class="reg-chip" aria-hidden="true">🪪</span><div><strong>Documento</strong><small id="identityDocSummary">—</small></div></div>
+              <div class="reg-row"><span class="reg-chip" aria-hidden="true">👤</span><div><strong>Nombre</strong><small id="identityNameSummary">—</small></div></div>
+              <div class="reg-row"><span class="reg-chip" aria-hidden="true">✓</span><div><strong>Datos personales</strong><small>Información ingresada y lista para validar</small></div></div>
+            </div>
+
+            <div class="verify-loading" id="identityLoading" hidden>
+              <span class="spinner" aria-hidden="true"></span>
+              <span>Validando tu documento…</span>
+            </div>
+
+            <div class="reg-alert" data-alert hidden></div>
+            <button class="btn primary register-button" type="submit" id="identityVerifyBtn">Verificar identidad</button>
+          </form>
+
+          <!-- 3. Resultado de la identidad -->
+          <form class="reg-screen" data-screen="identity-result" novalidate hidden>
+            <button class="reg-back" type="button" data-go="info">← Atrás</button>
+            <h1>Identidad verificada</h1>
+            <p class="reg-hint">Esto fue lo que revisamos con los datos que ingresaste.</p>
+
+            <div class="reg-card" id="identityResultList"></div>
+
+            <div class="reg-alert is-ok" id="identityResultSummary">No encontramos ningún reporte. Puedes continuar con tu registro.</div>
+            <button class="btn primary register-button" type="submit" id="identityResultContinue">Continuar</button>
+            <button class="btn primary register-button" type="button" id="identityResultHome" hidden>Volver al inicio</button>
+          </form>
+
+          <!-- 4. Correo -->
+          <form class="reg-screen" data-screen="email" novalidate hidden>
+            <button class="reg-back" type="button" data-go="identity-result">← Atrás</button>
+            <h1>Ingresa tu correo</h1>
+            <p class="reg-hint">Ingresa el correo al que enviaremos tu código de verificación.</p>
+
+            <div class="register-field">
+              <label for="regEmail">Correo electrónico</label>
+              <input id="regEmail" type="email" autocomplete="email" required placeholder="tucorreo@dominio.com">
+            </div>
+
+            <div class="reg-alert" data-alert hidden></div>
+            <button class="btn primary register-button" type="submit">Continuar</button>
+          </form>
+
+          <!-- 5. Código del correo -->
+          <form class="reg-screen" data-screen="email-code" novalidate hidden>
+            <button class="reg-back" type="button" data-go="email">← Atrás</button>
+            <h1>Verifica tu correo</h1>
+            <p class="reg-hint">Enviamos un código de 6 dígitos a <b id="regEmailTarget"></b>.</p>
+
+            <p class="demo-code" id="regEmailDemo"></p>
+            <div class="code-meta reg-timer" id="regEmailTimer"><span>Código vigente: <b>05:00</b></span></div>
+            <div class="pin-boxes code reg-otp" id="regEmailCode" data-length="6" data-visible role="group" aria-label="Código del correo"></div>
+
+            <div class="reg-alert" data-alert hidden></div>
+            <button class="btn primary register-button" type="submit">Verificar correo</button>
+            <button class="btn soft reg-ghost" type="button" id="regEmailResend">Reenviar código</button>
+            <button class="btn soft reg-ghost" type="button" data-go="email">Cambiar correo</button>
+          </form>
+
+          <!-- 6. Teléfono -->
+          <form class="reg-screen" data-screen="phone" novalidate hidden>
+            <button class="reg-back" type="button" data-go="email">← Atrás</button>
+            <h1>Ingresa tu número de teléfono</h1>
+            <p class="reg-hint">Ingresa el número de WhatsApp al que enviaremos tu código.</p>
+
+            <div class="reg-grid reg-grid-phone">
+              <div class="register-field">
+                <label for="regCountry">País</label>
+                <select id="regCountry">
+                  <option value="+57" selected>🇨🇴 Colombia (+57)</option>
+                  <option value="+1">🇺🇸 Estados Unidos (+1)</option>
+                  <option value="+52">🇲🇽 México (+52)</option>
+                  <option value="+34">🇪🇸 España (+34)</option>
+                  <option value="+51">🇵🇪 Perú (+51)</option>
+                  <option value="+56">🇨🇱 Chile (+56)</option>
+                  <option value="+593">🇪🇨 Ecuador (+593)</option>
+                  <option value="+507">🇵🇦 Panamá (+507)</option>
+                  <option value="+58">🇻🇪 Venezuela (+58)</option>
+                  <option value="+54">🇦🇷 Argentina (+54)</option>
+                </select>
+              </div>
+              <div class="register-field">
+                <label for="regPhone">Número de teléfono</label>
+                <input id="regPhone" type="tel" inputmode="numeric" maxlength="10" autocomplete="tel-national" required placeholder="3001234567">
+              </div>
+            </div>
+
+            <div class="reg-alert" data-alert hidden></div>
+            <button class="btn primary register-button" type="submit">Enviar código por WhatsApp</button>
+          </form>
+
+          <!-- 7. Código del teléfono -->
+          <form class="reg-screen" data-screen="phone-code" novalidate hidden>
+            <button class="reg-back" type="button" data-go="phone">← Atrás</button>
+            <h1>Verifica tu número de teléfono</h1>
+            <p class="reg-hint">Enviamos un código de 6 dígitos por WhatsApp a <b id="regPhoneTarget"></b>.</p>
+
+            <p class="demo-code" id="regPhoneDemo"></p>
+            <div class="code-meta reg-timer" id="regPhoneTimer"><span>Código vigente: <b>05:00</b></span></div>
+            <div class="pin-boxes code reg-otp" id="regPhoneCode" data-length="6" data-visible role="group" aria-label="Código de WhatsApp"></div>
+
+            <div class="reg-alert" data-alert hidden></div>
+            <button class="btn primary register-button" type="submit">Verificar teléfono</button>
+            <button class="btn soft reg-ghost" type="button" id="regPhoneResend">Reenviar código</button>
+            <button class="btn soft reg-ghost" type="button" data-go="phone">Cambiar número</button>
+          </form>
+
+          <!-- 8. Usuario -->
+          <form class="reg-screen" data-screen="username" novalidate hidden>
+            <button class="reg-back" type="button" data-go="phone">← Atrás</button>
+            <h1>Crea tu usuario</h1>
+            <p class="reg-hint">Así vas a identificarte cada vez que inicies sesión.</p>
+
+            <div class="register-field">
+              <label for="regUsername">Usuario</label>
+              <input id="regUsername" type="text" minlength="3" maxlength="30" autocomplete="username" autocapitalize="none" spellcheck="false" required placeholder="Ej. laura.gomez">
+              <small class="register-hint">De 3 a 30 caracteres: letras, números, punto, guion o guion bajo. Sin espacios.</small>
+            </div>
+
+            <div class="reg-alert" data-alert hidden></div>
+            <button class="btn primary register-button" type="submit">Continuar</button>
+          </form>
+
+          <!-- 9. Clave -->
+          <form class="reg-screen" data-screen="pin" novalidate hidden>
+            <button class="reg-back" type="button" data-go="username">← Atrás</button>
+            <h1>Crea tu clave de acceso</h1>
+            <p class="reg-hint">Una clave numérica de 4 dígitos. La usarás junto a tu usuario para iniciar sesión.</p>
+
+            <input type="hidden" id="regPin">
+            <input type="hidden" id="regPinConfirm">
+
+            <p class="reg-label">Clave de 4 dígitos</p>
+            <div class="pin-boxes reg-otp" data-length="4" data-pin-for="regPin" role="group" aria-label="Clave de 4 dígitos"></div>
+
+            <p class="reg-label">Confirma tu clave</p>
+            <div class="pin-boxes reg-otp" data-length="4" data-pin-for="regPinConfirm" role="group" aria-label="Confirma tu clave"></div>
+
+            <p class="reg-note">Evita secuencias obvias como 1234 o tu fecha de nacimiento.</p>
+
+            <label class="register-terms">
+              <input type="checkbox" id="regTerms">
+              <span>Acepto los <a href="terminos.html" target="_blank" rel="noopener">términos de uso</a> y la <a href="privacidad.html" target="_blank" rel="noopener">política de privacidad</a> de Banklite.</span>
+            </label>
+
+            <div class="reg-alert" data-alert hidden></div>
+            <button class="btn primary register-button" type="submit">Crear cuenta</button>
+          </form>
+
+        </div>
+
+        <p class="register-mobile-login">¿Ya tienes cuenta? <a href="login.html">Ingresar</a></p>
+      </section>
+
+      <small class="register-legal">Tus datos viajan cifrados y se validan con la Registraduría y la Policía Nacional.</small>
+    </div>
+  </main>
+
+  <div class="modal" id="genericModal" role="dialog" aria-modal="true" aria-labelledby="genericTitle" aria-describedby="genericText">
+    <div class="modal-box">
+      <button class="modal-close" data-close type="button" aria-label="Cerrar">×</button>
+      <div class="modal-icon" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+      </div>
+      <h3 id="genericTitle">Banklite</h3>
+      <p id="genericText"></p>
+      <button class="btn-main modal-button" data-close type="button">Entendido</button>
+    </div>
+  </div>
+
+  <script src="java.js"></script>
+  <script src="api.js"></script>
+  <script src="registro.js"></script>
+</body>
+</html>

@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#26474E">
+    <title>Transferir | Banklite</title>
+
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%232CCED2'/%3E%3Ctext x='32' y='44' font-family='Arial' font-size='34' font-weight='800' text-anchor='middle' fill='%2326474E'%3EB%3C/text%3E%3C/svg%3E">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+    <script>
+        // Modo oscuro: se aplica antes de pintar para que no parpadee
+        try {
+            var blTheme = localStorage.getItem("bankliteTheme");
+            if (blTheme === "dark" || (blTheme === "auto" && matchMedia("(prefers-color-scheme: dark)").matches)) {
+                document.documentElement.dataset.theme = "dark";
+                document.documentElement.style.background = "#0D1B1E";
+            }
+        } catch (e) {}
+    </script>
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="app">
+
+    <header class="app-header">
+        <a class="brand" href="dashboard.html" aria-label="Banklite, inicio">
+            <span class="logo">B</span>
+            <span>banklite</span>
+        </a>
+        <a class="back" href="dashboard.html"><span aria-hidden="true">←</span>&nbsp;Volver al inicio</a>
+    </header>
+
+
+    <main class="transfer-page">
+
+        <div class="page-title">
+            <span class="eyebrow">Transferencias</span>
+            <h1>Enviar dinero</h1>
+            <p>Completa la operación en cuatro pasos. Saldo disponible: <b id="availableTransfer">$0</b></p>
+        </div>
+
+        <!-- Indicador de pasos -->
+        <div class="stepper" aria-label="Pasos de la transferencia">
+            <div class="step active"><span>1</span><small>Entidad</small></div>
+            <div class="step"><span>2</span><small>Destinatario</small></div>
+            <div class="step"><span>3</span><small>Monto</small></div>
+            <div class="step"><span>4</span><small>Verificar</small></div>
+        </div>
+
+
+        <!-- autocomplete="off" evita que el navegador llene los datos solo -->
+        <form id="transferForm" class="panel transfer-form" autocomplete="off" novalidate>
+
+            <!-- PASO 1: ENTIDAD -->
+            <section class="transfer-step active" data-step="1">
+
+                <button type="button" class="breb-option" data-bank="Bre-B" disabled aria-disabled="true">
+                    <span class="breb-logo" aria-hidden="true">Bre-B</span>
+                    <span class="breb-option-text">
+                        <b>Enviar con llave Bre-B</b>
+                        <small>Usa el celular, correo, cédula o @llave de quien recibe. Llega en segundos a cualquier banco.</small>
+                    </span>
+                    <span class="soon-chip">Próximamente</span>
+                </button>
+
+                <h2>¿A qué banco o entidad va el dinero?</h2>
+                <p>Por ahora puedes enviar dinero a cuentas Banklite. Las demás entidades llegan pronto.</p>
+
+                <div class="bank-grid">
+                    <button type="button" class="bank-option is-banklite" data-bank="Banklite"><span class="bank-logo">B</span><b>Banklite</b><small>Al instante y sin costo</small></button>
+                    <button type="button" class="bank-option is-soon" disabled aria-disabled="true" data-bank="Bancolombia"><span class="bank-logo">BC</span><b>Bancolombia</b><small>Próximamente</small></button>
+                    <button type="button" class="bank-option is-soon" disabled aria-disabled="true" data-bank="Banco de Bogotá"><span class="bank-logo">BB</span><b>Banco de Bogotá</b><small>Próximamente</small></button>
+                    <button type="button" class="bank-option is-soon" disabled aria-disabled="true" data-bank="Davivienda"><span class="bank-logo">DV</span><b>Davivienda</b><small>Próximamente</small></button>
+                    <button type="button" class="bank-option is-soon" disabled aria-disabled="true" data-bank="BBVA Colombia"><span class="bank-logo">BV</span><b>BBVA Colombia</b><small>Próximamente</small></button>
+                    <button type="button" class="bank-option is-soon" disabled aria-disabled="true" data-bank="Banco de Occidente"><span class="bank-logo">BO</span><b>Banco de Occidente</b><small>Próximamente</small></button>
+                    <button type="button" class="bank-option is-soon" disabled aria-disabled="true" data-bank="Nequi"><span class="bank-logo">NQ</span><b>Nequi</b><small>Próximamente</small></button>
+                    <button type="button" class="bank-option is-soon" disabled aria-disabled="true" data-bank="DaviPlata"><span class="bank-logo">DP</span><b>DaviPlata</b><small>Próximamente</small></button>
+                    <button type="button" class="bank-option is-soon" disabled aria-disabled="true" data-bank="Otra entidad"><span class="bank-logo">+</span><b>Otra entidad</b><small>Próximamente</small></button>
+                </div>
+            </section>
+
+
+            <!-- PASO 2: DESTINATARIO -->
+            <section class="transfer-step" data-step="2">
+                <h2>Datos del destinatario</h2>
+                <p>Pídele a la persona el número de su cuenta Banklite. Lo encuentra en su inicio, en «Recibir».</p>
+
+                <div class="two" id="accountFields">
+
+                    <label class="two-span"><span id="accountNumberLabel">Número de cuenta Banklite (11 dígitos)</span>
+                        <input id="accountNumber" name="bl-destino" inputmode="numeric" maxlength="11" autocomplete="off" required placeholder="Ej. 86091953267">
+                    </label>
+                </div>
+            </section>
+
+
+            <!-- PASO 3: MONTO -->
+            <section class="transfer-step" data-step="3">
+                <h2>¿Cuánto quieres enviar?</h2>
+                <p id="limitHint">Se descuenta de tu saldo disponible.</p>
+
+                <div class="amount-box">
+                    <span>$</span>
+                    <input id="transferAmount" type="number" min="1" step="1" inputmode="numeric" required placeholder="0">
+                </div>
+                <p>Vas a enviar <b id="amountPreview">$ 0</b></p>
+
+                <div class="amount-chips">
+                    <button type="button" data-amount="20000">$20.000</button>
+                    <button type="button" data-amount="50000">$50.000</button>
+                    <button type="button" data-amount="100000">$100.000</button>
+                    <button type="button" data-amount="200000">$200.000</button>
+                </div>
+            </section>
+
+
+            <!-- PASO 4: VERIFICAR -->
+            <section class="transfer-step" data-step="4">
+                <h2>Verifica tu transferencia</h2>
+                <p>Revisa que la cuenta y el monto sean correctos antes de enviar.</p>
+
+                <div class="recipient-card">
+                    <span class="recipient-avatar" id="recipientInitials">?</span>
+                    <div>
+                        <small>Vas a enviar a</small>
+                        <strong id="recipientPreview">-</strong>
+                        <span id="recipientAccountPreview">-</span>
+                    </div>
+                    <b id="recipientAmountPreview">$ 0</b>
+                </div>
+
+                <label class="concept-field">Concepto (opcional)
+                    <input id="concept" maxlength="140" autocomplete="off" placeholder="Ej. Pago de arriendo">
+                </label>
+
+                <div id="transferSummary" class="summary-card"></div>
+            </section>
+
+
+            <div class="transfer-actions">
+                <button type="button" class="btn soft" id="prevTransfer">Atrás</button>
+                <button type="button" class="btn primary" id="nextTransfer">Continuar</button>
+            </div>
+
+        </form>
+
+    </main>
+
+
+    <!-- CONFIRMAR -->
+    <div id="transferConfirmModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="confirmTransferTitle">
+        <div class="modal-card">
+            <button class="modal-close" data-close type="button" aria-label="Cerrar">×</button>
+            <span class="eyebrow">Confirmar transferencia</span>
+            <h2 id="confirmTransferTitle">Revisa antes de enviar</h2>
+            <div id="confirmTransferContent" class="confirm-box"></div>
+            <p class="dk-auto-note">Tu clave dinámica se valida automáticamente al confirmar.</p>
+            <div class="modal-actions">
+                <button class="btn soft" data-close type="button">Corregir</button>
+                <button id="confirmTransfer" class="btn primary" type="button">Confirmar y enviar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ÉXITO -->
+    <div id="transferSuccessModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="successTransferTitle">
+        <div class="modal-card success-card">
+            <span class="success-icon" aria-hidden="true">✓</span>
+            <span class="eyebrow">Operación exitosa</span>
+            <h2 id="successTransferTitle">Transferencia realizada</h2>
+            <p>La operación quedó registrada en tus movimientos.</p>
+            <div id="successTransferContent" class="receipt"></div>
+            <button class="btn soft full receipt-download" type="button" id="downloadReceipt">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+                Descargar comprobante (PDF)
+            </button>
+            <div class="modal-actions">
+                <a class="btn soft" href="dashboard.html">Ir al inicio</a>
+                <a class="btn primary" href="movimientos.html">Ver movimientos</a>
+            </div>
+            <button type="button" class="new-transfer-link" data-close>Hacer otra transferencia</button>
+        </div>
+    </div>
+
+    <div class="modal" id="confirmModal" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle" aria-describedby="confirmText">
+        <div class="modal-card">
+            <span class="modal-icon is-alert" aria-hidden="true">!</span>
+            <h2 id="confirmTitle">¿Estás seguro?</h2>
+            <p id="confirmText"></p>
+            <div class="modal-actions">
+                <button class="btn soft" data-close type="button">Cancelar</button>
+                <button class="btn primary" id="confirmAccept" type="button">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="genericModal" role="dialog" aria-modal="true" aria-labelledby="genericTitle" aria-describedby="genericText">
+        <div class="modal-card">
+            <button class="modal-close" data-close type="button" aria-label="Cerrar">×</button>
+            <span class="modal-icon" aria-hidden="true">!</span>
+            <h2 id="genericTitle">Banklite</h2>
+            <p id="genericText"></p>
+            <button class="btn primary full" data-close type="button">Entendido</button>
+        </div>
+    </div>
+
+    <script src="java.js"></script>
+    <script src="api.js"></script>
+    <script src="comprobantes.js"></script>
+    <script src="transferir.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Ingresa a tu cuenta Banklite para consultar tu saldo, transferir dinero y administrar tus metas.">
+    <meta name="theme-color" content="#26474E">
+
+    <title>Ingresar | Banklite</title>
+
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%232CCED2'/%3E%3Ctext x='32' y='44' font-family='Arial' font-size='34' font-weight='800' text-anchor='middle' fill='%2326474E'%3EB%3C/text%3E%3C/svg%3E">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@600;700;800&display=swap"
+        rel="stylesheet">
+    <script>
+        // Modo oscuro: se aplica antes de pintar para que no parpadee
+        try {
+            var blTheme = localStorage.getItem("bankliteTheme");
+            if (blTheme === "dark" || (blTheme === "auto" && matchMedia("(prefers-color-scheme: dark)").matches)) {
+                document.documentElement.dataset.theme = "dark";
+                document.documentElement.style.background = "#0D1B1E";
+            }
+        } catch (e) {}
+    </script>
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body class="auth-page">
+
+    <!-- =====================================================
+         LATERAL
+    ====================================================== -->
+
+    <aside class="auth-side">
+
+        <a class="brand auth-brand" href="index.html" aria-label="Banklite, inicio">
+            <span class="logo">B</span>
+            <span>banklite</span>
+        </a>
+
+        <div class="auth-side-content login-side-content">
+
+            <span class="eyebrow light-eyebrow">Banca digital</span>
+
+            <h2>
+                Tu dinero,
+                <br>
+                <span>más cerca.</span>
+            </h2>
+
+            <p>
+                Consulta tu saldo, envía dinero, paga tus servicios
+                y administra tus metas desde un solo lugar.
+            </p>
+
+            <!-- Tarjeta únicamente visual, sin datos personales -->
+            <div class="mini-bank-card" aria-hidden="true">
+                <div>
+                    <b>banklite</b>
+                    <strong>VISA</strong>
+                </div>
+
+                <span>•••• •••• •••• 4821</span>
+
+                <small>TARJETA DÉBITO</small>
+            </div>
+
+        </div>
+
+        <div class="auth-side-footer">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+            CONEXIÓN SEGURA · BANKLITE
+        </div>
+
+    </aside>
+
+
+    <!-- =====================================================
+         CONTENIDO PRINCIPAL
+    ====================================================== -->
+
+    <main class="auth-main login-main">
+
+        <!-- Volver al inicio (escritorio) -->
+        <a href="index.html" class="auth-back">
+            <span aria-hidden="true">←</span> Volver al inicio
+        </a>
+
+        <!-- Marca para dispositivos pequeños -->
+        <div class="auth-mobile-brand">
+            <a class="brand" href="index.html" aria-label="Banklite, inicio">
+                <span class="logo">B</span>
+                <span>banklite</span>
+            </a>
+        </div>
+
+
+        <!-- =================================================
+             TARJETA DE LOGIN
+        ================================================== -->
+
+        <section class="auth-card login-card reveal">
+
+            <div class="login-icon" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+            </div>
+
+            <div class="auth-heading">
+                <span class="eyebrow">Ingreso seguro</span>
+                <h1>Bienvenido de nuevo</h1>
+                <p>Ingresa con tu usuario y tu clave de 4 dígitos.</p>
+            </div>
+
+
+            <!-- =================================================
+                 FORMULARIO
+            ================================================== -->
+
+            <form id="loginForm" class="login-form">
+
+                <!-- Usuario -->
+                <div class="form-field">
+                    <label for="loginUsername">Usuario</label>
+                    <input
+                        id="loginUsername"
+                        type="text"
+                        autocomplete="username"
+                        autocapitalize="none"
+                        spellcheck="false"
+                        placeholder="Tu nombre de usuario"
+                        required>
+                </div>
+
+                <!-- Clave: 4 casillas -->
+                <div class="form-field">
+                    <div class="pin-row">
+                        <label id="loginPinLabel">Clave</label>
+                        <button type="button" class="pin-toggle" data-pin-toggle="loginPin">Mostrar</button>
+                    </div>
+                    <div class="pin-boxes" data-pin-for="loginPin" data-length="4" role="group" aria-labelledby="loginPinLabel"></div>
+                    <input type="hidden" id="loginPin">
+                </div>
+
+                <!-- Opciones -->
+                <div class="login-options">
+                    <a href="#" id="forgotPin">¿Olvidaste tu clave?</a>
+                </div>
+
+                <!-- Ingresar -->
+                <button class="btn primary login-submit" type="submit">
+                    Ingresar
+                    <span aria-hidden="true">→</span>
+                </button>
+
+            </form>
+
+            <p class="auth-bottom">
+                ¿Aún no tienes cuenta?
+                <a href="registro.html">Ábrela en minutos</a>
+            </p>
+
+        </section>
+
+        <small class="legal">
+            © 2026 Banklite · Nunca te pediremos tu clave por teléfono, correo o mensaje.
+        </small>
+
+    </main>
+
+
+    <!-- =====================================================
+         MODAL GENÉRICO
+    ====================================================== -->
+
+    <!-- =====================================================
+         RECUPERAR CLAVE
+    ====================================================== -->
+
+    <div class="modal" id="recoverModal" role="dialog" aria-modal="true" aria-labelledby="recoverTitle">
+        <div class="modal-card flow-box">
+            <button class="modal-close" data-close type="button" aria-label="Cerrar">×</button>
+
+            <div class="flow-progress" aria-hidden="true"><span class="on"></span><span></span><span></span></div>
+
+            <!-- Paso 1: identificarse -->
+            <form class="flow-step" data-step="identify" novalidate>
+                <span class="eyebrow">Paso 1 de 3</span>
+                <h2 id="recoverTitle">Recupera tu acceso</h2>
+                <p class="flow-text">Escribe tu usuario y elige por dónde quieres recibir el código.</p>
+
+                <div class="form-stack">
+                    <label>Usuario
+                        <input id="recoverUsername" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="30" placeholder="Tu nombre de usuario">
+                    </label>
+
+                    <div class="channel-options" role="radiogroup" aria-label="Recibir el código por">
+                        <label class="channel-option">
+                            <input type="radio" name="recoverChannel" value="email">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg>
+                            <span><strong>Correo</strong><small>Al correo registrado</small></span>
+                        </label>
+                        <label class="channel-option">
+                            <input type="radio" name="recoverChannel" value="whatsapp">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 21l2.1-5.6A8.5 8.5 0 1 1 21 11.5z"/></svg>
+                            <span><strong>WhatsApp</strong><small>A tu celular</small></span>
+                        </label>
+                    </div>
+
+                    <!-- Se muestra el campo del canal elegido -->
+                    <label id="recoverEmailField" hidden>Ingresa tu correo registrado
+                        <input id="recoverEmail" type="email" autocomplete="email" placeholder="correo@ejemplo.com">
+                    </label>
+
+                    <div id="recoverPhoneField" hidden>
+                        <label for="recoverPhone">Ingresa tu número registrado</label>
+                        <div class="phone-input">
+                            <span class="phone-prefix" title="Colombia" aria-label="Colombia, +57">CO +57</span>
+                            <input id="recoverPhone" type="tel" inputmode="numeric" autocomplete="tel-national" maxlength="10" placeholder="300 123 4567">
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn primary full" type="submit">Enviar código</button>
+            </form>
+
+            <!-- Paso 2: código -->
+            <form class="flow-step" data-step="code" hidden novalidate>
+                <span class="eyebrow">Paso 2 de 3</span>
+                <h2>Ingresa el código</h2>
+                <p class="flow-text">Enviamos un código de 6 dígitos a <b id="recoverDestination">tu correo</b>.</p>
+
+                <div class="pin-boxes code" id="recoverCode" data-length="6" data-visible role="group" aria-label="Código de verificación"></div>
+
+                <div class="code-meta" id="recoverTimer"><span>El código vence en <b>05:00</b></span></div>
+                <p class="demo-code" id="recoverDemo" hidden></p>
+
+                <button class="btn primary full" type="submit">Verificar código</button>
+                <button class="flow-link" type="button" id="recoverResend" disabled>Reenviar código</button>
+            </form>
+
+            <!-- Paso 3: clave nueva -->
+            <form class="flow-step" data-step="newpin" hidden novalidate>
+                <span class="eyebrow">Paso 3 de 3</span>
+                <h2>Crea tu nueva clave</h2>
+                <p class="flow-text">Usa 4 dígitos que no sean tu fecha de nacimiento ni una secuencia como 1234.</p>
+
+                <div class="form-stack">
+                    <div>
+                        <div class="pin-row"><label id="recoverPinLabel">Clave nueva</label></div>
+                        <div class="pin-boxes" data-pin-for="recoverPin" data-length="4" role="group" aria-labelledby="recoverPinLabel"></div>
+                        <input type="hidden" id="recoverPin">
+                    </div>
+                    <div>
+                        <div class="pin-row"><label id="recoverPinConfirmLabel">Confirmar clave</label></div>
+                        <div class="pin-boxes" data-pin-for="recoverPinConfirm" data-length="4" role="group" aria-labelledby="recoverPinConfirmLabel"></div>
+                        <input type="hidden" id="recoverPinConfirm">
+                    </div>
+                </div>
+
+                <button class="btn primary full" type="submit">Guardar clave</button>
+            </form>
+        </div>
+    </div>
+
+
+    <div class="modal" id="genericModal" role="dialog" aria-modal="true" aria-labelledby="genericTitle" aria-describedby="genericText">
+        <div class="modal-card">
+            <button class="modal-close" data-close type="button" aria-label="Cerrar">×</button>
+            <span class="modal-icon" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+            </span>
+            <h2 id="genericTitle">Banklite</h2>
+            <p id="genericText"></p>
+            <button class="btn primary full" data-close type="button">Entendido</button>
+        </div>
+    </div>
+
+    <!-- =====================================================
+         JAVASCRIPT
+    ====================================================== -->
+
+    <script src="java.js"></script>
+    <script src="api.js"></script>
+    <script src="login.js"></script>
+
+</body>
+
+</html>
