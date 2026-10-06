@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#26474E">
+  <title>Ingresar | Banklite Admin</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%2326474E'/%3E%3Ctext x='32' y='44' font-family='Arial' font-size='34' font-weight='800' text-anchor='middle' fill='%232CCED2'%3EB%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>
+    // Modo oscuro (el mismo del banco): se aplica antes de pintar
+    try {
+      var blTheme = localStorage.getItem("bankliteTheme");
+      if (blTheme === "dark" || (blTheme === "auto" && matchMedia("(prefers-color-scheme: dark)").matches)) {
+        document.documentElement.dataset.theme = "dark";
+        document.documentElement.style.background = "#0B1719";
+      }
+    } catch (e) {}
+  </script>
+  <link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body class="adm-login" data-page="login">
+
+  <main class="login-card">
+
+    <!-- Lado oscuro con la marca -->
+    <section class="login-side">
+      <div class="brand" style="padding:0"><span class="logo-chip">B</span><div>Banklite<small>Panel administrativo</small></div></div>
+
+      <div>
+        <h1>Gestiona el banco desde un solo lugar.</h1>
+        <p>Panel interno para empleados de Banklite. Cada acción queda registrada en la auditoría con su motivo.</p>
+      </div>
+
+      <ul class="login-points">
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="4"/><path d="M1 21c0-4 4-6 8-6s8 2 8 6"/></svg>Clientes, cuentas y movimientos</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>Monitoreo de los servicios</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l8 4v6c0 5-3.5 9-8 10-4.5-1-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg>Roles de soporte y administrador</li>
+      </ul>
+    </section>
+
+    <!-- Formulario -->
+    <form class="login-form" id="loginForm" autocomplete="on" novalidate>
+      <h2>Ingreso de empleados</h2>
+      <p>Usa tu usuario y contraseña del panel.</p>
+
+      <div class="field">
+        <label for="lgUser">Usuario</label>
+        <input class="input" id="lgUser" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="40" autofocus>
+      </div>
+
+      <div class="field">
+        <label for="lgPass">Contraseña</label>
+        <div class="pass-wrap">
+          <input class="input" id="lgPass" name="password" type="password" autocomplete="current-password" maxlength="200">
+          <button class="pass-toggle" id="passToggle" type="button">Mostrar</button>
+        </div>
+      </div>
+
+      <div id="loginError" class="alert alert-error" role="alert" hidden></div>
+
+      <button class="btn btn-primary btn-block" id="loginBtn" type="submit" style="min-height:46px">Ingresar al panel</button>
+
+      <p class="login-foot">¿Buscas el banco? <a href="/">Ir a Banklite</a></p>
+    </form>
+  </main>
+
+  <script src="/admin/admin.js"></script>
+</body>
+</html>

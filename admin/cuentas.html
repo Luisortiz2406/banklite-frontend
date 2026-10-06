@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#26474E">
+  <title>Cuentas | Banklite Admin</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%2326474E'/%3E%3Ctext x='32' y='44' font-family='Arial' font-size='34' font-weight='800' text-anchor='middle' fill='%232CCED2'%3EB%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>
+    // Modo oscuro (el mismo del banco): se aplica antes de pintar
+    try {
+      var blTheme = localStorage.getItem("bankliteTheme");
+      if (blTheme === "dark" || (blTheme === "auto" && matchMedia("(prefers-color-scheme: dark)").matches)) {
+        document.documentElement.dataset.theme = "dark";
+        document.documentElement.style.background = "#0B1719";
+      }
+    } catch (e) {}
+  </script>
+  <link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body class="adm" data-page="accounts">
+
+  <!-- Menú lateral y barra superior: los arma admin.js -->
+  <div class="adm-shell">
+    <aside class="adm-side" id="admSide"></aside>
+    <div class="adm-main">
+      <header class="adm-top" id="admTop"></header>
+      <main class="adm-page" id="admPage">
+        <div class="empty"><span class="spin"></span></div>
+      </main>
+    </div>
+  </div>
+
+  <div class="toast-stack" id="toasts" aria-live="polite"></div>
+  <div id="drawerRoot"></div>
+  <div id="modalRoot"></div>
+
+  <script src="/admin/admin.js"></script>
+</body>
+</html>
