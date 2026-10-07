@@ -397,6 +397,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     initTheme();
 
+    // Botones "Imprimir" (términos, privacidad). Sin onclick inline por la CSP.
+    document.querySelectorAll("[data-print]").forEach(button => {
+        button.addEventListener("click", () => window.print());
+    });
+
     // -----------------------------------------------------
     // CASILLAS DE CLAVE / CÓDIGO
     // -----------------------------------------------------

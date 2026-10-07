@@ -211,7 +211,10 @@ document.addEventListener('DOMContentLoaded', () => {
     $('exportMovements').addEventListener('click', () => {
         const items = visible();
         if (!items.length) return showMessage('Sin movimientos', 'No hay movimientos para descargar con este filtro.', 'i');
-        const quote = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
+        // Una descripción como =HYPERLINK(...) se ejecutaría como fórmula al abrir
+        // el CSV: se antepone ' a lo que empiece por =, +, -, @, tab o CR.
+        const cell = v => (typeof v === 'number' ? String(v) : String(v ?? '').replace(/^[=+\-@\t\r]/, "'$&"));
+        const quote = v => `"${cell(v).replace(/"/g, '""')}"`;
         const rows = [
             ['Fecha', 'Descripción', 'Tipo', 'Cuenta contraparte', 'Valor', 'Moneda', 'N.º de operación'],
             ...items.map(({ m }) => [

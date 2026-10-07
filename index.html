@@ -21,16 +21,7 @@
         rel="stylesheet">
 
     <!-- Estilos -->
-    <script>
-        // Modo oscuro: se aplica antes de pintar para que no parpadee
-        try {
-            var blTheme = localStorage.getItem("bankliteTheme");
-            if (blTheme === "dark" || (blTheme === "auto" && matchMedia("(prefers-color-scheme: dark)").matches)) {
-                document.documentElement.dataset.theme = "dark";
-                document.documentElement.style.background = "#0D1B1E";
-            }
-        } catch (e) {}
-    </script>
+    <script src="theme-init.js"></script>
     <link rel="stylesheet" href="styles.css">
 </head>
 

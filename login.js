@@ -27,12 +27,6 @@ document.addEventListener('DOMContentLoaded', () => {
         else button.innerHTML = label;
     }
 
-    // Cuentas creadas antes de que el usuario se guardara en el servidor:
-    // lo tienen solo en este navegador y entran con su correo. Solo lectura.
-    function readLegacyUserEmail(username) {
-        try { return localStorage.getItem('blUsuario:' + username.toLowerCase()); } catch { return null; }
-    }
-
     // ---------- ingresar ----------
     const submitLabel = submitBtn.innerHTML;
     form.addEventListener('submit', async event => {
@@ -57,14 +51,10 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Se entra con el usuario. Las cuentas antiguas (usuario solo en este
-        // navegador) se resuelven a su correo sin que la persona lo escriba.
-        const email = readLegacyUserEmail(username);
-
         setLoading(submitBtn, true);
         try {
             const password = BlApi.passwordFromPin(pin);
-            const data = await BlApi.api(config.authApi, 'POST', '/auth/login', email ? { email, password } : { username, password });
+            const data = await BlApi.api(config.authApi, 'POST', '/auth/login', { username, password });
             BlApi.startSession(data);
             window.location.href = 'dashboard.html';
         } catch (err) {

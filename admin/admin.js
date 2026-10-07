@@ -25,6 +25,11 @@ const SESSION_LIMIT = 20 * 60 * 1000; // 20 minutos sin actividad (el token dura
 
 const $ = id => document.getElementById(id);
 
+// REGLA DEL PANEL: todo dato que venga de la API y se interpole en un template
+// que termina en innerHTML va dentro de esc(...), sin excepción (también ids,
+// estados y textos "que siempre son seguros"). Solo se interpolan sin esc()
+// los helpers que ya devuelven HTML escapado (svg, badge, pageHead, money, fdate...).
+// La CSP (script-src 'self', sin inline) es la segunda barrera si algo se escapa.
 const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 const money = (value, currency = "COP") => new Intl.NumberFormat("es-CO", { style: "currency", currency: currency || "COP", maximumFractionDigits: 2 }).format(Number(value) || 0);
@@ -84,8 +89,16 @@ function toast(message, isError = false) {
     }, isError ? 5200 : 3200);
 }
 
+// Celdas que Excel/LibreOffice interpretarían como fórmula (=, +, -, @, tab, CR):
+// se antepone ' para que se muestren como texto. Los números se dejan tal cual.
+function csvCell(value) {
+    if (typeof value === "number") return String(value);
+    const text = String(value ?? "");
+    return /^[=+\-@\t\r]/.test(text) ? "'" + text : text;
+}
+
 function downloadCSV(name, rows) {
-    const csv = rows.map(row => row.map(cell => `"${String(cell ?? "").replace(/"/g, '""')}"`).join(";")).join("\n");
+    const csv = rows.map(row => row.map(cell => `"${csvCell(cell).replace(/"/g, '""')}"`).join(";")).join("\n");
     const link = document.createElement("a");
     link.href = URL.createObjectURL(new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8" }));
     link.download = name;
