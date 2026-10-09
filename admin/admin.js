@@ -131,7 +131,9 @@ const ICON = {
     plus: '<path d="M12 5v14M5 12h14"/>',
     shield: '<path d="M12 2l8 4v6c0 5-3.5 9-8 10-4.5-1-8-5-8-10V6z"/>',
     mail: '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 6l-10 7L2 6"/>',
-    card: '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>'
+    card: '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>',
+    fraud: '<path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/>',
+    compliance: '<path d="M12 2l8 4v6c0 5-3.5 9-8 10-4.5-1-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/>'
 };
 
 const svg = (name, extra = "") => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" ${extra}>${ICON[name] || ""}</svg>`;
@@ -216,7 +218,12 @@ const ACTIONS = {
     "transaction.reverse": "Reversó un movimiento",
     "account.credit": "Abonó a una cuenta",
     "notification.retry": "Reintentó un correo",
-    "dlq.requeue": "Reprocesó una cola"
+    "dlq.requeue": "Reprocesó una cola",
+    "fraud.confirmed": "Confirmó una alerta de fraude",
+    "fraud.dismissed": "Descartó una alerta de fraude",
+    "sar.filed": "Radicó un SAR",
+    "sar.dismissed": "Descartó un SAR",
+    "report.generate": "Generó un reporte AML"
 };
 
 const badge = (map, key, extra) => {
@@ -385,6 +392,8 @@ const PAGES = [
     { id: "customers", title: "Clientes", href: BASE + "clientes", group: "Operación" },
     { id: "accounts", title: "Cuentas", href: BASE + "cuentas", group: "Operación" },
     { id: "movements", title: "Movimientos", href: BASE + "movimientos", group: "Operación" },
+    { id: "fraud", title: "Fraude", href: BASE + "fraude", group: "Operación" },
+    { id: "compliance", title: "Cumplimiento", href: BASE + "cumplimiento", group: "Operación" },
     { id: "monitoring", title: "Monitoreo", href: BASE + "monitoreo", group: "Sistema" },
     { id: "staff", title: "Empleados", href: BASE + "empleados", group: "Sistema", adminOnly: true },
     { id: "audit", title: "Auditoría", href: BASE + "auditoria", group: "Sistema" }
@@ -1130,13 +1139,15 @@ async function renderMonitoring(el) {
 
     el.innerHTML = loadingBox;
 
-    const [h, authOb, kycOb, recon, accDlq, notDlq, failed, pending] = await Promise.all([
+    const [h, authOb, kycOb, recon, accDlq, notDlq, fraudDlq, compDlq, failed, pending] = await Promise.all([
         health(),
         tryApi("GET", "/auth/admin/outbox"),
         tryApi("GET", "/kyc/admin/outbox"),
         tryApi("GET", "/ledger/admin/reconciliation"),
         tryApi("GET", "/accounts/admin/dlq"),
         tryApi("GET", "/notifications/admin/dlq"),
+        tryApi("GET", "/fraud/admin/dlq"),
+        tryApi("GET", "/compliance/admin/dlq"),
         tryApi("GET", "/notifications/admin/notifications" + qs({ status: "failed", limit: 20 })),
         tryApi("GET", "/notifications/admin/notifications" + qs({ status: "pending", channel: "email", limit: 20 }))
     ]);
@@ -1206,6 +1217,8 @@ async function renderMonitoring(el) {
             <div class="grid" style="gap:16px">
                 ${dlqCard("account-service", "accounts", accDlq)}
                 ${dlqCard("notification-service", "notifications", notDlq)}
+                ${dlqCard("fraud-service", "fraud", fraudDlq)}
+                ${dlqCard("compliance-service", "compliance", compDlq)}
             </div>
         </div>
 
@@ -1340,7 +1353,9 @@ const AUDIT_SOURCES = [
     ["auth", "/auth/admin/audit"],
     ["accounts", "/accounts/admin/audit"],
     ["ledger", "/ledger/admin/audit"],
-    ["notifications", "/notifications/admin/audit"]
+    ["notifications", "/notifications/admin/audit"],
+    ["fraud", "/fraud/admin/audit"],
+    ["compliance", "/compliance/admin/audit"]
 ];
 
 async function loadAudit({ q = "", limit = 100 } = {}) {
@@ -1411,6 +1426,262 @@ async function renderAudit(el) {
 
 
 // =========================================================
+// 13b. FRAUDE
+// Transacciones marcadas por el motor de reglas de fraud-service. Nunca se
+// bloquea una cuenta ni se reversa dinero desde aquí: solo se confirma o
+// descarta la alerta (decisión de alcance, ver README sección 4).
+// =========================================================
+
+const FLAG_STATUS = { pending: ["Pendiente", "b-warn"], confirmed: ["Confirmada", "b-bad"], dismissed: ["Descartada", "b-gray"] };
+
+const fraudFilters = { status: "", page: 1 };
+
+async function renderFraud(el) {
+
+    const f = fraudFilters;
+
+    el.innerHTML = pageHead("Fraude", "Transacciones marcadas por el motor de reglas para revisión manual.") + `
+        <form class="filters" id="frf">
+            <div><label for="frs">Estado</label><select id="frs"><option value="">Todos</option>${Object.entries(FLAG_STATUS).map(([k, [t]]) => `<option value="${k}" ${f.status === k ? "selected" : ""}>${t}</option>`).join("")}</select></div>
+            <button class="btn btn-primary" type="submit">Filtrar</button>
+        </form>
+        <div id="frres">${loadingBox}</div>`;
+
+    $("frf").onsubmit = e => {
+        e.preventDefault();
+        Object.assign(f, { status: $("frs").value, page: 1 });
+        renderFraud(el);
+    };
+
+    try {
+        const data = await api("GET", "/fraud/admin/flags" + qs({ status: f.status, page: f.page, limit: 25 }));
+        $("frres").innerHTML = data.items.length ? `<div class="table-wrap"><table>
+            <thead><tr><th>Fecha</th><th>Cuenta</th><th>Score</th><th>Motivo</th><th>Estado</th><th></th></tr></thead>
+            <tbody>${data.items.map(x => `
+                <tr>
+                    <td>${fdate(x.createdAt)}</td>
+                    <td class="mono">${short(x.accountId)}</td>
+                    <td><strong style="color:${x.score >= 80 ? "var(--bad)" : x.score >= 60 ? "var(--warn)" : "inherit"}">${esc(x.score)}</strong></td>
+                    <td>${esc((x.reason || "").slice(0, 80))}</td>
+                    <td>${badge(FLAG_STATUS, x.status)}</td>
+                    <td><button class="btn btn-sm" data-open="${esc(x.id)}">Ver</button></td>
+                </tr>`).join("")}
+            </tbody></table></div>${pager(data, p => { f.page = p; renderFraud(el); })}`
+            : emptyBox("Sin alertas", "Las transacciones marcadas por el motor de reglas aparecerán aquí.", "fraud");
+        el.querySelectorAll("[data-open]").forEach(b => b.onclick = () => openFlag(b.dataset.open));
+    } catch (err) {
+        $("frres").innerHTML = errorBox(err);
+    }
+}
+
+function openFlag(id) {
+    openDrawer("Alerta de fraude", async body => {
+        let x;
+        try { x = await api("GET", `/fraud/admin/flags/${id}`); } catch (err) { body.innerHTML = errorBox(err); return; }
+
+        body.innerHTML = `
+            <div class="money-head">
+                <div><small>SCORE</small><p class="big">${esc(x.score)}</p></div>
+                <div style="text-align:right">${badge(FLAG_STATUS, x.status)}</div>
+            </div>
+
+            <div class="section-title"><h3>Datos</h3></div>
+            <div class="card"><dl class="kv">
+                <dt>Cuenta</dt><dd class="mono">${esc(x.accountId)}</dd>
+                <dt>Transacción</dt><dd class="mono">${esc(x.transactionId)}</dd>
+                <dt>Cliente</dt><dd class="mono">${short(x.idUser)}</dd>
+                <dt>Fecha</dt><dd>${fdate(x.createdAt)}</dd>
+                ${x.reviewedBy ? `<dt>Revisado por</dt><dd>@${esc(x.reviewedBy)} — ${fdate(x.reviewedAt)}</dd>` : ""}
+                ${x.resolutionNote ? `<dt>Nota</dt><dd>${esc(x.resolutionNote)}</dd>` : ""}
+            </dl></div>
+
+            <div class="section-title"><h3>Reglas disparadas</h3></div>
+            <div class="table-wrap"><table class="mini-table">
+                <thead><tr><th>Regla</th><th>Puntos</th><th>Detalle</th></tr></thead>
+                <tbody>${(x.rulesTriggered || []).map(r => `<tr><td class="mono">${esc(r.rule)}</td><td>${esc(r.points)}</td><td>${esc(r.detail)}</td></tr>`).join("") || '<tr><td colspan="3" class="muted">Sin detalle</td></tr>'}</tbody>
+            </table></div>
+
+            ${x.status === "pending" && isAdmin() ? `<div class="actions" style="margin-top:16px">
+                <button class="btn btn-sm btn-primary" id="frConfirm">Confirmar fraude</button>
+                <button class="btn btn-sm" id="frDismiss">Descartar</button>
+            </div>` : ""}`;
+
+        $("frConfirm")?.addEventListener("click", () => formModal({
+            title: "Confirmar como fraude", danger: true, confirm: "Confirmar",
+            desc: "Queda registrado como confirmado. Esto <strong>no</strong> bloquea la cuenta ni reversa el dinero automáticamente: esas acciones, si corresponden, se hacen aparte desde Cuentas o Movimientos.",
+            fields: [reasonField],
+            onSubmit: async v => {
+                await api("PATCH", `/fraud/admin/flags/${id}`, { status: "confirmed", note: v.reason });
+                toast("Alerta confirmada.");
+                refreshAll();
+            }
+        }));
+        $("frDismiss")?.addEventListener("click", () => formModal({
+            title: "Descartar alerta", confirm: "Descartar",
+            desc: "Se marca como revisada y descartada (falso positivo).",
+            fields: [reasonField],
+            onSubmit: async v => {
+                await api("PATCH", `/fraud/admin/flags/${id}`, { status: "dismissed", note: v.reason });
+                toast("Alerta descartada.");
+                refreshAll();
+            }
+        }));
+    });
+}
+
+
+// =========================================================
+// 13c. CUMPLIMIENTO
+// KPIs, SAR (Reportes de Actividad Sospechosa) y reportes AML de
+// compliance-service. Igual que Fraude: aquí solo se radica o descarta un
+// SAR, nunca se actúa sobre cuentas o dinero.
+// =========================================================
+
+const SAR_STATUS = { open: ["Abierto", "b-warn"], filed: ["Radicado", "b-bad"], dismissed: ["Descartado", "b-gray"] };
+const SAR_SEVERITY = { low: ["Baja", "b-gray"], medium: ["Media", "b-warn"], high: ["Alta", "b-bad"] };
+
+const complianceFilters = { status: "", severity: "", page: 1 };
+
+function defaultPeriod() {
+    const to = new Date();
+    const from = new Date(to.getTime() - 30 * 86400000);
+    return { from: from.toISOString().slice(0, 10), to: to.toISOString().slice(0, 10) };
+}
+
+async function renderCompliance(el) {
+
+    const f = complianceFilters;
+    const period = defaultPeriod();
+
+    el.innerHTML = pageHead("Cumplimiento", "KPIs de negocio, reportes de actividad sospechosa (SAR) y reportes AML.", `<button class="btn btn-sm btn-primary" id="newReport">${svg("plus")} Generar reporte</button>`) + `
+        <div class="grid g4" id="kpis">${loadingBox}</div>
+
+        <div class="section-title" style="margin:22px 0 12px"><h3>Reportes de Actividad Sospechosa (SAR)</h3></div>
+        <form class="filters" id="cf">
+            <div><label for="cfs">Estado</label><select id="cfs"><option value="">Todos</option>${Object.entries(SAR_STATUS).map(([k, [t]]) => `<option value="${k}" ${f.status === k ? "selected" : ""}>${t}</option>`).join("")}</select></div>
+            <div><label for="cfv">Severidad</label><select id="cfv"><option value="">Todas</option>${Object.entries(SAR_SEVERITY).map(([k, [t]]) => `<option value="${k}" ${f.severity === k ? "selected" : ""}>${t}</option>`).join("")}</select></div>
+            <button class="btn btn-primary" type="submit">Filtrar</button>
+        </form>
+        <div id="cres">${loadingBox}</div>
+
+        <div class="section-title" style="margin:22px 0 12px"><h3>Reportes AML generados</h3></div>
+        <div id="crep">${loadingBox}</div>`;
+
+    $("cf").onsubmit = e => {
+        e.preventDefault();
+        Object.assign(f, { status: $("cfs").value, severity: $("cfv").value, page: 1 });
+        renderCompliance(el);
+    };
+
+    tryApi("GET", "/compliance/admin/kpis" + qs({ from: period.from, to: period.to })).then(k => {
+        $("kpis").innerHTML = k ? `
+            <div class="card stat"><div class="stat-top"><span class="label">Transacciones (30 días)</span><span class="stat-icon">${svg("movements")}</span></div><div class="value">${esc(k.totalTransactions)}</div><div class="sub">${esc(period.from)} a ${esc(period.to)}</div></div>
+            <div class="card stat"><div class="stat-top"><span class="label">Volumen (30 días)</span><span class="stat-icon">${svg("money")}</span></div><div class="value">${compact(k.totalVolume)}</div><div class="sub">Salidas + ingresos externos</div></div>
+            <div class="card stat"><div class="stat-top"><span class="label">Cuentas nuevas</span><span class="stat-icon">${svg("customers")}</span></div><div class="value">${esc(k.newAccounts)}</div><div class="sub">Tasa de aprobación KYC: ${k.kycApprovalRate !== null ? esc(k.kycApprovalRate) + "%" : "—"}</div></div>
+            <div class="card stat"><div class="stat-top"><span class="label">SAR abiertos</span><span class="stat-icon">${svg("compliance")}</span></div><div class="value" style="color:${k.openSars ? "var(--warn)" : "inherit"}">${esc(k.openSars)}</div><div class="sub">${esc(k.sarCount)} generados en el periodo</div></div>`
+            : emptyBox("No disponible", "compliance-service no respondió.", "server");
+    });
+
+    try {
+        const data = await api("GET", "/compliance/admin/sars" + qs({ status: f.status, severity: f.severity, page: f.page, limit: 25 }));
+        $("cres").innerHTML = data.items.length ? `<div class="table-wrap"><table>
+            <thead><tr><th>Fecha</th><th>Cliente</th><th>Origen</th><th>Severidad</th><th>Motivo</th><th>Estado</th><th></th></tr></thead>
+            <tbody>${data.items.map(s => `
+                <tr>
+                    <td>${fdate(s.createdAt)}</td>
+                    <td class="mono">${short(s.idUser)}</td>
+                    <td>${s.source === "fraud.alert" ? "Fraud Service" : "Regla AML"}</td>
+                    <td>${badge(SAR_SEVERITY, s.severity)}</td>
+                    <td>${esc((s.reason || "").slice(0, 80))}</td>
+                    <td>${badge(SAR_STATUS, s.status)}</td>
+                    <td><button class="btn btn-sm" data-open="${esc(s.id)}">Ver</button></td>
+                </tr>`).join("")}
+            </tbody></table></div>${pager(data, p => { f.page = p; renderCompliance(el); })}`
+            : emptyBox("Sin SAR", "Los reportes de actividad sospechosa aparecerán aquí.", "compliance");
+        el.querySelectorAll("[data-open]").forEach(b => b.onclick = () => openSar(b.dataset.open));
+    } catch (err) {
+        $("cres").innerHTML = errorBox(err);
+    }
+
+    try {
+        const reports = await api("GET", "/compliance/admin/reports" + qs({ page: 1, limit: 10 }));
+        $("crep").innerHTML = reports.items.length ? `<div class="table-wrap"><table>
+            <thead><tr><th>Periodo</th><th>Transacciones</th><th>Volumen</th><th>SAR</th><th>Generado por</th><th>Fecha</th></tr></thead>
+            <tbody>${reports.items.map(r => `
+                <tr><td>${esc(r.periodFrom)} a ${esc(r.periodTo)}</td><td>${esc(r.totalTransactions)}</td><td>${money(r.totalVolume)}</td><td>${esc(r.sarCount)}</td><td>@${esc(r.generatedBy)}</td><td>${fdate(r.generatedAt)}</td></tr>`).join("")}
+            </tbody></table></div>` : emptyBox("Sin reportes", "Genera el primero con el botón de arriba.", "compliance");
+    } catch (err) {
+        $("crep").innerHTML = errorBox(err);
+    }
+
+    $("newReport").onclick = () => formModal({
+        title: "Generar reporte AML", confirm: "Generar", icon: "compliance",
+        desc: "Calcula un snapshot de KPIs para el periodo indicado y lo guarda de forma permanente (no se puede editar después).",
+        fields: [
+            { name: "periodFrom", label: "Desde", type: "date", required: true, value: period.from },
+            { name: "periodTo", label: "Hasta", type: "date", required: true, value: period.to },
+        ],
+        onSubmit: async v => {
+            await api("POST", "/compliance/admin/reports", { periodFrom: v.periodFrom, periodTo: v.periodTo });
+            toast("Reporte generado.");
+            refreshAll();
+        }
+    });
+}
+
+function openSar(id) {
+    openDrawer("Reporte de Actividad Sospechosa", async body => {
+        let s;
+        try { s = await api("GET", `/compliance/admin/sars/${id}`); } catch (err) { body.innerHTML = errorBox(err); return; }
+
+        body.innerHTML = `
+            <div class="money-head">
+                <div><small>SEVERIDAD</small><p class="big">${badge(SAR_SEVERITY, s.severity)}</p></div>
+                <div style="text-align:right">${badge(SAR_STATUS, s.status)}</div>
+            </div>
+
+            <div class="section-title"><h3>Datos</h3></div>
+            <div class="card"><dl class="kv">
+                <dt>Cliente</dt><dd class="mono">${esc(s.idUser)}</dd>
+                <dt>Cuenta</dt><dd class="mono">${esc(s.accountId || "—")}</dd>
+                <dt>Transacción</dt><dd class="mono">${esc(s.transactionId || "—")}</dd>
+                <dt>Origen</dt><dd>${s.source === "fraud.alert" ? "Fraud Service" : "Regla AML propia"}</dd>
+                <dt>Motivo</dt><dd>${esc(s.reason)}</dd>
+                <dt>Fecha</dt><dd>${fdate(s.createdAt)}</dd>
+                ${s.filedBy ? `<dt>Resuelto por</dt><dd>@${esc(s.filedBy)} — ${fdate(s.filedAt)}</dd>` : ""}
+                ${s.resolutionNote ? `<dt>Nota</dt><dd>${esc(s.resolutionNote)}</dd>` : ""}
+            </dl></div>
+
+            ${s.status === "open" && isAdmin() ? `<div class="actions" style="margin-top:16px">
+                <button class="btn btn-sm btn-primary" id="sarFile">Radicar</button>
+                <button class="btn btn-sm" id="sarDismiss">Descartar</button>
+            </div>` : ""}`;
+
+        $("sarFile")?.addEventListener("click", () => formModal({
+            title: "Radicar SAR", confirm: "Radicar",
+            desc: "Marca que este reporte fue radicado ante la autoridad competente.",
+            fields: [reasonField],
+            onSubmit: async v => {
+                await api("PATCH", `/compliance/admin/sars/${id}`, { status: "filed", note: v.reason });
+                toast("SAR radicado.");
+                refreshAll();
+            }
+        }));
+        $("sarDismiss")?.addEventListener("click", () => formModal({
+            title: "Descartar SAR", confirm: "Descartar",
+            desc: "Se marca como revisado y descartado (falso positivo).",
+            fields: [reasonField],
+            onSubmit: async v => {
+                await api("PATCH", `/compliance/admin/sars/${id}`, { status: "dismissed", note: v.reason });
+                toast("SAR descartado.");
+                refreshAll();
+            }
+        }));
+    });
+}
+
+
+// =========================================================
 // 14. ARRANQUE DE CADA PÁGINA
 // =========================================================
 
@@ -1419,6 +1690,8 @@ const RENDER = {
     customers: renderCustomers,
     accounts: renderAccounts,
     movements: renderMovements,
+    fraud: renderFraud,
+    compliance: renderCompliance,
     monitoring: renderMonitoring,
     staff: renderStaff,
     audit: renderAudit
