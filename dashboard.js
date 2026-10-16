@@ -2,7 +2,8 @@
 // BANKLITE - DASHBOARD (dashboard.html)
 // Datos reales: /kyc, /accounts (+limits), /ledger (saldo y resumen del
 // mes), /cards (emitir, reveal, congelar),
-// /notifications y cambio de clave con /auth/password-recovery.
+// y cambio de clave con /auth/password-recovery. Encabezado, menú y
+// notificaciones: layout.js.
 // Usa BlApi (api.js) y las utilidades visuales de java.js.
 // =========================================================
 
@@ -33,7 +34,6 @@ document.addEventListener('DOMContentLoaded', () => {
         issued: {},       // CVV y número completo de la tarjeta recién emitida (solo en memoria)
         revealed: null,   // número completo revelado (se oculta solo)
         showAccount: false,
-        notifications: [],
     };
 
     const TYPE_LABELS = { savings: 'Cuenta de ahorros', checking: 'Cuenta corriente' };
@@ -45,7 +45,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const formatAccount = n => (n || '').replace(/^(\d{3})(\d{4})(\d{4})$/, '$1 $2 $3');
     const maskAccount = n => (n ? `••• •••• ${n.slice(-4)}` : '—');
     const fullName = () => (state.kyc ? `${state.kyc.nombres || ''} ${state.kyc.apellidos || ''}`.trim() : '');
-    const htmlToText = value => new DOMParser().parseFromString(String(value ?? ''), 'text/html').body.textContent || '';
     const longDate = value => {
         if (!value) return '—';
         const [y, m, d] = String(value).slice(0, 10).split('-').map(Number);
@@ -80,8 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const name = fullName();
         const first = state.kyc?.nombres?.split(/\s+/)[0] || 'cliente';
         $('helloName').textContent = first;
-        $('headerName').textContent = name || 'Mi cuenta';
-        $('avatar').textContent = initials(name || 'B');
+        BlLayout.setUser(name);
         $('cardHolder').textContent = (name || 'TITULAR BANKLITE').toUpperCase();
     }
 
@@ -366,75 +364,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
 
-    // =====================================================
-    // NOTIFICACIONES (GET /notifications/:idUser, PUT /:id/read)
-    // =====================================================
-
-    const NOTIF_ICON = {
-        income: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 7 7 17"/><path d="M17 17H7V7"/></svg>',
-        expense: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg>',
-        notice: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></svg>',
-    };
-
-    async function loadNotifications() {
-        try {
-            state.notifications = await get(config.notificationApi, `/notifications/${session.idUser}?channel=in_app`);
-        } catch (err) {
-            if (BlApi.handleAuthError(err)) return;
-            state.notifications = []; // notification-service apagado: no se rompe el resto
-        }
-        updateDot();
-    }
-
-    function updateDot() {
-        const dot = document.querySelector('#notifications i');
-        if (dot) dot.hidden = !state.notifications.some(n => !n.read);
-    }
-
-    function notifKind(n) {
-        const text = `${n.event} ${n.title}`.toLowerCase();
-        if (/recib|entrada|abono|consign|deposit/.test(text)) return 'income';
-        if (/envia|enviaste|salida|transferencia|cargo/.test(text)) return 'expense';
-        return 'notice';
-    }
-
-    function renderNotifications() {
-        const list = $('notifList');
-        list.replaceChildren();
-        if (!state.notifications.length) {
-            list.innerHTML = '<li class="notif-empty">No tienes notificaciones todavía.</li>';
-            return;
-        }
-        state.notifications.slice(0, 30).forEach(n => {
-            const kind = notifKind(n);
-            const li = document.createElement('li');
-            li.className = n.read ? '' : 'is-new';
-            li.innerHTML = `<span class="notif-icon ${kind}">${NOTIF_ICON[kind]}</span><div><strong></strong><p></p></div><time></time>`;
-            // Título y cuerpo vienen del servidor: se insertan como texto, nunca como HTML.
-            li.querySelector('strong').textContent = htmlToText(n.title);
-            li.querySelector('p').textContent = htmlToText(n.body);
-            li.querySelector('time').textContent = formatDate(n.createdAt);
-            if (!n.read) {
-                li.style.cursor = 'pointer';
-                li.title = 'Marcar como leída';
-                li.addEventListener('click', async () => {
-                    try {
-                        await send(config.notificationApi, 'PUT', `/notifications/${n.id}/read`);
-                        n.read = true;
-                        li.classList.remove('is-new');
-                        updateDot();
-                    } catch (err) { if (!BlApi.handleAuthError(err)) toast('No se pudo marcar como leída.', 'err'); }
-                }, { once: true });
-            }
-            list.appendChild(li);
-        });
-    }
-
-    $('notifications').addEventListener('click', async () => {
-        await loadNotifications();
-        renderNotifications();
-        openModal('notifModal');
-    });
+    // Notificaciones y Salir: los maneja layout.js (encabezado compartido).
 
 
     // =====================================================
@@ -475,6 +405,14 @@ document.addEventListener('DOMContentLoaded', () => {
             box.appendChild(row);
         });
         openModal('profileModal');
+    }
+
+    // Desde las demás vistas, Mi perfil, Configuración y el avatar llegan con #perfil, #configuracion o #datos
+    function openFromHash() {
+        const open = { perfil: openMyProfile, configuracion: () => openModal('settingsModal'), datos: openProfileData }[location.hash.slice(1)];
+        if (!open) return;
+        history.replaceState(null, '', location.pathname + location.search);
+        open();
     }
 
     $('openMyProfile').addEventListener('click', event => { event.preventDefault(); openMyProfile(); });
@@ -603,21 +541,10 @@ document.addEventListener('DOMContentLoaded', () => {
     pinModal.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', () => pinFlow.timer?.stop()));
 
 
-    // =====================================================
-    // CERRAR SESIÓN
-    // =====================================================
-
-    $('logout').addEventListener('click', async event => {
-        event.preventDefault();
-        const confirmed = await confirmAction('Cerrar sesión', '¿Quieres salir de tu cuenta Banklite?', 'Salir');
-        if (confirmed) BlApi.logout('cerrada');
-    });
-
-
     // Suscripciones (subscriptions.js): un cobro cambia el saldo y genera avisos.
     document.addEventListener('banklite:account-changed', async () => {
         await loadAccount();
-        await loadNotifications();
+        await BlLayout.refreshNotifications();
     });
 
     // ---------- carga inicial ----------
@@ -625,6 +552,6 @@ document.addEventListener('DOMContentLoaded', () => {
         await loadKyc();
         await loadAccount();
         await loadCards();
-        await loadNotifications();
+        openFromHash();
     })();
 });

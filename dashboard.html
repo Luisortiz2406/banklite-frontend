@@ -17,136 +17,9 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 
-<body class="app">
+<body class="app" data-page="dashboard">
 
-    <!-- =====================================================
-         HEADER
-    ====================================================== -->
-
-    <header class="app-header">
-
-        <a class="brand" href="dashboard.html" aria-label="Banklite, inicio">
-            <span class="logo">B</span>
-            <span>banklite</span>
-        </a>
-
-        <div class="header-user">
-            <button class="notification" id="notifications" type="button" aria-label="Notificaciones">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
-                <i></i>
-            </button>
-            <span class="avatar" id="avatar">·</span>
-            <b id="headerName">…</b>
-            <button id="logout" class="logout" type="button">Salir</button>
-        </div>
-
-    </header>
-
-
-    <div class="layout">
-
-        <!-- =================================================
-             MENÚ LATERAL
-        ================================================== -->
-
-        <aside class="sidebar" aria-label="Menú">
-
-            <a class="side active" href="#inicio" data-spy="inicio" aria-current="page">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
-                <span>Inicio</span>
-            </a>
-
-            <!-- Grupos desplegables: solo uno abierto a la vez -->
-            <div class="side-group" data-group="dinero">
-                <button type="button" class="side side-toggle" aria-expanded="false" aria-controls="side-dinero">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3l4 4-4 4"/><path d="M3 7h18"/><path d="M7 21l-4-4 4-4"/><path d="M21 17H3"/></svg>
-                    <span>Mover dinero</span>
-                    <svg class="side-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
-                </button>
-                <div class="side-sub" id="side-dinero">
-                    <div class="side-sub-inner">
-                        <a class="side" href="transferir.html">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
-                            <span>Transferir</span>
-                        </a>
-                        <a class="side" href="pagos.html">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2v20l3-2 3 2 2-2 2 2 3-2 3 2V2l-3 2-3-2-2 2-2-2-3 2Z"/><path d="M8 9h8M8 13h6"/></svg>
-                            <span>Pagos</span>
-                        </a>
-                        <a class="side" href="qr.html">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3M21 14v.01M14 21h7v-4M17 21v-.01"/></svg>
-                            <span>Pagar con QR</span>
-                        </a>
-                        <a class="side" href="llaves.html">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="7.5" cy="15.5" r="4.5"/><path d="m10.7 12.3 9.3-9.3M16 7l3 3M14 9l2 2"/></svg>
-                            <span>Llaves Bre-B</span>
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="side-group" data-group="ahorro">
-                <button type="button" class="side side-toggle" aria-expanded="false" aria-controls="side-ahorro">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 9a7 7 0 0 0-7-4H9a6 6 0 0 0-6 6c0 2 1 3.7 2.5 4.8L6 20h3l1-2h3l1 2h3l.6-3.2A6 6 0 0 0 20 14h1v-4h-1.2a7 7 0 0 0-.8-1Z"/><path d="M16 11h.01"/></svg>
-                    <span>Ahorrar</span>
-                    <svg class="side-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
-                </button>
-                <div class="side-sub" id="side-ahorro">
-                    <div class="side-sub-inner">
-                        <a class="side" href="#ahorro" data-spy="ahorro">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>
-                            <span>Metas de ahorro</span>
-                        </a>
-                        <a class="side" href="inversiones.html">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 6-6"/><path d="M15 8h5v5"/></svg>
-                            <span>Bolsillos y CDT</span>
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="side-group" data-group="cuenta">
-                <button type="button" class="side side-toggle" aria-expanded="false" aria-controls="side-cuenta">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0 0 4h14a2 2 0 0 1 2 2v4h-4a2 2 0 0 0 0 4h4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5"/></svg>
-                    <span>Mis finanzas</span>
-                    <svg class="side-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
-                </button>
-                <div class="side-sub" id="side-cuenta">
-                    <div class="side-sub-inner">
-                        <a class="side" href="movimientos.html">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 16-4 4-4-4"/><path d="M17 20V4"/><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/></svg>
-                            <span>Movimientos</span>
-                        </a>
-                        <a class="side" href="#tarjetas" data-spy="tarjetas">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
-                            <span>Tarjetas</span>
-                        </a>
-                        <a class="side" href="#suscripciones" data-spy="suscripciones">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="15" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M8 14h3"/></svg>
-                            <span>Suscripciones</span>
-                        </a>
-                        <a class="side" href="puntos.html">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 3 7h7l-5.5 4.5 2 7.5-6.5-4.5L5.5 21l2-7.5L2 9h7z"/></svg>
-                            <span>Mis puntos</span>
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="side-space"></div>
-
-            <a class="side" href="#perfil" id="openMyProfile">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
-                <span>Mi perfil</span>
-            </a>
-
-            <a class="side" href="#configuracion" id="openSettings">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-                <span>Configuración</span>
-            </a>
-
-        </aside>
-
+    <!-- Encabezado y menú lateral: los arma layout.js (compartido con las vistas internas) -->
 
         <!-- =================================================
              CONTENIDO
@@ -448,8 +321,6 @@
 
         </main>
 
-    </div>
-
 
     <!-- =====================================================
          MODALES
@@ -558,17 +429,6 @@
                 <button class="btn soft" data-close type="button">Cancelar</button>
                 <button class="btn primary" id="confirmAccept" type="button">Confirmar</button>
             </div>
-        </div>
-    </div>
-
-    <!-- Notificaciones (GET /notifications/:idUser, PUT /notifications/:id/read) -->
-    <div class="modal" id="notifModal" role="dialog" aria-modal="true" aria-labelledby="notifTitle">
-        <div class="modal-card">
-            <button class="modal-close" data-close type="button" aria-label="Cerrar">×</button>
-            <span class="eyebrow">Centro de avisos</span>
-            <h2 id="notifTitle">Notificaciones</h2>
-            <ul class="notif-list" id="notifList"></ul>
-            <button class="btn primary full" data-close type="button">Listo</button>
         </div>
     </div>
 
@@ -811,6 +671,7 @@
 
     <script src="java.js"></script>
     <script src="api.js"></script>
+    <script src="layout.js"></script>
     <script src="comprobantes.js"></script>
     <script src="dynamic-key.js"></script>
     <script src="dashboard.js"></script>

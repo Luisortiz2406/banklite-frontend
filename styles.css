@@ -15725,3 +15725,151 @@ body.qr-presenting {
     font-size: 0.82rem;
     font-weight: 600;
 }
+
+
+/* =========================================================
+   LAYOUT COMPARTIDO (layout.js): encabezado, menú lateral
+   y menú ☰ en celular para el dashboard y las vistas internas
+   ========================================================= */
+
+.header-start {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.menu-toggle,
+.sidebar-close {
+    width: 40px;
+    height: 40px;
+    display: none;
+    place-items: center;
+    flex: 0 0 auto;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--white);
+    color: var(--text);
+    cursor: pointer;
+}
+
+.menu-toggle:hover,
+.sidebar-close:hover { background: var(--primary-soft); color: var(--primary-text); }
+
+.menu-toggle:focus-visible,
+.sidebar-close:focus-visible { outline: none; box-shadow: var(--ring); }
+
+.sidebar-head { display: none; }
+.sidebar-backdrop[hidden] { display: none; }
+
+/* Las vistas internas usan todo el espacio de la derecha */
+.layout > main {
+    min-width: 0;
+}
+
+.layout > .movement-page,
+.layout > .transfer-page {
+    width: 100%;
+    max-width: 1180px;
+    margin: 0;
+    padding: 5px 0 40px;
+}
+
+@media (max-width: 760px) {
+    .menu-toggle,
+    .sidebar-close { display: grid; }
+
+    /* Sin el nombre hay espacio para la campana (antes se ocultaba en celular) */
+    .header-user b { display: none; }
+    .header-user .notification { display: grid; }
+
+    /* El menú deja de ser una franja horizontal: es un panel que se abre con ☰ */
+    .layout > .sidebar {
+        position: fixed;
+        inset: 0 auto 0 0;
+        z-index: 120;
+        width: min(300px, 86vw);
+        height: 100dvh;
+        min-height: 0;
+        flex-direction: column;
+        gap: 4px;
+        overflow-x: hidden;
+        overflow-y: auto;
+        padding: 14px 14px 22px;
+        background: var(--white);
+        box-shadow: var(--shadow-lg);
+        transform: translateX(-105%);
+        visibility: hidden;
+        transition: transform 0.25s ease, visibility 0s linear 0.25s;
+    }
+
+    body.menu-open .layout > .sidebar {
+        transform: none;
+        visibility: visible;
+        transition: transform 0.25s ease;
+    }
+
+    body.menu-open { overflow: hidden; }
+
+    /* Banki (z-index 900) no tapa el menú abierto */
+    body.menu-open .bot-bubble,
+    body.menu-open .bot-widget { visibility: hidden; }
+
+    .sidebar-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin: 0 0 10px;
+        padding: 0 2px 12px;
+        border-bottom: 1px solid var(--border-light);
+    }
+
+    .sidebar-head .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--dark);
+        font-family: "Manrope", sans-serif;
+        font-size: 1.15rem;
+        font-weight: 800;
+    }
+
+    .sidebar-head .logo {
+        width: 34px;
+        height: 34px;
+        display: grid;
+        place-items: center;
+        border-radius: 10px;
+        background: var(--primary);
+        color: var(--on-primary);
+    }
+
+    /* Dentro del panel, los grupos vuelven a ser desplegables */
+    .layout > .sidebar .side { width: 100%; flex: none; min-height: 44px; white-space: nowrap; }
+    .layout > .sidebar .side-group { display: block; }
+    .layout > .sidebar .side-sub { display: grid; }
+    .layout > .sidebar .side-sub-inner { display: block; }
+    .layout > .sidebar .side-toggle { display: flex !important; }
+    .layout > .sidebar .side-sub .side { padding-left: 24px; min-height: 40px; }
+    .layout > .sidebar .side-space { display: block; flex: 1; min-height: 16px; }
+    .layout > .sidebar #openMyProfile { border-top: 1px solid var(--border-light); border-radius: 0 0 9px 9px; }
+
+    .sidebar-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 110;
+        background: rgba(13, 27, 30, 0.45);
+    }
+
+    .layout > .movement-page,
+    .layout > .transfer-page {
+        width: 100%;
+        padding-top: 4px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .layout > .sidebar { transition: none !important; }
+}
+
+.layout > .sidebar:focus { outline: none; }

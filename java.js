@@ -1100,7 +1100,8 @@ function botChatMarkup(id) {
 function initBotBubble() {
     if (document.getElementById("helpPage") || document.getElementById("botBubble")) return;
 
-    if (!document.querySelector("main.dashboard")) {
+    // El chat va en el dashboard y en las vistas internas con el layout compartido (layout.js)
+    if (!document.querySelector("main.dashboard") && !document.body.dataset.page) {
         // En las demás páginas, los botones de chat llevan al Centro de ayuda
         document.querySelectorAll("[data-open-bot]").forEach(button => {
             button.addEventListener("click", event => {
@@ -1358,6 +1359,13 @@ function initSidebar() {
     }
 
     spyLinks.forEach(link => link.addEventListener("click", () => activate(link.dataset.spy)));
+
+    // Fuera del dashboard (layout.js): se marca la vista actual y no hay secciones que vigilar
+    const page = sidebar.dataset.page;
+    if (page && page !== "dashboard") {
+        activate(page);
+        return;
+    }
 
     // Cada sección del dashboard es una vista propia, así que no hay secciones que vigilar
     const sections = []
