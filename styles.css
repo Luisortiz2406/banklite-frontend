@@ -15775,6 +15775,18 @@ body.qr-presenting {
     padding: 5px 0 40px;
 }
 
+/* Espacio al final para que la burbuja de Banki (fija abajo a la derecha) no tape contenido */
+.layout:has(> .sidebar) { padding-bottom: 104px; }
+.layout > .movement-page,
+.layout > .transfer-page { padding-bottom: 0; }
+
+/* Con el menú lateral, el contenido es ~300px más angosto que la ventana:
+   las rejillas de cada vista se acomodan antes */
+@media (min-width: 761px) and (max-width: 1200px) {
+    .layout .cdt-layout { grid-template-columns: minmax(0, 1fr); }
+    .layout .savings-summary { grid-template-columns: 1fr 1fr; }
+}
+
 @media (max-width: 760px) {
     .menu-toggle,
     .sidebar-close { display: grid; }
@@ -15866,6 +15878,8 @@ body.qr-presenting {
         width: 100%;
         padding-top: 4px;
     }
+
+    .layout:has(> .sidebar) { padding-bottom: 96px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
