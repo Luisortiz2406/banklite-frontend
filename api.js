@@ -20,7 +20,7 @@ const BlApi = (function () {
 
     // ---------- configuración (igual que el index) ----------
     const API_GATEWAY = ((window.BANKLITE_CONFIG || {}).apiGateway || 'http://localhost:8080').replace(/\/+$/, '');
-    const DEFAULT_CONFIG = { authApi: API_GATEWAY, kycApi: API_GATEWAY, accountApi: API_GATEWAY, notificationApi: API_GATEWAY, ledgerApi: API_GATEWAY, cardApi: API_GATEWAY, transferApi: API_GATEWAY };
+    const DEFAULT_CONFIG = { authApi: API_GATEWAY, kycApi: API_GATEWAY, accountApi: API_GATEWAY, notificationApi: API_GATEWAY, ledgerApi: API_GATEWAY, cardApi: API_GATEWAY, transferApi: API_GATEWAY, paymentApi: API_GATEWAY, rewardsApi: API_GATEWAY, savingsApi: API_GATEWAY };
     const config = Object.assign({}, DEFAULT_CONFIG, window.BANKLITE_CONFIG || {});
 
     // ---------- sesión en sessionStorage ----------

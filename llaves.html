@@ -28,27 +28,140 @@
     </header>
 
 
-    <!-- Esta función todavía no tiene servicio en el backend: no se muestran datos de ejemplo. -->
-    <main class="panel soon-page">
-        <span class="soon-chip">Próximamente</span>
-        <span class="modal-icon" aria-hidden="true">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 2-9.6 9.6M15.5 7.5l3 3L22 7l-3-3M12.4 12.6a5.5 5.5 0 1 1-7.8 7.8 5.5 5.5 0 0 1 7.8-7.8z"/></svg>
-        </span>
-        <span class="eyebrow">Pagos inmediatos</span>
-        <h1>Llaves Bre-B</h1>
-        <p>Muy pronto podrás recibir plata con tu celular, correo o documento, sin dar tu número de cuenta.</p>
-        <ul class="soon-list">
-            <li>Registro de llaves (celular, correo, documento)</li>
-            <li>Transferencias a otros bancos por Bre-B</li>
-            <li>Por ahora, transfiere entre cuentas Banklite con el número de cuenta</li>
-        </ul>
-        <div class="modal-actions">
-            <a class="btn soft" href="dashboard.html">Volver al inicio</a>
-            <a class="btn primary" href="transferir.html">Transferir</a>
+
+    <main class="movement-page keys-page" id="keysPage">
+
+        <div class="page-title movement-title">
+            <div>
+                <span class="eyebrow">Bre-B</span>
+                <h1>Mis llaves Bre-B</h1>
+                <p>Recibe y envía dinero en segundos con tu celular, correo, cédula o una llave personalizada, sin dar tu número de cuenta. Por ahora funciona entre cuentas Banklite.</p>
+            </div>
+            <button type="button" class="btn primary" data-dynamic-open>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M9 7h6M9 11h6M11 18h2"/></svg>
+                Ver clave dinámica
+            </button>
         </div>
+
+        <!-- Qué es Bre-B -->
+        <section class="breb-hero" aria-label="Qué es Bre-B">
+            <div class="breb-hero-brand">
+                <span class="breb-logo breb-logo-lg" aria-hidden="true">Bre-B</span>
+                <p>El sistema de pagos inmediatos de Colombia. Conecta a todos los bancos y billeteras.</p>
+            </div>
+            <ul class="breb-points">
+                <li><b>En segundos</b><span>El dinero llega al instante, no al otro día.</span></li>
+                <li><b>24/7</b><span>Funciona fines de semana y festivos.</span></li>
+                <li><b>Entre todos</b><span>Bancos y billeteras, sin importar la entidad.</span></li>
+                <li><b>Sin costo</b><span>Enviar y recibir con llave es gratis en Banklite.</span></li>
+            </ul>
+        </section>
+
+        <div class="keys-layout">
+
+            <section class="panel keys-panel" aria-labelledby="keysTitle">
+                <div class="panel-top">
+                    <b id="keysTitle">Tus llaves</b>
+                    <span class="panel-chip" id="keysCount">0 de 4</span>
+                </div>
+                <p class="keys-intro">Registra una llave de cada tipo. Quien la tenga podrá enviarte dinero a tu cuenta Banklite <b id="keysAccount">-</b>.</p>
+                <div class="keys-grid" id="keysGrid"></div>
+            </section>
+
+            <aside class="keys-side">
+
+                <div class="panel">
+                    <div class="panel-top"><b>Enviar con llave</b></div>
+                    <p class="keys-side-text">Escribe la llave de quien recibe y te mostramos a nombre de quién está antes de enviar.</p>
+                    <label class="keys-lookup">
+                        <span class="visually-hidden">Llave del destinatario</span>
+                        <input id="keyLookup" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Celular, correo, cédula o @llave">
+                    </label>
+                    <p class="key-lookup-result" id="keyLookupResult" hidden></p>
+                    <a class="btn primary full" href="transferir.html?breb=1">Ir a enviar con Bre-B</a>
+                </div>
+
+                <div class="panel dynamic-panel">
+                    <span class="dynamic-panel-icon" aria-hidden="true">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M9 7h6M9 11h6M11 18h2"/></svg>
+                    </span>
+                    <b>Clave dinámica</b>
+                    <p>Un código de 6 dígitos que cambia cada 60 segundos. La app lo valida automáticamente al enviar dinero y al registrar o eliminar llaves.</p>
+                    <button type="button" class="btn soft full" data-dynamic-open>Ver mi clave dinámica</button>
+                </div>
+
+                <div class="panel keys-tips">
+                    <b>Consejos</b>
+                    <ul>
+                        <li>Comparte tu llave solo con quien te va a pagar.</li>
+                        <li>Antes de enviar, revisa siempre el nombre del titular.</li>
+                        <li>Nadie de Banklite te pedirá tu clave dinámica.</li>
+                    </ul>
+                </div>
+
+            </aside>
+
+        </div>
+
     </main>
 
+
+    <!-- Registrar llave -->
+    <div class="modal" id="keyModal" role="dialog" aria-modal="true" aria-labelledby="keyModalTitle">
+        <form class="modal-card key-modal" id="keyForm" novalidate>
+            <button class="modal-close" data-close type="button" aria-label="Cerrar">×</button>
+            <span class="modal-icon" id="keyModalIcon" aria-hidden="true"></span>
+            <h2 id="keyModalTitle">Registrar llave</h2>
+            <p>Revisa el dato antes de continuar. Solo puedes registrar tu propio celular, correo y cédula, tal como los verificaste en Banklite. Tu clave dinámica se valida automáticamente.</p>
+            <label class="key-field">Tu llave
+                <input id="keyValue" autocomplete="off" autocapitalize="none" spellcheck="false">
+            </label>
+            <small class="key-hint" id="keyModalHint"></small>
+            <div class="modal-actions">
+                <button class="btn soft" data-close type="button">Cancelar</button>
+                <button class="btn primary" type="submit">Continuar</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Clave dinámica -->
+    <div class="modal" id="dynamicModal" role="dialog" aria-modal="true" aria-labelledby="dynamicModalTitle">
+        <div class="modal-card">
+            <button class="modal-close" data-close type="button" aria-label="Cerrar">×</button>
+            <span class="eyebrow">Seguridad</span>
+            <h2 id="dynamicModalTitle">Tu clave dinámica</h2>
+            <p>Cambia cada 60 segundos. Nadie de Banklite te la pedirá.</p>
+            <div data-dynamic-key></div>
+        </div>
+    </div>
+
+    <div class="modal" id="confirmModal" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle" aria-describedby="confirmText">
+        <div class="modal-card">
+            <span class="modal-icon is-alert" aria-hidden="true">!</span>
+            <h2 id="confirmTitle">¿Estás seguro?</h2>
+            <p id="confirmText"></p>
+            <div class="modal-actions">
+                <button class="btn soft" data-close type="button">Cancelar</button>
+                <button class="btn primary" id="confirmAccept" type="button">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="genericModal" role="dialog" aria-modal="true" aria-labelledby="genericTitle" aria-describedby="genericText">
+        <div class="modal-card">
+            <button class="modal-close" data-close type="button" aria-label="Cerrar">×</button>
+            <span class="modal-icon" aria-hidden="true">i</span>
+            <h2 id="genericTitle">Banklite</h2>
+            <p id="genericText"></p>
+            <button class="btn primary full" data-close type="button">Entendido</button>
+        </div>
+    </div>
+
     <script src="java.js"></script>
+    <script src="api.js"></script>
+    <script src="dynamic-key.js"></script>
+    <script src="breb.js"></script>
+    <script src="llaves.js"></script>
 
 </body>
 

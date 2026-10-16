@@ -247,13 +247,21 @@ function pdfMoney(value, currency = "COP") {
     }).format(Number(value) || 0);
 }
 
+// Las transferencias a otros bancos son cargos hacia la cuenta de compensación.
+function movementTypeLabel(movement) {
+    if (movement.type === "debit" && /^Transferencia a /.test(movement.description || "")) return "Transferencia a otro banco";
+    return MOVEMENT_TYPES[movement.type] || "Movimiento";
+}
+
 const MOVEMENT_TYPES = {
     transfer: "Transferencia",
     deposit: "Consignación",
     credit: "Abono",
     debit: "Cargo",
     reversal: "Reverso",
-    payment: "Pago a comercio"
+    payment: "Pago a comercio",
+    reward: "Canje de puntos",
+    saving: "Ahorro e inversión"
 };
 
 
@@ -271,7 +279,7 @@ function downloadReceipt(movement, holder) {
     const c = PDF_COLORS;
     const pdf = new MiniPDF();
     const incoming = movement.direction === "in";
-    const isTransfer = movement.type === "transfer";
+    const isTransfer = movement.type === "transfer" || movementTypeLabel(movement) === "Transferencia a otro banco";
     const number = String(movement.transactionId || movement.id || "").toUpperCase();
     const shortNumber = number.slice(0, 8);
     const amountText = pdfMoney(movement.amount, movement.currency);
@@ -294,10 +302,10 @@ function downloadReceipt(movement, holder) {
         : "—";
     const rows = [
         ["Fecha y hora", formatDate(movement.createdAt, { dateStyle: "long", timeStyle: "short" })],
-        ["Tipo", MOVEMENT_TYPES[movement.type] || "Movimiento"],
+        ["Tipo", movementTypeLabel(movement)],
         ["Descripción", movement.description || "—"],
         ["Movimiento", `${incoming ? "+" : "-"}${amountText}`],
-        isTransfer || movement.type === "payment" ? [incoming ? "Cuenta de origen" : "Cuenta de destino", counterparty] : null,
+        (isTransfer && movement.counterpartyAccountLast4) || movement.type === "payment" ? [incoming ? "Cuenta de origen" : "Cuenta de destino", counterparty] : null,
         [incoming ? "Cuenta que recibe" : "Cuenta de origen", ownAccount],
         ["Titular", holder.name],
         ["Número de operación", number]
@@ -418,7 +426,7 @@ function downloadStatement(statement, holder, label, fileKey) {
         pdf.text(formatDate(date, { day: "2-digit", month: "2-digit" }), cols.date + 8, y + 14, { color: c.text, bold: false, size: 8.5 });
         pdf.text(formatDate(date, { hour: "2-digit", minute: "2-digit" }), cols.date + 8, y + 26, { color: c.muted, size: 7.5 });
 
-        const detail = [MOVEMENT_TYPES[movement.type], movement.counterpartyAccountLast4 ? `Cuenta ···· ${movement.counterpartyAccountLast4}` : ""].filter(Boolean).join(" · ");
+        const detail = [movementTypeLabel(movement), movement.counterpartyAccountLast4 ? `Cuenta ···· ${movement.counterpartyAccountLast4}` : ""].filter(Boolean).join(" · ");
         pdf.text(pdf.fit(movement.description || "Movimiento", 230, 9, true), cols.desc, y + 14, { color: c.dark, bold: true, size: 9 });
         pdf.text(pdf.fit(detail, 230, 7.5, false), cols.desc, y + 26, { color: c.muted, bold: false, size: 7.5 });
 

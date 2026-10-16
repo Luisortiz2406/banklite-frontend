@@ -592,7 +592,7 @@ const HOME_ARTICLES = {
     },
     cdt: {
         title: "¿CDT o bolsillo?",
-        text: "Bolsillo: apartas plata para algo concreto y la puedes sacar cuando quieras. Sirve para emergencias o metas cercanas.\n\nCDT: la plata queda quieta hasta el final del plazo a cambio de una tasa fija. Sirve para dinero que no vas a necesitar pronto.\n\nMuchas personas combinan los dos. En Banklite, bolsillos y CDT llegan próximamente."
+        text: "Bolsillo: apartas plata para algo concreto y la puedes sacar cuando quieras. Sirve para emergencias o metas cercanas.\n\nCDT: la plata queda quieta hasta el final del plazo a cambio de una tasa fija. Sirve para dinero que no vas a necesitar pronto.\n\nMuchas personas combinan los dos. En Banklite tienes bolsillos que ganan 9% E.A. y CDT de hasta 11% E.A., en Bolsillos y CDT."
     },
     fraude: {
         title: "5 señales de fraude",
@@ -791,7 +791,7 @@ const BOT_TOPICS = [
     { id: "chao", keys: ["chao", "adios", "hasta luego", "nos vemos", "bye"], small: true,
       answer: () => ({ text: "¡Hasta pronto! Cuida tu clave y no la compartas con nadie." }) },
     { id: "quien", keys: ["quien eres", "como te llamas", "tu nombre", "que eres", "eres un robot", "eres humano", "que haces", "que puedes hacer", "ayudame", "ayuda"], small: true,
-      answer: () => ({ text: `Soy ${BOT_NAME}, el asistente virtual de Banklite. Te oriento sobre tu cuenta, transferencias entre cuentas Banklite, extractos, tu tarjeta débito y seguridad.\nNo veo los datos de tu cuenta: tu saldo y tus movimientos están en el inicio.`, chips: ["¿Cómo abro una cuenta?", "¿Cómo hago una transferencia?"] }) },
+      answer: () => ({ text: `Soy ${BOT_NAME}, el asistente virtual de Banklite. Te oriento sobre tu cuenta, transferencias, pagos, extractos, tu tarjeta débito y seguridad.\nNo veo los datos de tu cuenta: tu saldo y tus movimientos están en el inicio.`, chips: ["¿Cómo abro una cuenta?", "¿Cómo hago una transferencia?"] }) },
     { id: "humano", keys: ["asesor", "humano", "persona real", "hablar con alguien", "llamar", "telefono", "linea", "contacto", "correo", "horario", "atencion"],
       faq: "¿Cómo hablo con un asesor?", cat: "cuenta",
       answer: () => ({ text: "Puedes comunicarte con un asesor por la **Línea Banklite 601 000 0000** (24 horas) o escribir a **ayuda@banklite.co**." }) },
@@ -834,7 +834,7 @@ const BOT_TOPICS = [
       answer: () => ({ text: "Ve a **Transferir**, elige Banklite, escribe el número de cuenta de 11 dígitos, el valor y el concepto. Revisa los datos y confirma: entre cuentas Banklite llega al instante. Si algo está mal, toca *Corregir* y la solicitud se cancela.", links: [{ label: "Transferir", href: "transferir.html" }] }) },
     { id: "otrosbancos", keys: ["otro banco", "otros bancos", "bancolombia", "nequi", "daviplata", "davivienda", "billetera"],
       faq: "¿Puedo transferir a otros bancos?", cat: "transferencias",
-      answer: () => ({ text: `Por ahora solo puedes transferir entre cuentas Banklite. Las transferencias a otros bancos y billeteras llegan próximamente.` }) },
+      answer: () => ({ text: "Sí. En **Transferir** eliges el banco (Bancolombia, Banco de Bogotá, Davivienda, BBVA, Banco de Occidente u otra entidad) o la billetera (Nequi o DaviPlata), escribes el tipo y número de cuenta (en billeteras, el celular) y el nombre de quien recibe, y confirmas con tu clave dinámica. El dinero sale de tu cuenta de inmediato. Banklite no está conectado a la red interbancaria, así que la llegada al otro banco es de demostración.", links: [{ label: "Transferir", href: "transferir.html" }] }) },
     { id: "limites", keys: ["minimo", "maximo", "tope", "cuanto puedo enviar", "limite de transferencia", "limite diario", "limite mensual", "limites"],
       faq: "¿Cuánto puedo transferir?", cat: "transferencias",
       answer: () => ({ text: "Puedes enviar hasta tu saldo disponible, dentro de los **límites diario y mensual** de tu cuenta. Los ves en el inicio, junto a tu saldo." }) },
@@ -878,34 +878,33 @@ const BOT_TOPICS = [
 
     // --- Próximamente ---
     { id: "breb", keys: ["bre b", "breb", "que es bre", "pagos inmediatos", "llave", "llaves"],
-      faq: "¿Banklite tiene llaves Bre-B?", cat: "pronto",
-      answer: () => ({ text: `**Bre-B** es el sistema de pagos inmediatos de Colombia: con una llave (celular, correo o cédula) te envían plata sin tu número de cuenta. ${BOT_SOON}`, links: [{ label: "Ver más", href: "llaves.html" }] }) },
+      faq: "¿Banklite tiene llaves Bre-B?", cat: "transferencias",
+      answer: () => ({ text: "Sí. **Bre-B** es el sistema de pagos inmediatos de Colombia: con una llave te envían plata sin tu número de cuenta. En **Llaves Bre-B** registras tu celular, correo y cédula (los que verificaste en Banklite) y una @llave personalizada; registrar o eliminar una llave se confirma con tu clave dinámica. Para enviar, en **Transferir** eliges Bre-B, escribes la llave y te mostramos a nombre de quién está. Por ahora funciona entre cuentas Banklite.", links: [{ label: "Mis llaves", href: "llaves.html" }, { label: "Enviar con llave", href: "transferir.html?breb=1" }] }) },
     { id: "qr", keys: ["pagar con qr", "escanear", "leer qr", "codigo qr", "qr", "cobrar con qr", "mi qr"],
-      faq: "¿Puedo pagar con QR?", cat: "pronto",
-      answer: () => ({ text: `Pagar y cobrar con QR: ${BOT_SOON}`, links: [{ label: "Ver más", href: "qr.html" }] }) },
+      faq: "¿Puedo pagar con QR?", cat: "transferencias",
+      answer: () => ({ text: "Sí. En **Pagar con QR** creas tu código de cobro (con o sin valor) con una de tus llaves Bre-B o tu número de cuenta, o escaneas con la cámara (o subiendo una foto) el QR de otra persona o de un comercio para pagarle. Se descuenta de tu saldo, se confirma con tu clave dinámica y te queda el comprobante en PDF. Por ahora funciona entre cuentas Banklite.", links: [{ label: "Ir a QR", href: "qr.html" }] }) },
     { id: "pagos", keys: ["factura", "facturas", "servicios publicos", "pagar la luz", "pagar el agua", "pagar el gas", "internet", "administracion", "recarga", "recargar", "recargar celular", "paquete de datos"],
-      faq: "¿Puedo pagar facturas o recargar el celular?", cat: "pronto",
-      answer: () => ({ text: `Pago de facturas y recargas: ${BOT_SOON}`, links: [{ label: "Ver más", href: "pagos.html" }] }) },
+      faq: "¿Puedo pagar facturas o recargar el celular?", cat: "transferencias",
+      answer: () => ({ text: "Sí. En **Pagos y recargas** pagas facturas de servicios públicos, internet y administración con la referencia del recibo, o recargas tu celular Claro, Movistar, Tigo, WOM o Virgin Mobile (de $1.000 a $500.000). Se descuenta de tu saldo, se confirma con tu clave dinámica y te queda el comprobante en PDF. Las facturas son de demostración: Banklite no está conectado a los convenios reales.", links: [{ label: "Ir a pagos", href: "pagos.html" }] }) },
     { id: "ahorro", keys: ["bolsillo", "bolsillos", "apartar plata", "separar plata", "ahorrar", "cdt", "invertir", "inversion", "plazo fijo", "rentabilidad", "intereses", "meta", "metas", "meta de ahorro"],
-      faq: "¿Tienen bolsillos, CDT o metas de ahorro?", cat: "pronto",
-      answer: () => ({ text: `Bolsillos, CDT y metas de ahorro: ${BOT_SOON}`, links: [{ label: "Ver más", href: "inversiones.html" }] }) },
+      faq: "¿Tienen bolsillos, CDT o metas de ahorro?", cat: "cuenta",
+      answer: () => ({ text: "Sí. En **Bolsillos y CDT** apartas plata en bolsillos que ganan 9% E.A. y puedes sacar cuando quieras, o abres un CDT desde $500.000 a 30, 60, 90, 180 o 360 días (de 8,5% a 11% E.A., con retención del 4% sobre los intereses); el CDT no se puede retirar antes de vencer. En el inicio, sección **Mis metas**, creas metas de ahorro con monto y fecha y les abonas cuando quieras. Lo que apartas sale de tu saldo disponible y vuelve cuando lo sacas.", links: [{ label: "Bolsillos y CDT", href: "inversiones.html" }, { label: "Mis metas", href: "dashboard.html#ahorro" }] }) },
     { id: "puntos", keys: ["puntos", "mis puntos", "cuantos puntos", "nivel", "programa de puntos", "lealtad", "canjear", "canje", "redimir"],
-      faq: "¿Hay programa de puntos?", cat: "pronto",
-      answer: () => ({ text: `Puntos Banklite: ${BOT_SOON}`, links: [{ label: "Ver más", href: "puntos.html" }] }) },
+      faq: "¿Hay programa de puntos?", cat: "cuenta",
+      answer: () => ({ text: "Sí. Con **Puntos Banklite** ganas 1 punto por cada $1.000 en compras con tarjeta, facturas, recargas y pagos con QR (las transferencias no suman). Tu nivel multiplica: Plata x1,25 y Oro x1,5. Cada punto vale $10: cámbialos por plata a tu cuenta, una recarga a tu celular verificado o bonos. También hay retos de bienvenida que suman puntos extra.", links: [{ label: "Mis puntos", href: "puntos.html" }] }) },
     { id: "suscripciones", keys: ["suscripcion", "suscripciones", "netflix", "spotify", "cobro recurrente", "cobros automaticos", "pausar", "cancelar suscripcion"],
       faq: "¿Cómo funcionan las suscripciones?", cat: "tarjeta",
       answer: () => ({ text: "En el inicio, sección **Suscripciones**, inscribes servicios como Netflix o Spotify a tu tarjeta. Pagas el primer mes al inscribir y luego se cobra solo cada mes el mismo día; te avisamos 3 días antes. Si un cobro falla (tarjeta congelada o sin saldo) lo reintentamos 3 días y después se suspende. Puedes **pausar**, **reanudar** o **cancelar** cuando quieras.", links: [{ label: "Mis suscripciones", href: "dashboard.html#suscripciones" }] }) },
     { id: "credito", keys: ["credito", "prestamo", "prestan", "tarjeta de credito", "hipoteca", "libranza", "bitcoin", "cripto", "criptomonedas", "acciones", "seguro de vida", "dolares", "divisas"],
       faq: "¿Banklite ofrece créditos?", cat: "cuenta",
-      answer: () => ({ text: "Banklite no ofrece créditos, tarjetas de crédito, criptomonedas ni cambio de divisas. Hoy tienes cuenta de ahorros o corriente, tarjeta débito y transferencias entre cuentas Banklite." }) }
+      answer: () => ({ text: "Banklite no ofrece créditos, tarjetas de crédito, criptomonedas ni cambio de divisas. Hoy tienes cuenta de ahorros o corriente, tarjeta débito, transferencias (a Banklite, con llave Bre-B y a otros bancos), pagos con QR, pago de facturas y recargas." }) }
 ];
 
 const BOT_CATEGORIES = [
     { id: "cuenta", title: "Mi cuenta", text: "Saldo, extractos y datos", icon: "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0" },
-    { id: "transferencias", title: "Transferencias", text: "Enviar plata entre cuentas Banklite", icon: "m22 2-7 20-4-9-9-4ZM22 2 11 13" },
+    { id: "transferencias", title: "Transferencias y pagos", text: "Enviar plata, pagar facturas y recargar", icon: "m22 2-7 20-4-9-9-4ZM22 2 11 13" },
     { id: "tarjeta", title: "Tarjeta débito", text: "Emitir, ver datos y congelar", icon: "M2 5h20v14H2zM2 10h20" },
-    { id: "seguridad", title: "Seguridad", text: "Claves, códigos y fraude", icon: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" },
-    { id: "pronto", title: "Próximamente", text: "Bre-B, QR, pagos, ahorro y puntos", icon: "M12 6v6l4 2M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z" }
+    { id: "seguridad", title: "Seguridad", text: "Claves, códigos y fraude", icon: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" }
 ];
 
 const BOT_OFF_TOPIC = [
@@ -1462,24 +1461,31 @@ const FEATURE_SLIDES = [
         icon: "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M12 18v-6M9 15l3 3 3-3"
     },
     {
-        eyebrow: "Próximamente",
-        title: "Llaves Bre-B y QR",
-        text: "Recibir plata con tu celular o correo y pagar escaneando un código.",
-        cta: "Ver más", href: "llaves.html", tone: "t3",
+        eyebrow: "Nuevo",
+        title: "Cobra y paga con QR",
+        text: "Muestra tu código para que te paguen o escanea uno para pagar en segundos.",
+        cta: "Ir a QR", href: "qr.html", tone: "t3",
+        icon: "M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h3v3h-3zM18 18h3v3h-3zM18 14h3M14 18v3"
+    },
+    {
+        eyebrow: "Nuevo",
+        title: "Llaves Bre-B",
+        text: "Recibir plata con tu celular o correo, sin dar tu número de cuenta.",
+        cta: "Mis llaves", href: "llaves.html", tone: "t3",
         icon: "m21 2-9.6 9.6M15.5 7.5l3 3L22 7l-3-3M12.4 12.6a5.5 5.5 0 1 1-7.8 7.8 5.5 5.5 0 0 1 7.8-7.8z"
     },
     {
-        eyebrow: "Próximamente",
+        eyebrow: "Nuevo",
         title: "Bolsillos y CDT",
-        text: "Nuevas formas de apartar e invertir tu plata desde la app.",
-        cta: "Ver más", href: "inversiones.html", tone: "t4",
+        text: "Aparta plata que gana 9% E.A. o invierte a plazo fijo hasta 11% E.A.",
+        cta: "Ahorrar ahora", href: "inversiones.html", tone: "t4",
         icon: "M3 17l6-6 4 4 8-8M15 7h6v6"
     },
     {
-        eyebrow: "Próximamente",
+        eyebrow: "Nuevo",
         title: "Pagos y recargas",
         text: "Facturas de servicios y recargas de celular sin salir de Banklite.",
-        cta: "Ver más", href: "pagos.html", tone: "t5",
+        cta: "Pagar ahora", href: "pagos.html", tone: "t5",
         icon: "M4 2v20l3-2 3 2 2-2 2 2 3-2 3 2V2l-3 2-3-2-2 2-2-2-3 2ZM8 9h8M8 13h6"
     },
     {

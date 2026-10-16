@@ -28,27 +28,192 @@
     </header>
 
 
-    <!-- Esta función todavía no tiene servicio en el backend: no se muestran datos de ejemplo. -->
-    <main class="panel soon-page">
-        <span class="soon-chip">Próximamente</span>
-        <span class="modal-icon" aria-hidden="true">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l3-2 3 2 2-2 2 2 3-2 3 2V2l-3 2-3-2-2 2-2-2-3 2ZM8 9h8M8 13h6"/></svg>
-        </span>
-        <span class="eyebrow">Pagos y recargas</span>
-        <h1>Pagos y recargas</h1>
-        <p>Muy pronto podrás pagar tus facturas y recargar tu celular desde Banklite.</p>
-        <ul class="soon-list">
-            <li>Servicios públicos, internet y administración</li>
-            <li>Recargas de celular</li>
-            <li>Comprobante en PDF de cada pago</li>
-        </ul>
-        <div class="modal-actions">
-            <a class="btn soft" href="dashboard.html">Volver al inicio</a>
-            <a class="btn primary" href="transferir.html">Transferir</a>
+    <main class="movement-page payments-page" id="paymentsPage">
+
+        <div class="page-title movement-title">
+            <div>
+                <span class="eyebrow">Pagos y recargas</span>
+                <h1>Paga tus cuentas</h1>
+                <p>Servicios públicos, internet, administración y recargas desde un solo lugar, sin costo.</p>
+            </div>
+            <div class="pay-balance">
+                <span>Saldo disponible</span>
+                <strong id="payAvailable">$ 0</strong>
+            </div>
         </div>
+
+        <div class="pay-tabs" role="tablist" aria-label="Tipo de pago">
+            <button type="button" class="pay-tab active" role="tab" aria-selected="true" aria-controls="tabBills" id="tabBillsBtn" data-tab="tabBills">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2v20l3-2 3 2 2-2 2 2 3-2 3 2V2l-3 2-3-2-2 2-2-2-3 2Z"/><path d="M8 9h8M8 13h6"/></svg>
+                Pagar facturas
+            </button>
+            <button type="button" class="pay-tab" role="tab" aria-selected="false" aria-controls="tabRecharge" id="tabRechargeBtn" data-tab="tabRecharge">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M11 18h2"/></svg>
+                Recargar celular
+            </button>
+        </div>
+
+
+        <!-- =================================================
+             FACTURAS
+        ================================================== -->
+
+        <section class="pay-panel" id="tabBills" role="tabpanel" aria-labelledby="tabBillsBtn">
+
+            <div class="pay-layout">
+
+                <form class="panel pay-form" id="billLookupForm" novalidate>
+                    <div class="panel-top"><b>1. Elige el servicio</b></div>
+                    <div class="service-picker" id="servicePicker" role="radiogroup" aria-label="Servicio"></div>
+
+                    <div class="form-stack">
+                        <label>2. Empresa
+                            <select id="billCompany"></select>
+                        </label>
+                        <label>3. Número de contrato o referencia
+                            <input id="billReference" inputmode="numeric" maxlength="14" autocomplete="off" placeholder="Aparece en tu factura">
+                        </label>
+                        <button class="btn primary full" type="submit">Consultar factura</button>
+                    </div>
+
+                    <!-- Resultado de la consulta -->
+                    <div class="invoice-card" id="invoiceCard" hidden>
+                        <div class="invoice-head">
+                            <span class="pocket-icon" id="invoiceIcon"></span>
+                            <div>
+                                <strong id="invoiceCompany">Empresa</strong>
+                                <small id="invoiceRef">Ref.</small>
+                            </div>
+                            <span class="panel-chip" id="invoiceStatus">Pendiente</span>
+                        </div>
+                        <div class="invoice-rows">
+                            <div><span>Periodo</span><strong id="invoicePeriod">-</strong></div>
+                            <div><span>Fecha límite de pago</span><strong id="invoiceDue">-</strong></div>
+                            <div class="invoice-total"><span>Total a pagar</span><strong id="invoiceAmount">$ 0</strong></div>
+                        </div>
+                        <p class="pay-demo-note">Factura de demostración: Banklite no está conectado a las empresas reales. El pago sí se descuenta de tu saldo.</p>
+                        <label class="save-contact-check invoice-save" id="invoiceSaveBox">
+                            <input type="checkbox" id="invoiceSave">
+                            <span><b>Inscribir esta factura</b><small>Para pagarla con un toque el próximo mes.</small></span>
+                        </label>
+                        <button class="btn primary full" type="button" id="payInvoice">Pagar</button>
+                    </div>
+                </form>
+
+                <div class="pay-side">
+                    <div class="panel">
+                        <div class="panel-top"><b>Facturas inscritas</b><span class="panel-chip" id="billsCount">0</span></div>
+                        <div id="savedBills"></div>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-top"><b>Últimos pagos</b><a class="text-btn" href="movimientos.html">Ver todos</a></div>
+                        <div id="lastBills"></div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+
+        <!-- =================================================
+             RECARGAS
+        ================================================== -->
+
+        <section class="pay-panel" id="tabRecharge" role="tabpanel" aria-labelledby="tabRechargeBtn" hidden>
+
+            <div class="pay-layout">
+
+                <form class="panel pay-form" id="rechargePageForm" novalidate>
+                    <div class="panel-top"><b>1. Operador</b></div>
+                    <div class="operator-picker" id="operatorPicker" role="radiogroup" aria-label="Operador"></div>
+
+                    <div class="form-stack">
+                        <label>2. Número celular
+                            <input id="rcNumber" type="tel" inputmode="numeric" maxlength="10" autocomplete="off" placeholder="300 000 0000">
+                        </label>
+                        <label>3. Tipo de recarga
+                            <select id="rcType">
+                                <option>Recarga de saldo</option>
+                                <option>Paquete de datos</option>
+                                <option>Paquete de minutos</option>
+                                <option>Todo incluido</option>
+                            </select>
+                        </label>
+                        <label>4. Valor
+                            <input id="rcAmount" type="text" inputmode="numeric" autocomplete="off" placeholder="0">
+                            <small class="pay-hint">De $1.000 a $500.000.</small>
+                        </label>
+                        <div class="amount-chips" id="rcChips">
+                            <button type="button" data-rc="5000">$5.000</button>
+                            <button type="button" data-rc="10000">$10.000</button>
+                            <button type="button" data-rc="20000">$20.000</button>
+                            <button type="button" data-rc="50000">$50.000</button>
+                        </div>
+                        <button class="btn primary full" type="submit">Recargar</button>
+                    </div>
+                </form>
+
+                <div class="pay-side">
+                    <div class="panel">
+                        <div class="panel-top"><b>Números recientes</b></div>
+                        <div id="recentNumbers"></div>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-top"><b>Últimas recargas</b><a class="text-btn" href="movimientos.html">Ver todas</a></div>
+                        <div id="lastRecharges"></div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
     </main>
 
+
+    <!-- Pago exitoso -->
+    <div id="paySuccessModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="paySuccessTitle">
+        <div class="modal-card success-card">
+            <span class="success-icon" aria-hidden="true">✓</span>
+            <span class="eyebrow">Operación exitosa</span>
+            <h2 id="paySuccessTitle">Pago realizado</h2>
+            <div id="paySuccessContent" class="receipt"></div>
+            <button class="btn soft full receipt-download" type="button" id="payReceipt">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+                Descargar comprobante (PDF)
+            </button>
+            <div class="modal-actions">
+                <a class="btn soft" href="dashboard.html">Ir al inicio</a>
+                <button class="btn primary" type="button" data-close>Hacer otro pago</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="confirmModal" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle" aria-describedby="confirmText">
+        <div class="modal-card">
+            <span class="modal-icon is-alert" aria-hidden="true">!</span>
+            <h2 id="confirmTitle">¿Estás seguro?</h2>
+            <p id="confirmText"></p>
+            <div class="modal-actions">
+                <button class="btn soft" data-close type="button">Cancelar</button>
+                <button class="btn primary" id="confirmAccept" type="button">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="genericModal" role="dialog" aria-modal="true" aria-labelledby="genericTitle" aria-describedby="genericText">
+        <div class="modal-card">
+            <button class="modal-close" data-close type="button" aria-label="Cerrar">×</button>
+            <span class="modal-icon" aria-hidden="true">i</span>
+            <h2 id="genericTitle">Banklite</h2>
+            <p id="genericText"></p>
+            <button class="btn primary full" data-close type="button">Entendido</button>
+        </div>
+    </div>
+
     <script src="java.js"></script>
+    <script src="api.js"></script>
+    <script src="comprobantes.js"></script>
+    <script src="pagos.js"></script>
 
 </body>
 

@@ -268,7 +268,7 @@
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 2v20l3-2 3 2 2-2 2 2 3-2 3 2V2l-3 2-3-2-2 2-2-2-3 2Z"/><path d="M8 9h8M8 13h6"/></svg>
                         </span>
                         <b>Pagos y recargas</b>
-                        <small>Próximamente</small>
+                        <small>Facturas y celular</small>
                     </a>
                 </div>
 
@@ -398,7 +398,7 @@
 
 
             <!-- =================================================
-                 SUSCRIPCIONES Y METAS: sin backend todavía
+                 SUSCRIPCIONES (card-service) Y METAS DE AHORRO (savings-service)
             ================================================== -->
 
             <section class="subs-section" id="suscripciones-vista" data-view="suscripciones">
@@ -435,9 +435,14 @@
                         <h2>Mis metas</h2>
                     </div>
                 </div>
-                <div class="panel soon-panel" id="ahorro">
-                    <span class="soon-chip">Próximamente</span>
-                    <p>Pronto podrás crear metas de ahorro y separar dinero para cada una.</p>
+                <div class="panel goals" id="ahorro" aria-labelledby="goalsTitle">
+                    <div class="panel-top">
+                        <b id="goalsTitle">Tus metas de ahorro</b>
+                        <button class="text-btn" id="newGoal" type="button">+ Nueva meta</button>
+                    </div>
+                    <div id="goalsSummary"></div>
+                    <div id="goalsList"><p class="pay-empty">Cargando…</p></div>
+                    <p class="goal-tip-box" id="goalTip"></p>
                 </div>
             </section>
 
@@ -452,6 +457,52 @@
 
     
     <!-- Cambiar clave: código por correo o WhatsApp (POST /auth/password-recovery/*) -->
+    <!-- Nueva meta de ahorro -->
+    <div class="modal" id="goalModal" role="dialog" aria-modal="true" aria-labelledby="goalModalTitle">
+        <div class="modal-card">
+            <button class="modal-close" data-close type="button" aria-label="Cerrar">×</button>
+            <span class="eyebrow">Ahorro</span>
+            <h2 id="goalModalTitle">Nueva meta</h2>
+            <form id="goalForm" class="form-stack">
+                <label>Nombre de la meta
+                    <input id="goalName" required maxlength="40" placeholder="Ej. Viaje a Cartagena">
+                </label>
+                <label>Monto objetivo
+                    <input id="goalTarget" type="number" min="10000" step="1000" inputmode="numeric" required placeholder="0">
+                </label>
+                <label>Monto inicial
+                    <input id="goalSaved" type="number" min="0" step="1000" inputmode="numeric" value="0">
+                </label>
+                <fieldset class="goal-icon-field">
+                    <legend>Elige un ícono</legend>
+                    <div class="goal-icon-picker" id="goalIconPicker"></div>
+                </fieldset>
+                <label><span>Fecha límite <small>(opcional)</small></span>
+                    <input id="goalDate" type="date">
+                </label>
+                <button class="btn primary full" type="submit">Crear meta</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Abonar a una meta -->
+    <div class="modal" id="goalDepositModal" role="dialog" aria-modal="true" aria-labelledby="goalDepositTitle">
+        <div class="modal-card">
+            <button class="modal-close" data-close type="button" aria-label="Cerrar">×</button>
+            <span class="eyebrow">Ahorro</span>
+            <h2 id="goalDepositTitle">Abonar a <span id="goalDepositName">tu meta</span></h2>
+            <p class="modal-hint">Te faltan <b id="goalDepositMissing">$0</b> para cumplirla. El dinero se descuenta de tu saldo disponible.</p>
+            <form id="goalDepositForm" class="form-stack">
+                <input type="hidden" id="goalDepositId">
+                <label>Monto a abonar
+                    <input id="goalDepositAmount" type="number" min="1000" step="1000" inputmode="numeric" required placeholder="0">
+                </label>
+                <div class="goal-quick" id="goalQuick" aria-label="Montos rápidos"></div>
+                <button class="btn primary full" type="submit">Abonar</button>
+            </form>
+        </div>
+    </div>
+
     <div class="modal" id="pinModal" role="dialog" aria-modal="true" aria-labelledby="pinModalTitle">
         <div class="modal-card flow-box">
             <button class="modal-close" data-close type="button" aria-label="Cerrar">×</button>
@@ -764,6 +815,7 @@
     <script src="dynamic-key.js"></script>
     <script src="dashboard.js"></script>
     <script src="subscriptions.js"></script>
+    <script src="metas.js"></script>
 
 </body>
 

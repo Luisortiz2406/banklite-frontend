@@ -91,21 +91,35 @@
     </main>
 
 
-    <!-- Detalle -->
-    <div id="movementModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
-        <div class="modal-card">
+    <!-- Comprobante del movimiento (estilo tiquete) -->
+    <div id="movementModal" class="modal ticket-modal" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+        <div class="ticket" id="ticket">
             <button class="modal-close" type="button" aria-label="Cerrar">×</button>
-            <span class="modal-icon" id="detailIcon" aria-hidden="true">↔</span>
-            <span class="eyebrow">Detalle de operación</span>
-            <h2 id="detailTitle">Movimiento</h2>
-            <div class="confirm-box" id="detailBody"></div>
-            <div class="modal-actions">
-                <button class="btn soft" id="detailReceipt" type="button">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
-                    Comprobante
-                </button>
-                <button class="btn primary" id="detailOk" type="button">Cerrar</button>
+            <div class="ticket-head">
+                <span class="logo" aria-hidden="true">B</span>
+                <span>banklite</span>
+                <span class="ticket-badge">Comprobante</span>
             </div>
+            <span class="ticket-check" id="detailIcon" aria-hidden="true">✓</span>
+            <h2 id="detailTitle">¡Envío exitoso!</h2>
+            <p class="ticket-sub" id="detailSub"></p>
+            <strong class="ticket-amount" id="detailAmount">$ 0</strong>
+            <dl class="ticket-rows" id="detailBody"></dl>
+            <div class="ticket-ref">
+                <span>Referencia</span>
+                <b id="detailRef">-</b>
+            </div>
+            <div class="ticket-actions">
+                <button class="btn soft" id="detailShare" type="button">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></svg>
+                    Compartir
+                </button>
+                <button class="btn primary" id="detailReceipt" type="button">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+                    Descargar PDF
+                </button>
+            </div>
+            <button class="ticket-done" id="detailOk" type="button">Listo</button>
         </div>
     </div>
 

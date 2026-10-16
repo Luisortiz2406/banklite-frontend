@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#26474E">
-    <title>Pagar con QR | Banklite</title>
+    <title>Cobrar y pagar con QR | Banklite</title>
 
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%232CCED2'/%3E%3Ctext x='32' y='44' font-family='Arial' font-size='34' font-weight='800' text-anchor='middle' fill='%2326474E'%3EB%3C/text%3E%3C/svg%3E">
 
@@ -28,27 +28,226 @@
     </header>
 
 
-    <!-- Esta función todavía no tiene servicio en el backend: no se muestran datos de ejemplo. -->
-    <main class="panel soon-page">
-        <span class="soon-chip">Próximamente</span>
-        <span class="modal-icon" aria-hidden="true">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h3v3h-3zM18 18h3v3h-3zM18 14h3M14 18v3"/></svg>
-        </span>
-        <span class="eyebrow">Paga sin efectivo</span>
-        <h1>Pagar y cobrar con QR</h1>
-        <p>Muy pronto podrás pagar escaneando un código y generar el tuyo para que te paguen.</p>
-        <ul class="soon-list">
-            <li>Pagar escaneando un QR</li>
-            <li>Cobrar con tu propio código</li>
-            <li>Comprobante de cada pago</li>
-        </ul>
-        <div class="modal-actions">
-            <a class="btn soft" href="dashboard.html">Volver al inicio</a>
-            <a class="btn primary" href="transferir.html">Transferir</a>
+
+    <main class="movement-page qr-page" id="qrPage">
+
+        <div class="page-title movement-title">
+            <div>
+                <span class="eyebrow">Código QR</span>
+                <h1>Cobra y paga con QR</h1>
+                <p>Muestra tu QR con tu llave Bre-B o tu cuenta para que te paguen, o escanea uno para pagar en segundos desde tu cuenta Banklite.</p>
+            </div>
+            <div class="pay-balance">
+                <span>Saldo disponible</span>
+                <strong id="qrAvailable">$ 0</strong>
+            </div>
         </div>
+
+        <div class="pay-tabs" role="tablist" aria-label="Cobrar o pagar">
+            <button type="button" class="pay-tab active" role="tab" aria-selected="true" aria-controls="tabCharge" id="tabChargeBtn" data-qr-tab="tabCharge">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3"/></svg>
+                Cobrar con mi QR
+            </button>
+            <button type="button" class="pay-tab" role="tab" aria-selected="false" aria-controls="tabPay" id="tabPayBtn" data-qr-tab="tabPay">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 12h10"/></svg>
+                Pagar escaneando
+            </button>
+        </div>
+
+
+        <!-- =================================================
+             COBRAR
+        ================================================== -->
+
+        <section class="pay-panel" id="tabCharge" role="tabpanel" aria-labelledby="tabChargeBtn">
+            <div class="pay-layout">
+
+                <form class="panel pay-form" id="qrChargeForm" novalidate>
+                    <div class="panel-top"><b>Arma tu código de cobro</b></div>
+
+                    <div class="qr-no-keys" id="qrNoKeys" hidden>
+                        <strong>Primero abre tu cuenta Banklite</strong>
+                        <p>Tu QR lleva el número de tu cuenta para que el dinero te llegue directo.</p>
+                        <a class="btn primary" href="dashboard.html">Ir al inicio</a>
+                    </div>
+
+                    <div class="form-stack" id="qrChargeFields">
+                        <label>Llave o cuenta con la que vas a recibir
+                            <select id="qrKey"></select>
+                        </label>
+                        <label>Valor a cobrar (opcional)
+                            <input id="qrAmount" inputmode="numeric" autocomplete="off" placeholder="Déjalo vacío para que quien paga escriba el valor">
+                        </label>
+                        <div class="amount-chips" id="qrChips">
+                            <button type="button" data-qr-amount="10000">$10.000</button>
+                            <button type="button" data-qr-amount="35000">$35.000</button>
+                            <button type="button" data-qr-amount="100000">$100.000</button>
+                            <button type="button" data-qr-amount="0">Sin valor</button>
+                        </div>
+                        <label>Concepto (opcional)
+                            <input id="qrNote" maxlength="40" autocomplete="off" placeholder="Ej. Almuerzo del viernes">
+                        </label>
+                        <p class="qr-form-hint">El código se actualiza solo mientras escribes.</p>
+                        <button type="submit" class="btn primary full" id="qrAccept">Aceptar</button>
+                    </div>
+                </form>
+
+                <div class="qr-card" id="qrCard" aria-labelledby="qrCardName">
+                    <div class="qr-card-head">
+                        <span class="logo" aria-hidden="true">B</span>
+                        <span>banklite</span>
+                        <span class="breb-chip">QR</span>
+                    </div>
+                    <div class="qr-box" id="qrBox" role="img" aria-label="Tu código QR de cobro"></div>
+                    <strong id="qrCardName">-</strong>
+                    <span id="qrCardKey">-</span>
+                    <b class="qr-card-amount" id="qrCardAmount">Valor libre</b>
+                    <small id="qrCardNote"></small>
+                    <p class="qr-present-hint" id="qrPresentHint" hidden>Escanea este código con tu app Banklite para pagar.</p>
+                    <div class="qr-card-actions">
+                        <button type="button" class="btn primary" id="qrDownload">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+                            Descargar QR
+                        </button>
+                        <button type="button" class="btn soft" id="qrCopy">Copiar</button>
+                        <button type="button" class="btn soft" id="qrPresentClose" hidden>Cerrar</button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+
+        <!-- =================================================
+             PAGAR
+        ================================================== -->
+
+        <section class="pay-panel" id="tabPay" role="tabpanel" aria-labelledby="tabPayBtn" hidden>
+            <div class="pay-layout">
+
+                <div class="panel">
+                    <div class="panel-top"><b>Escanea el código</b></div>
+
+                    <div class="qr-scanner" id="qrScanner">
+                        <video id="qrVideo" playsinline muted></video>
+                        <div class="qr-scanner-idle" id="qrIdle">
+                            <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><rect x="7" y="7" width="10" height="10" rx="1"/></svg>
+                            <p>Abre la cámara y apunta al código QR, o sube una foto del código.</p>
+                        </div>
+                        <div class="qr-frame" aria-hidden="true"><span></span></div>
+                    </div>
+                    <p class="qr-status" id="qrStatus" aria-live="polite"></p>
+
+                    <div class="qr-scan-actions">
+                        <button type="button" class="btn primary" id="qrCameraBtn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z"/><circle cx="12" cy="13" r="3"/></svg>
+                            <span>Abrir cámara</span>
+                        </button>
+                        <label class="btn soft qr-upload">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></svg>
+                            Subir foto del QR
+                            <input type="file" id="qrFile" accept="image/*" class="visually-hidden">
+                        </label>
+                    </div>
+                </div>
+
+                <div class="pay-side">
+                    <div class="panel">
+                        <div class="panel-top"><b>Comercios de prueba</b></div>
+                        <p class="qr-side-text">¿No tienes otro celular a la mano? Escanea estos QR con tu cámara o toca "Pagar". Son comercios de prueba con cuenta real en Banklite: el pago sí se descuenta de tu saldo.</p>
+                        <div id="qrStores" class="qr-stores"></div>
+                    </div>
+                    <div class="panel">
+                        <div class="panel-top"><b>Últimos pagos con QR</b><a class="text-btn" href="movimientos.html">Ver todos</a></div>
+                        <div id="qrHistory"></div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
     </main>
 
+
+    <!-- Confirmar pago -->
+    <div class="modal" id="qrPayModal" role="dialog" aria-modal="true" aria-labelledby="qrPayTitle">
+        <form class="modal-card qr-pay-card" id="qrPayForm" novalidate>
+            <button class="modal-close" data-close type="button" aria-label="Cerrar">×</button>
+            <span class="eyebrow">Pago con QR</span>
+            <h2 id="qrPayTitle">Vas a pagarle a</h2>
+            <div class="breb-result is-found qr-payee">
+                <span class="recipient-avatar" id="qrPayInitials">?</span>
+                <div>
+                    <small id="qrPayKind">Cliente</small>
+                    <strong id="qrPayName">-</strong>
+                    <span id="qrPayEntity">-</span>
+                </div>
+                <span class="breb-check" aria-hidden="true">✓</span>
+            </div>
+            <label class="qr-pay-field">Valor
+                <div class="amount-box qr-pay-amount">
+                    <span>$</span>
+                    <input id="qrPayAmount" inputmode="numeric" autocomplete="off" placeholder="0">
+                </div>
+            </label>
+            <small class="qr-pay-fixed" id="qrPayFixed" hidden>Valor definido por quien cobra.</small>
+            <label class="qr-pay-field">Concepto
+                <input id="qrPayNote" maxlength="60" autocomplete="off" placeholder="Pago con QR">
+            </label>
+            <p class="qr-pay-balance">Saldo disponible: <b id="qrPayBalance">$ 0</b></p>
+            <div class="modal-actions">
+                <button class="btn soft" data-close type="button">Cancelar</button>
+                <button class="btn primary" type="submit" id="qrPaySubmit">Pagar</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Pago exitoso -->
+    <div id="qrSuccessModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="qrSuccessTitle">
+        <div class="modal-card success-card">
+            <span class="success-icon" aria-hidden="true">✓</span>
+            <span class="eyebrow">Operación exitosa</span>
+            <h2 id="qrSuccessTitle">Pago realizado</h2>
+            <div id="qrSuccessContent" class="receipt"></div>
+            <button class="btn soft full receipt-download" type="button" id="qrReceipt">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+                Descargar comprobante (PDF)
+            </button>
+            <div class="modal-actions">
+                <a class="btn soft" href="dashboard.html">Ir al inicio</a>
+                <button class="btn primary" type="button" data-close>Listo</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="confirmModal" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle" aria-describedby="confirmText">
+        <div class="modal-card">
+            <span class="modal-icon is-alert" aria-hidden="true">!</span>
+            <h2 id="confirmTitle">¿Estás seguro?</h2>
+            <p id="confirmText"></p>
+            <div class="modal-actions">
+                <button class="btn soft" data-close type="button">Cancelar</button>
+                <button class="btn primary" id="confirmAccept" type="button">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="genericModal" role="dialog" aria-modal="true" aria-labelledby="genericTitle" aria-describedby="genericText">
+        <div class="modal-card">
+            <button class="modal-close" data-close type="button" aria-label="Cerrar">×</button>
+            <span class="modal-icon" aria-hidden="true">i</span>
+            <h2 id="genericTitle">Banklite</h2>
+            <p id="genericText"></p>
+            <button class="btn primary full" data-close type="button">Entendido</button>
+        </div>
+    </div>
+
+    <script src="qr-lib.js"></script>
     <script src="java.js"></script>
+    <script src="api.js"></script>
+    <script src="comprobantes.js"></script>
+    <script src="breb.js"></script>
+    <script src="qr.js"></script>
 
 </body>
 

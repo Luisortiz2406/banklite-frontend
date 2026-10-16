@@ -15438,3 +15438,290 @@ span.account-type-chip:hover { box-shadow: none; }
 .sub-charge.is-rejected b { color: var(--text-muted); text-decoration: line-through; }
 
 .subs-panel .sub-info small b { color: #D64545; }
+
+/* Pagos y recargas: avisos de la factura de demostración y del rango de recarga */
+.pay-demo-note,
+.pay-hint {
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    font-weight: 500;
+    line-height: 1.45;
+}
+
+.pay-demo-note {
+    margin: 12px 0 0;
+}
+
+
+/* Cobrar con QR: después de "Aceptar" se muestra solo la tarjeta, en toda la
+   pantalla. z-index por debajo de los modales (2000) y del aviso de inactividad. */
+.qr-card.is-presenting {
+    position: fixed;
+    inset: 0;
+    z-index: 1900;
+    align-content: center;
+    gap: 6px;
+    padding: max(24px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom));
+    border-radius: 0;
+    overflow-y: auto;
+}
+
+.qr-card.is-presenting .qr-card-head {
+    max-width: 520px;
+}
+
+/* El QR se adapta al ancho y al alto: el resto de la tarjeta ocupa ~380px. */
+.qr-card.is-presenting .qr-box {
+    width: clamp(180px, min(86vw, 100vh - 380px), 460px);
+    width: clamp(180px, min(86vw, 100dvh - 380px), 460px);
+    margin-bottom: 8px;
+}
+
+.qr-card.is-presenting .qr-card-head {
+    margin-bottom: 8px;
+}
+
+.qr-card.is-presenting .qr-box canvas {
+    image-rendering: pixelated;
+}
+
+.qr-card.is-presenting > strong {
+    font-size: 1.35rem;
+}
+
+.qr-card.is-presenting #qrCardKey {
+    font-size: 0.95rem;
+}
+
+.qr-card.is-presenting .qr-card-amount {
+    font-size: clamp(1.8rem, 6vmin, 2.6rem);
+}
+
+.qr-card.is-presenting small {
+    font-size: 0.9rem;
+}
+
+.qr-card.is-presenting #qrCopy {
+    display: none;
+}
+
+.qr-present-hint {
+    margin: 8px 0 0;
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 0.86rem;
+}
+
+body.qr-presenting {
+    overflow: hidden;
+}
+
+
+/* =========================================================
+   COMPROBANTE DE UN MOVIMIENTO (movimientos.html), estilo tiquete
+   ========================================================= */
+
+/* Si el recibo no cabe, se desplaza la capa (no el recibo): el borde dentado queda al final. */
+.ticket-modal {
+    align-items: flex-start;
+    overflow-y: auto;
+    padding: 16px;
+}
+
+.ticket-modal .ticket {
+    position: relative;
+    flex: 0 0 auto;
+    width: min(100%, 420px);
+    margin: auto;
+    padding: 20px 22px 18px;
+    border-radius: 22px 22px 6px 6px;
+    background: var(--white);
+    box-shadow: var(--shadow);
+    text-align: center;
+    /* Borde inferior dentado, como un recibo */
+    -webkit-mask: radial-gradient(9px at 50% 100%, #0000 98%, #000) 50% / 22px 100% repeat-x;
+            mask: radial-gradient(9px at 50% 100%, #0000 98%, #000) 50% / 22px 100% repeat-x;
+    padding-bottom: 30px;
+}
+
+.ticket-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 18px;
+    color: var(--dark);
+    font-family: "Manrope", sans-serif;
+    font-weight: 800;
+}
+
+.ticket-head .logo {
+    width: 28px;
+    height: 28px;
+    display: grid;
+    place-items: center;
+    border-radius: 8px;
+    background: var(--primary);
+    color: var(--on-primary);
+    font-size: 0.85rem;
+}
+
+.ticket-badge {
+    margin-right: 34px;
+    margin-left: auto;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: var(--primary-soft);
+    color: var(--primary-text);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.ticket-check {
+    width: 58px;
+    height: 58px;
+    display: inline-grid;
+    place-items: center;
+    margin-bottom: 10px;
+    border-radius: 50%;
+    background: var(--brand);
+    color: var(--primary);
+    font-size: 1.6rem;
+    font-weight: 800;
+    box-shadow: 0 0 0 7px var(--primary-soft);
+}
+
+.ticket-check.is-in {
+    background: var(--success);
+    color: #ffffff;
+}
+
+.ticket h2 {
+    margin: 4px 0 2px;
+    color: var(--dark);
+    font-family: "Manrope", sans-serif;
+    font-size: 1.35rem;
+}
+
+.ticket-sub {
+    margin: 0;
+    color: var(--text-light);
+    font-size: 0.8rem;
+}
+
+.ticket-amount {
+    display: block;
+    margin: 12px 0 16px;
+    color: var(--dark);
+    font-family: "Manrope", sans-serif;
+    font-size: clamp(1.8rem, 7vw, 2.3rem);
+    font-weight: 800;
+}
+
+.ticket-amount.is-in {
+    color: var(--success);
+}
+
+.ticket-rows {
+    display: grid;
+    margin: 0;
+    padding: 4px 0;
+    border-top: 1px dashed var(--border);
+    border-bottom: 1px dashed var(--border);
+    text-align: left;
+}
+
+.ticket-rows > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 8px 0;
+    font-size: 0.8rem;
+}
+
+.ticket-rows > div + div {
+    border-top: 1px solid var(--border-light);
+}
+
+.ticket-rows dt {
+    flex: 0 0 auto;
+    color: var(--text-light);
+}
+
+.ticket-rows dd {
+    margin: 0;
+    color: var(--dark);
+    font-weight: 700;
+    text-align: right;
+    overflow-wrap: anywhere;
+}
+
+.ticket-rows dd.is-ok {
+    color: var(--success);
+}
+
+.ticket-ref {
+    display: grid;
+    gap: 2px;
+    margin: 14px 0 16px;
+    padding: 10px;
+    border-radius: 12px;
+    background: var(--surface-2);
+}
+
+.ticket-ref span {
+    color: var(--text-light);
+    font-size: 0.7rem;
+}
+
+.ticket-ref b {
+    color: var(--dark);
+    font-family: "Manrope", sans-serif;
+    font-size: 1rem;
+    letter-spacing: 0.12em;
+}
+
+.ticket-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.ticket-actions .btn {
+    min-height: 42px;
+    justify-content: center;
+    gap: 6px;
+    font-size: 0.78rem;
+}
+
+.ticket-done {
+    width: 100%;
+    margin-top: 10px;
+    padding: 8px;
+    border: 0;
+    background: transparent;
+    color: var(--primary-text);
+    font-size: 0.8rem;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+@media (max-width: 380px) {
+    .ticket-actions {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Mis puntos: selector de operador del canje de recarga */
+.key-field select {
+    width: 100%;
+    height: 46px;
+    padding: 0 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--white);
+    color: var(--text);
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 600;
+}

@@ -1,7 +1,9 @@
 // =========================================================
 // BANKLITE - MOVIMIENTOS (movimientos.html)
 // Datos reales: GET /ledger/accounts/:id/transactions (paginado),
-// /ledger/accounts/:id/balance y /statement (extracto PDF).
+// /ledger/accounts/:id/balance y /statement (extracto PDF). Al tocar un
+// movimiento se muestra su comprobante (estilo tiquete), enriquecido con lo que
+// saben transfer-service (destinatario) y payment-service (factura, recarga, QR).
 // =========================================================
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -13,12 +15,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const $ = id => document.getElementById(id);
     const PAGE_SIZE = 50;
 
-    const TYPE_LABELS = { transfer: 'Transferencia', deposit: 'Consignación', credit: 'Abono', debit: 'Cargo', reversal: 'Reverso', payment: 'Pago a comercio' };
+    const TYPE_LABELS = { transfer: 'Transferencia', deposit: 'Consignación', credit: 'Abono', debit: 'Cargo', reversal: 'Reverso', payment: 'Pago a comercio', reward: 'Canje de puntos', saving: 'Ahorro e inversión' };
+    // Las transferencias a otros bancos son cargos hacia la cuenta de compensación.
+    const typeLabel = m => (m.type === 'debit' && /^Transferencia a /.test(m.description || '') ? 'Transferencia a otro banco' : TYPE_LABELS[m.type]);
     const ACCOUNT_TYPES = { savings: 'Cuenta de ahorros', checking: 'Cuenta corriente' };
     const ICON_IN = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 7 7 17"/><path d="M17 17H7V7"/></svg>';
     const ICON_OUT = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg>';
 
-    const state = { account: null, kyc: null, items: [], page: 0, done: false, filter: 'all', selected: null };
+    const state = { account: null, kyc: null, items: [], page: 0, done: false, filter: 'all', selected: null, ticket: null };
     const container = $('fullMovements');
     const search = $('movementSearch');
     const modal = $('movementModal');
@@ -105,8 +109,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return state.items
             .map((m, index) => ({ m, index }))
             .filter(({ m }) => state.filter === 'all'
-                || (state.filter === 'transfer' ? m.type === 'transfer' : m.direction === state.filter))
-            .filter(({ m }) => !term || `${m.description || ''} ${TYPE_LABELS[m.type] || ''} ${m.counterpartyAccountLast4 || ''}`.toLowerCase().includes(term));
+                || (state.filter === 'transfer' ? m.type === 'transfer' || typeLabel(m) === 'Transferencia a otro banco' : m.direction === state.filter))
+            .filter(({ m }) => !term || `${m.description || ''} ${typeLabel(m) || ''} ${m.counterpartyAccountLast4 || ''}`.toLowerCase().includes(term));
     }
 
     function dayLabel(value) {
@@ -149,8 +153,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="movement-meta"><strong class="movement-amount ${incoming ? 'positive' : 'negative'}"></strong><time></time></span>
                     <span class="movement-chevron" aria-hidden="true">›</span>
                 </button>`;
-            entry.querySelector('.movement-info strong').textContent = m.description || TYPE_LABELS[m.type] || 'Movimiento';
-            entry.querySelector('.movement-info span').textContent = [TYPE_LABELS[m.type], m.counterpartyAccountLast4 ? `${m.type === 'payment' ? 'Comercio' : 'Cuenta'} ····${m.counterpartyAccountLast4}` : ''].filter(Boolean).join(' · ');
+            entry.querySelector('.movement-info strong').textContent = m.description || typeLabel(m) || 'Movimiento';
+            entry.querySelector('.movement-info span').textContent = [typeLabel(m), m.counterpartyAccountLast4 ? `${m.type === 'payment' ? 'Comercio' : 'Cuenta'} ····${m.counterpartyAccountLast4}` : ''].filter(Boolean).join(' · ');
             entry.querySelector('.movement-amount').textContent = `${incoming ? '+' : '−'}${money(m.amount, m.currency)}`;
             entry.querySelector('time').textContent = formatDate(m.createdAt, { hour: '2-digit', minute: '2-digit' });
             container.appendChild(entry);
@@ -168,43 +172,183 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     search.addEventListener('input', render);
 
-    // ---------- detalle y comprobante ----------
-    container.addEventListener('click', event => {
+    // ---------- comprobante del movimiento (estilo tiquete) ----------
+    // El ledger no guarda nombres: el destinatario, la factura o la recarga se
+    // toman de transfer-service y payment-service (solo lo que hizo el cliente).
+    let extrasPromise = null;
+    function loadExtras() {
+        if (!extrasPromise) {
+            const byLedger = list => new Map((list || []).filter(x => x.ledgerTransactionId).map(x => [x.ledgerTransactionId, x]));
+            extrasPromise = Promise.all([
+                BlApi.authed(config.transferApi, 'GET', '/transfers').then(byLedger).catch(() => new Map()),
+                BlApi.authed(config.paymentApi || config.transferApi, 'GET', '/payments').then(byLedger).catch(() => new Map()),
+            ]).then(([transfers, payments]) => ({ transfers, payments }));
+        }
+        return extrasPromise;
+    }
+
+    const formatPhone = n => String(n || '').replace(/^(\d{3})(\d{3})(\d{4})$/, '$1 $2 $3');
+    const ownProduct = () => `${ACCOUNT_TYPES[state.account?.accountType] || 'Cuenta'} ···· ${String(state.account?.accountNumber || '').slice(-4)}`;
+    const last4 = m => (m.counterpartyAccountLast4 ? `···· ${m.counterpartyAccountLast4}` : null);
+    // La llave del destinatario se muestra a medias, como en Bre-B (la @llave sí completa).
+    function maskKey(key) {
+        const value = String(key || '');
+        if (value.startsWith('@')) return value;
+        if (value.includes('@')) { const [user, domain] = value.split('@'); return `${user.slice(0, 2)}•••@${domain}`; }
+        if (/^3\d{9}$/.test(value)) return `${value.slice(0, 3)} ••• ${value.slice(-4)}`;
+        return `••• ${value.slice(-4)}`;
+    }
+
+    // Título, subtítulo y filas del comprobante según el tipo de operación.
+    function ticketOf(m, extras) {
+        const incoming = m.direction === 'in';
+        const transfer = extras.transfers.get(m.transactionId);
+        const payment = extras.payments.get(m.transactionId);
+        const isQR = /^Pago QR/.test(m.description || '');
+        const concept = String(m.description || '').replace(/^Pago QR · /, '');
+        let title; let sub; let rows = [];
+
+        if (payment?.kind === 'bill') {
+            title = '¡Factura pagada!';
+            sub = `${payment.serviceName || 'Servicio'} · ${payment.billerName}`;
+            rows = [['Empresa', payment.billerName], ['Servicio', payment.serviceName], ['Referencia de pago', payment.reference]];
+        } else if (payment?.kind === 'topup') {
+            title = '¡Recarga exitosa!';
+            sub = `${payment.billerName} · ${payment.topupType || 'Recarga'}`;
+            rows = [['Operador', payment.billerName], ['Celular', formatPhone(payment.reference)], ['Tipo de recarga', payment.topupType]];
+        } else if (payment?.kind === 'qr') {
+            title = '¡Pago exitoso!';
+            sub = 'Pago con QR';
+            rows = [['Comercio', payment.billerName], ['Concepto', concept.replace(`${payment.billerName} · `, '')]];
+        } else if (m.type === 'debit' && /^Transferencia a /.test(m.description || '')) {
+            title = '¡Envío exitoso!';
+            sub = 'Transferencia a otro banco';
+            const bank = transfer?.destinationBank || (m.description.match(/^Transferencia a ([^·]+) ·/) || [])[1]?.trim();
+            rows = [
+                ['Para', transfer?.recipientName],
+                ['Entidad', bank],
+                [transfer?.destinationAccountType ? `Cuenta de ${transfer.destinationAccountType.toLowerCase()}` : /^(Nequi|DaviPlata)$/.test(bank || '') ? 'Celular' : 'Cuenta', transfer ? `···· ${transfer.destinationAccountLast4}` : null],
+                ['Concepto', transfer?.description && transfer.description !== 'Transferencia' ? transfer.description : null],
+            ];
+        } else if (m.type === 'transfer' && !incoming) {
+            title = '¡Envío exitoso!';
+            sub = isQR ? 'Pago con QR' : transfer?.destinationKey ? 'Envío con llave Bre-B' : 'Transferencia a Banklite';
+            rows = [
+                ['Para', transfer?.recipientName || 'Cliente Banklite'],
+                ['Entidad', 'Banklite'],
+                transfer?.destinationKey ? ['Llave Bre-B', maskKey(transfer.destinationKey)] : ['Cuenta Banklite', last4(m)],
+                ['Concepto', concept || 'Transferencia'],
+            ];
+        } else if (m.type === 'transfer') {
+            title = '¡Te llegó plata!';
+            sub = isQR ? 'Pago recibido por QR' : 'Transferencia recibida';
+            rows = [['De', 'Cliente Banklite'], ['Cuenta de origen', last4(m)], ['Concepto', concept || 'Transferencia']];
+        } else if (m.type === 'payment') {
+            title = '¡Pago exitoso!';
+            sub = 'Pago a comercio';
+            rows = [['Comercio', last4(m) ? `Comercio ${last4(m)}` : null], ['Concepto', m.description]];
+        } else if (m.type === 'reward') {
+            title = '¡Canje exitoso!';
+            sub = 'Puntos Banklite';
+            rows = [['Premio', String(m.description || '').replace(/^Canje de Puntos Banklite · /, '')]];
+        } else if (m.type === 'saving') {
+            const desc = String(m.description || '');
+            title = incoming ? (desc.startsWith('Intereses') ? '¡Te pagamos intereses!' : 'Volvió a tu saldo') : 'Plata apartada';
+            sub = desc.split(' · ')[0];
+            rows = [['Detalle', desc.split(' · ').slice(1).join(' · ') || desc]];
+        } else if (m.type === 'deposit') {
+            title = '¡Consignación recibida!';
+            sub = 'Consignación';
+            rows = [['Concepto', m.description]];
+        } else if (m.type === 'credit') {
+            title = '¡Te abonaron plata!';
+            sub = 'Abono';
+            rows = [['Concepto', m.description]];
+        } else if (m.type === 'reversal') {
+            title = 'Reverso aplicado';
+            sub = incoming ? 'Te devolvimos el dinero' : 'Reverso';
+            rows = [['Concepto', m.description]];
+        } else {
+            title = 'Cargo aplicado';
+            sub = typeLabel(m) || 'Cargo';
+            rows = [['Concepto', m.description]];
+        }
+
+        rows.push(
+            ['Fecha y hora', formatDate(m.createdAt, { dateStyle: 'long', timeStyle: 'short' })],
+            [incoming ? 'Llegó a' : 'Salió de', ownProduct()],
+            ['Estado', 'Exitosa'],
+        );
+        return { title, sub, incoming, rows: rows.filter(([, value]) => value) };
+    }
+
+    function paintTicket(m, ticket) {
+        $('detailTitle').textContent = ticket.title;
+        $('detailSub').textContent = ticket.sub;
+        $('detailIcon').className = `ticket-check ${ticket.incoming ? 'is-in' : ''}`;
+        $('detailAmount').textContent = `${ticket.incoming ? '+' : '−'}${money(m.amount, m.currency)}`;
+        $('detailAmount').className = `ticket-amount ${ticket.incoming ? 'is-in' : ''}`;
+        $('detailRef').textContent = String(m.transactionId || '').slice(0, 8).toUpperCase();
+        $('detailRef').title = m.transactionId || '';
+        const body = $('detailBody');
+        body.replaceChildren();
+        ticket.rows.forEach(([label, value]) => {
+            const row = document.createElement('div');
+            row.innerHTML = '<dt></dt><dd></dd>';
+            row.querySelector('dt').textContent = label;
+            row.querySelector('dd').textContent = value;
+            if (label === 'Estado') row.querySelector('dd').className = 'is-ok';
+            body.appendChild(row);
+        });
+    }
+
+    container.addEventListener('click', async event => {
         const button = event.target.closest('[data-movement-index]');
         if (!button) return;
         const m = state.items[Number(button.dataset.movementIndex)];
         if (!m) return;
         state.selected = m;
-        const incoming = m.direction === 'in';
-        $('detailTitle').textContent = m.description || TYPE_LABELS[m.type] || 'Movimiento';
-        $('detailIcon').innerHTML = incoming ? ICON_IN : ICON_OUT;
-        $('detailIcon').className = `modal-icon movement-icon ${incoming ? 'income' : 'expense'}`;
-        const rows = [
-            ['Valor', `${incoming ? '+' : '−'}${money(m.amount, m.currency)}`, incoming ? 'movement-amount positive' : 'movement-amount negative'],
-            ['Tipo', TYPE_LABELS[m.type] || 'Movimiento'],
-            ['Descripción', m.description || 'Sin descripción'],
-            [incoming ? 'Desde' : 'Hacia', m.counterpartyAccountLast4 ? `${m.type === 'payment' ? 'Comercio' : 'Cuenta Banklite'} ····${m.counterpartyAccountLast4}` : '—'],
-            ['Fecha', formatDate(m.createdAt, { dateStyle: 'long', timeStyle: 'short' })],
-            ['N.º de operación', String(m.transactionId || '').slice(0, 8).toUpperCase()],
-            ['Estado', 'Aprobada', 'status-ok'],
-        ];
-        const body = $('detailBody');
-        body.replaceChildren();
-        rows.forEach(([title, value, cls]) => {
-            const row = document.createElement('div');
-            row.innerHTML = '<span></span><strong></strong>';
-            row.querySelector('span').textContent = title;
-            row.querySelector('strong').textContent = value;
-            if (cls) row.querySelector('strong').className = cls;
-            body.appendChild(row);
-        });
-        modal.classList.add('active');
+        // Primero lo que dice el ledger; al llegar los datos de transfer/payment se completa.
+        const empty = { transfers: new Map(), payments: new Map() };
+        state.ticket = ticketOf(m, empty);
+        paintTicket(m, state.ticket);
+        openModal('movementModal');
+        const extras = await loadExtras();
+        if (state.selected !== m) return;
+        state.ticket = ticketOf(m, extras);
+        paintTicket(m, state.ticket);
     });
-    modal.querySelectorAll('.modal-close, #detailOk').forEach(b => b.addEventListener('click', () => modal.classList.remove('active')));
+    const closeTicket = () => modal.classList.remove('active');
+    modal.querySelectorAll('.modal-close, #detailOk').forEach(b => b.addEventListener('click', closeTicket));
+    modal.addEventListener('click', event => { if (event.target === modal) closeTicket(); });
+
     $('detailReceipt').addEventListener('click', () => {
         if (!state.selected) return;
         downloadReceipt(state.selected, holder());
         toast('Comprobante descargado.', 'ok');
+    });
+
+    // Compartir: menú del sistema en el celular; si no hay, se copia el resumen.
+    $('detailShare').addEventListener('click', async () => {
+        const m = state.selected;
+        const ticket = state.ticket;
+        if (!m || !ticket) return;
+        const text = [
+            `Banklite · ${ticket.title}`,
+            `Valor: ${money(m.amount, m.currency)}`,
+            ...ticket.rows.filter(([label]) => label !== 'Salió de' && label !== 'Llegó a').map(([label, value]) => `${label}: ${value}`),
+            `Referencia: ${String(m.transactionId || '').slice(0, 8).toUpperCase()}`,
+        ].join('\n');
+        try {
+            if (navigator.share) {
+                await navigator.share({ title: `Comprobante Banklite · ${ticket.title}`, text });
+                return;
+            }
+            await navigator.clipboard.writeText(text);
+            toast('Comprobante copiado. Pégalo donde quieras compartirlo.', 'ok');
+        } catch (err) {
+            if (err?.name !== 'AbortError') toast('No se pudo compartir el comprobante.', 'err');
+        }
     });
 
     // ---------- CSV (lo cargado y filtrado) ----------
@@ -220,7 +364,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ...items.map(({ m }) => [
                 formatDate(m.createdAt, { dateStyle: 'short', timeStyle: 'short' }),
                 m.description || '',
-                TYPE_LABELS[m.type] || '',
+                typeLabel(m) || '',
                 m.counterpartyAccountLast4 ? `····${m.counterpartyAccountLast4}` : '',
                 (m.direction === 'in' ? 1 : -1) * (Number(m.amount) || 0),
                 m.currency,

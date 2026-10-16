@@ -28,27 +28,180 @@
     </header>
 
 
-    <!-- Esta función todavía no tiene servicio en el backend: no se muestran datos de ejemplo. -->
-    <main class="panel soon-page">
-        <span class="soon-chip">Próximamente</span>
-        <span class="modal-icon" aria-hidden="true">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></svg>
-        </span>
-        <span class="eyebrow">Ahorro e inversión</span>
-        <h1>Bolsillos y CDT</h1>
-        <p>Muy pronto podrás apartar plata en bolsillos e invertir en CDT desde tu cuenta Banklite.</p>
-        <ul class="soon-list">
-            <li>Bolsillos para separar tu plata por metas</li>
-            <li>CDT a plazo fijo abiertos 100% en línea</li>
-            <li>Todo conectado a tu saldo real</li>
-        </ul>
-        <div class="modal-actions">
-            <a class="btn soft" href="dashboard.html">Volver al inicio</a>
-            <a class="btn primary" href="transferir.html">Transferir</a>
+    <main class="movement-page savings-page" id="savingsPage">
+
+        <div class="page-title movement-title">
+            <div>
+                <span class="eyebrow">Ahorro e inversión</span>
+                <h1>Bolsillos y CDT</h1>
+                <p>Aparta plata para lo que quieras o inviértela a un plazo fijo y mira cuánto gana.</p>
+            </div>
         </div>
+
+
+        <!-- Resumen -->
+        <div class="movement-summary savings-summary">
+            <div class="summary-tile">
+                <span>Saldo disponible</span>
+                <strong id="savAvailable">$ 0</strong>
+            </div>
+            <div class="summary-tile">
+                <span>En bolsillos</span>
+                <strong id="savPockets">$ 0</strong>
+            </div>
+            <div class="summary-tile">
+                <span>Invertido en CDT</span>
+                <strong id="savCdts">$ 0</strong>
+            </div>
+            <div class="summary-tile">
+                <span>Intereses ganados</span>
+                <strong class="positive" id="savInterest">$ 0</strong>
+            </div>
+        </div>
+
+
+        <!-- =================================================
+             BOLSILLOS
+        ================================================== -->
+
+        <section class="savings-section" aria-labelledby="pocketsTitle">
+
+            <div class="section-heading savings-heading">
+                <div>
+                    <span class="eyebrow">Disponibles cuando quieras</span>
+                    <h2 id="pocketsTitle">Bolsillos</h2>
+                    <p>La plata que apartas deja de estar en tu saldo, gana <b id="pocketRateText">9% E.A.</b> y la puedes sacar en cualquier momento.</p>
+                </div>
+                <button class="btn primary" type="button" id="newPocket">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+                    Nuevo bolsillo
+                </button>
+            </div>
+
+            <div class="pocket-grid" id="pocketList"></div>
+
+        </section>
+
+
+        <!-- =================================================
+             CDT
+        ================================================== -->
+
+        <section class="savings-section" aria-labelledby="cdtTitle">
+
+            <div class="section-heading savings-heading">
+                <div>
+                    <span class="eyebrow">Inversión a plazo fijo</span>
+                    <h2 id="cdtTitle">CDT Banklite</h2>
+                    <p>Inviertes un monto por un tiempo fijo y al final recibes tu plata más los intereses. Mientras más largo el plazo, mejor la tasa.</p>
+                </div>
+            </div>
+
+            <div class="cdt-layout">
+
+                <!-- Simulador -->
+                <form class="panel cdt-simulator" id="cdtForm" novalidate>
+                    <div class="panel-top"><b>Simula y abre tu CDT</b></div>
+
+                    <label class="cdt-amount">¿Cuánto quieres invertir?
+                        <span class="amount-box">
+                            <span>$</span>
+                            <input id="cdtAmount" type="text" inputmode="numeric" autocomplete="off" placeholder="1.000.000">
+                        </span>
+                    </label>
+                    <small class="cdt-min" id="cdtMinText">Mínimo $ 500.000</small>
+
+                    <span class="cdt-label" id="cdtTermLabel">Plazo</span>
+                    <div class="term-options" id="cdtTerms" role="radiogroup" aria-labelledby="cdtTermLabel"></div>
+
+                    <div class="cdt-result">
+                        <div><span>Tasa efectiva anual</span><strong id="cdtRate">-</strong></div>
+                        <div><span>Intereses</span><strong id="cdtGross">$ 0</strong></div>
+                        <div><span>Retención en la fuente (4%)</span><strong id="cdtTax">$ 0</strong></div>
+                        <div><span>Fecha de vencimiento</span><strong id="cdtDate">-</strong></div>
+                        <div class="cdt-total"><span>Recibirás al final</span><strong id="cdtTotal">$ 0</strong></div>
+                    </div>
+
+                    <button class="btn primary full" type="submit">Abrir CDT</button>
+                    <small class="cdt-note">El dinero queda invertido hasta la fecha de vencimiento y no se puede retirar antes.</small>
+                </form>
+
+                <!-- Mis CDT -->
+                <div class="panel cdt-list-panel">
+                    <div class="panel-top"><b>Mis CDT</b><span class="panel-chip" id="cdtCount">0 activos</span></div>
+                    <div id="cdtList"></div>
+                </div>
+
+            </div>
+
+        </section>
+
     </main>
 
+
+    <!-- Nuevo bolsillo -->
+    <div class="modal" id="pocketModal" role="dialog" aria-modal="true" aria-labelledby="pocketModalTitle">
+        <div class="modal-card">
+            <button class="modal-close" data-close type="button" aria-label="Cerrar">×</button>
+            <span class="eyebrow">Bolsillos</span>
+            <h2 id="pocketModalTitle">Nuevo bolsillo</h2>
+            <form id="pocketForm" class="form-stack" novalidate>
+                <label>Nombre del bolsillo
+                    <input id="pocketName" maxlength="24" autocomplete="off" placeholder="Ej. Viaje, Emergencias, Moto">
+                </label>
+                <span class="cdt-label">Ícono</span>
+                <div class="pocket-icons" id="pocketIcons" role="radiogroup" aria-label="Ícono del bolsillo"></div>
+                <label>¿Cuánto quieres apartar ahora? (opcional)
+                    <input id="pocketInitial" type="text" inputmode="numeric" autocomplete="off" placeholder="0">
+                </label>
+                <button class="btn primary full" type="submit">Crear bolsillo</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Agregar o sacar dinero -->
+    <div class="modal" id="pocketMoveModal" role="dialog" aria-modal="true" aria-labelledby="pocketMoveTitle">
+        <div class="modal-card">
+            <button class="modal-close" data-close type="button" aria-label="Cerrar">×</button>
+            <span class="eyebrow" id="pocketMoveEyebrow">Bolsillo</span>
+            <h2 id="pocketMoveTitle">Agregar dinero</h2>
+            <p class="modal-hint" id="pocketMoveHint"></p>
+            <form id="pocketMoveForm" class="form-stack" novalidate>
+                <input type="hidden" id="pocketMoveId">
+                <input type="hidden" id="pocketMoveMode">
+                <label>Valor
+                    <input id="pocketMoveAmount" type="text" inputmode="numeric" autocomplete="off" placeholder="0">
+                </label>
+                <button class="btn primary full" type="submit" id="pocketMoveSubmit">Confirmar</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="confirmModal" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle" aria-describedby="confirmText">
+        <div class="modal-card">
+            <span class="modal-icon is-alert" aria-hidden="true">!</span>
+            <h2 id="confirmTitle">¿Estás seguro?</h2>
+            <p id="confirmText"></p>
+            <div class="modal-actions">
+                <button class="btn soft" data-close type="button">Cancelar</button>
+                <button class="btn primary" id="confirmAccept" type="button">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="genericModal" role="dialog" aria-modal="true" aria-labelledby="genericTitle" aria-describedby="genericText">
+        <div class="modal-card">
+            <button class="modal-close" data-close type="button" aria-label="Cerrar">×</button>
+            <span class="modal-icon" aria-hidden="true">i</span>
+            <h2 id="genericTitle">Banklite</h2>
+            <p id="genericText"></p>
+            <button class="btn primary full" data-close type="button">Entendido</button>
+        </div>
+    </div>
+
     <script src="java.js"></script>
+    <script src="api.js"></script>
+    <script src="inversiones.js"></script>
 
 </body>
 

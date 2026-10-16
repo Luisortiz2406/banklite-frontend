@@ -190,8 +190,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const donut = $('spendingDonut');
         const totals = { transfer: 0, debit: 0, income: 0 };
         for (const m of state.monthMovements) {
+            // Apartar o sacar de bolsillos, metas y CDT no es gasto ni ingreso: es tu misma plata.
+            if (m.type === 'saving' && !String(m.description || '').startsWith('Intereses')) continue;
             if (m.direction === 'in') totals.income += Number(m.amount) || 0;
-            else if (m.type === 'transfer') totals.transfer += Number(m.amount) || 0;
+            // Las transferencias a otros bancos son cargos hacia la cuenta de compensación.
+            else if (m.type === 'transfer' || (m.type === 'debit' && /^Transferencia a /.test(m.description || ''))) totals.transfer += Number(m.amount) || 0;
             else totals.debit += Number(m.amount) || 0;
         }
         const out = totals.transfer + totals.debit;
