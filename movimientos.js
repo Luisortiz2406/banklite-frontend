@@ -108,8 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const term = (search.value || '').trim().toLowerCase();
         return state.items
             .map((m, index) => ({ m, index }))
-            .filter(({ m }) => state.filter === 'all'
-                || (state.filter === 'transfer' ? m.type === 'transfer' || typeLabel(m) === 'Transferencia a otro banco' : m.direction === state.filter))
+            .filter(({ m }) => state.filter === 'all' || m.direction === state.filter)
             .filter(({ m }) => !term || `${m.description || ''} ${typeLabel(m) || ''} ${m.counterpartyAccountLast4 || ''}`.toLowerCase().includes(term));
     }
 
