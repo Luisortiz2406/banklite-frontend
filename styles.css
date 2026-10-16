@@ -15787,6 +15787,17 @@ body.qr-presenting {
     .layout .savings-summary { grid-template-columns: 1fr 1fr; }
 }
 
+/* Transferir: el formulario va alineado con el título y los pasos */
+.layout .transfer-form { max-width: none; margin-inline: 0; }
+
+/* Pagos, QR y Llaves: las dos columnas se apilan cuando el contenido baja de ~850px
+   (sin menú pasaba a los 900px de ventana) */
+@media (min-width: 761px) and (max-width: 1150px) {
+    .layout .pay-layout,
+    .layout .keys-layout { grid-template-columns: minmax(0, 1fr); }
+    .layout .breb-points { grid-template-columns: repeat(2, 1fr); }
+}
+
 @media (max-width: 760px) {
     .menu-toggle,
     .sidebar-close { display: grid; }
