@@ -15898,3 +15898,52 @@ body.qr-presenting {
 }
 
 .layout > .sidebar:focus { outline: none; }
+
+/* =========================================================
+   DASHBOARD EN CELULAR: clave dinámica y "Enviar dinero" en una fila
+   (solo .welcome-actions; el óvalo de Llaves Bre-B no cambia)
+   ========================================================= */
+
+@media (max-width: 560px) {
+    .welcome-actions {
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+    }
+
+    /* La clave conserva su ancho (200px) y se encoge solo si falta espacio */
+    .welcome-actions [data-dynamic-key] {
+        flex: 0 1 200px;
+        min-width: 0;
+        justify-self: auto;
+    }
+
+    .welcome-actions .dk-oval {
+        width: 100%;
+        height: 52px;
+        padding: 0 38px 0 14px;
+    }
+
+    .welcome-actions .dk-seconds { right: 12px; }
+
+    /* El botón ocupa el resto de la fila */
+    .welcome .welcome-actions .btn {
+        flex: 1 0 auto;
+        justify-content: center;
+        width: auto;
+        height: 52px;
+        min-height: 52px;
+        padding: 0 16px;
+        white-space: nowrap;
+    }
+}
+
+/* Pantallas muy angostas: números un poco más chicos y el botón dice solo "Enviar" */
+@media (max-width: 389px) {
+    .welcome-actions .dk-oval { padding: 0 34px 0 12px; }
+    .welcome-actions .dk-code { font-size: 1.02rem; letter-spacing: 0.1em; }
+    .welcome-actions .dk-seconds { right: 10px; }
+    .welcome-actions .send-money-long { display: none; }
+}
