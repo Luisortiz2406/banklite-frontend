@@ -166,16 +166,50 @@
             </section>
 
 
-            <!-- Cuentas a las que más has enviado (solo últimos 4 dígitos: es lo que da /ledger) -->
-            <section class="frequent-contacts" id="frequentContacts" data-view="inicio" hidden>
+            <!-- =================================================
+                 PROMOCIONES (simulación académica, sin backend: ver beneficios.js)
+            ================================================== -->
+
+            <section class="promotions-section" data-view="inicio">
+
                 <div class="section-heading">
                     <div>
-                        <span class="eyebrow">Tus envíos</span>
-                        <h2>Cuentas frecuentes</h2>
+                        <span class="eyebrow">Beneficios</span>
+                        <h2>Promociones con tu tarjeta</h2>
                     </div>
-                    <a class="text-btn" href="transferir.html">Transferir <span aria-hidden="true">→</span></a>
+                    <div class="promo-controls">
+                        <button class="icon-btn" id="promoPrev" type="button" aria-label="Promoción anterior">‹</button>
+                        <button class="icon-btn" id="promoNext" type="button" aria-label="Promoción siguiente">›</button>
+                    </div>
                 </div>
-                <div class="frequent-list" id="frequentList"></div>
+
+                <div class="promo-carousel" id="promoCarousel">
+                    <article class="promo-card">
+                        <span>HASTA 25% OFF</span>
+                        <h3>Restaurantes aliados</h3>
+                        <p>Descuentos pagando con tu tarjeta Banklite en comercios participantes.</p>
+                        <button type="button" class="promo-link" data-benefit="restaurantes">Ver beneficio <span aria-hidden="true">→</span></button>
+                    </article>
+                    <article class="promo-card">
+                        <span>15% OFF</span>
+                        <h3>Viajes y experiencias</h3>
+                        <p>Beneficios especiales en experiencias y escapadas seleccionadas.</p>
+                        <button type="button" class="promo-link" data-benefit="viajes">Conocer promoción <span aria-hidden="true">→</span></button>
+                    </article>
+                    <article class="promo-card">
+                        <span>20% OFF</span>
+                        <h3>Compras online</h3>
+                        <p>Promociones en comercios digitales participantes.</p>
+                        <button type="button" class="promo-link" data-benefit="online">Ver comercios <span aria-hidden="true">→</span></button>
+                    </article>
+                    <article class="promo-card">
+                        <span>2x1</span>
+                        <h3>Cine y entretenimiento</h3>
+                        <p>Compra tus entradas y disfruta beneficios con Banklite.</p>
+                        <button type="button" class="promo-link" data-benefit="cine">Ver beneficio <span aria-hidden="true">→</span></button>
+                    </article>
+                </div>
+
             </section>
 
 
@@ -328,6 +362,14 @@
 
     
     <!-- Cambiar clave: código por correo o WhatsApp (POST /auth/password-recovery/*) -->
+    <!-- Detalle de una promoción (lo llena beneficios.js) -->
+    <div class="modal benefit-modal" id="benefitModal" role="dialog" aria-modal="true" aria-labelledby="benefitTitle">
+        <div class="modal-card benefit-card">
+            <button class="modal-close" data-close type="button" aria-label="Cerrar">×</button>
+            <div id="benefitContent"></div>
+        </div>
+    </div>
+
     <!-- Nueva meta de ahorro -->
     <div class="modal" id="goalModal" role="dialog" aria-modal="true" aria-labelledby="goalModalTitle">
         <div class="modal-card">
@@ -677,6 +719,7 @@
     <script src="dashboard.js"></script>
     <script src="subscriptions.js"></script>
     <script src="metas.js"></script>
+    <script src="beneficios.js"></script>
 
 </body>
 

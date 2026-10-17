@@ -6004,8 +6004,7 @@ button:focus-visible {
     position: relative;
 }
 
-.contact-main,
-.frequent-item {
+.contact-main {
     width: 100%;
     display: flex;
     align-items: center;
@@ -6020,8 +6019,7 @@ button:focus-visible {
     transition: border-color var(--transition), background var(--transition), transform var(--transition);
 }
 
-.contact-main:hover,
-.frequent-item:hover {
+.contact-main:hover {
     border-color: var(--primary);
     background: var(--primary-soft);
     transform: translateY(-1px);
@@ -6152,27 +6150,6 @@ button:focus-visible {
     color: var(--primary-text) !important;
     font-size: 0.78rem;
     font-weight: 700;
-}
-
-.frequent-contacts {
-    margin-top: 31px;
-}
-
-.frequent-list {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 12px;
-    margin-top: 16px;
-}
-
-.frequent-item {
-    padding-right: 12px;
-}
-
-@media (max-width: 900px) {
-    .frequent-list {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
 }
 
 @media (max-width: 560px) {

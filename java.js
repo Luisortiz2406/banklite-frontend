@@ -4,7 +4,8 @@
 // casillas de clave, tema, menú lateral, inicio público y el
 // asistente Banki. Los datos reales los traen api.js y el script
 // de cada página (login.js, registro.js, dashboard.js, ...).
-// En localStorage solo se guarda el tema (bankliteTheme).
+// En localStorage solo se guarda el tema (bankliteTheme) y los códigos
+// simulados de beneficios (bankliteBenefits, en beneficios.js).
 // =========================================================
 
 // Monto corto para gráficos: $1,2M · $350K · $900
@@ -838,11 +839,11 @@ const BOT_TOPICS = [
     { id: "limites", keys: ["minimo", "maximo", "tope", "cuanto puedo enviar", "limite de transferencia", "limite diario", "limite mensual", "limites"],
       faq: "¿Cuánto puedo transferir?", cat: "transferencias",
       answer: () => ({ text: "Puedes enviar hasta tu saldo disponible, dentro de los **límites diario y mensual** de tu cuenta. Los ves en el inicio, junto a tu saldo." }) },
-    { id: "frecuentes", keys: ["contacto guardado", "contactos", "frecuentes", "guardar contacto", "favoritos"],
-      faq: "¿Qué son las cuentas frecuentes?", cat: "transferencias",
-      answer: () => ({ text: "En el inicio, **Cuentas frecuentes** muestra las cuentas a las que más les has enviado, calculadas con tus movimientos." }) },
 
     // --- Tarjeta ---
+    { id: "promociones", keys: ["promociones", "promocion", "beneficios", "descuentos", "descuento", "2x1", "codigo de descuento", "cupon"],
+      faq: "¿Qué promociones tengo con mi tarjeta?", cat: "tarjeta",
+      answer: () => ({ text: "En el inicio, **Promociones con tu tarjeta** muestra descuentos en restaurantes, viajes, compras online y cine. Es una **simulación académica**: las marcas no tienen alianza con Banklite y los códigos no sirven en ningún comercio.", links: [{ label: "Ver promociones", href: "dashboard.html" }] }) },
     { id: "bloquear", keys: ["bloquear tarjeta", "bloquear", "congelar", "perdi mi tarjeta", "perdi la tarjeta", "me robaron", "robo", "tarjeta perdida", "desbloquear", "reactivar"],
       faq: "¿Cómo congelo mi tarjeta?", cat: "tarjeta",
       answer: () => ({ text: "En el inicio, sección **Tarjetas**, usa el interruptor para **congelarla**. Queda congelada al instante y la reactivas con el mismo interruptor.", links: [{ label: "Ir a mi tarjeta", href: "dashboard.html#tarjetas" }] }) },

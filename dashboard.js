@@ -125,7 +125,6 @@ document.addEventListener('DOMContentLoaded', () => {
             Object.assign(state, { account: detail, limits, balance, movements: recent, monthMovements: month });
             renderAccount();
             renderSpending();
-            renderFrequent();
         } catch (err) {
             fail(err, 'No se pudo cargar tu cuenta.');
         }
@@ -211,32 +210,6 @@ document.addEventListener('DOMContentLoaded', () => {
         donut.style.background = `conic-gradient(var(--primary) 0 ${a}%, var(--dark) ${a}% 100%)`;
         donut.setAttribute('aria-label', `Salidas del mes: transferencias ${Math.round(a)}%, cargos ${Math.round(100 - a)}%`);
     }
-
-    // Cuentas a las que más se ha transferido (el ledger solo da los últimos 4 dígitos).
-    function renderFrequent() {
-        const counts = new Map();
-        for (const m of state.movements) {
-            if (m.type !== 'transfer' || m.direction !== 'out' || !m.counterpartyAccountLast4) continue;
-            const entry = counts.get(m.counterpartyAccountLast4) || { last4: m.counterpartyAccountLast4, uses: 0 };
-            entry.uses += 1;
-            counts.set(m.counterpartyAccountLast4, entry);
-        }
-        const top = [...counts.values()].sort((a, b) => b.uses - a.uses).slice(0, 4);
-        $('frequentContacts').hidden = !top.length;
-        const list = $('frequentList');
-        list.replaceChildren();
-        top.forEach(c => {
-            const a = document.createElement('a');
-            a.className = 'frequent-item';
-            a.href = 'transferir.html';
-            a.innerHTML = '<span class="contact-avatar" aria-hidden="true"></span><span class="contact-info"><strong></strong><small></small></span>';
-            a.querySelector('.contact-avatar').textContent = c.last4.slice(-2);
-            a.querySelector('strong').textContent = `Cuenta ····${c.last4}`;
-            a.querySelector('small').textContent = `${c.uses} ${c.uses === 1 ? 'envío' : 'envíos'}`;
-            list.appendChild(a);
-        });
-    }
-
 
     // =====================================================
     // ABRIR CUENTA
