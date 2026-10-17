@@ -12,16 +12,24 @@
 const WRAPPED_MONTHS = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
 const WRAPPED_SLIDE_MS = 6500;
 
-// Fondo animado de cada historia (solo decorativo; los estilos están en styles.css, "wr-fx").
+// Fondo animado de cada historia, con motivos financieros (solo decorativo; los
+// estilos están en styles.css, "wr-fx"): velas de bolsa, una gráfica de tendencia
+// que se dibuja al alza y monedas y símbolos que suben girando.
+const WRAPPED_TOKENS = ["coin", "$", "coin", "%", "coin", "↗", "coin", "$", "coin", "%", "coin", "↗"];
+
 const wrappedFx = art => `
     <div class="wr-fx" aria-hidden="true">
-        ${wrappedArt(art)}
         <span class="wr-aurora wr-aurora-1"></span>
         <span class="wr-aurora wr-aurora-2"></span>
         <span class="wr-aurora wr-aurora-3"></span>
-        <span class="wr-sheen"></span>
-        <span class="wr-grid"></span>
-        ${"<i></i>".repeat(12)}
+        ${wrappedArt(art)}
+        <div class="wr-candles">${"<span></span>".repeat(9)}</div>
+        <svg class="wr-chart" viewBox="0 0 300 120" preserveAspectRatio="none">
+            <path class="wr-chart-area" d="M0 100L30 92 55 96 80 78 105 84 130 64 155 70 180 50 205 56 230 36 255 40 280 18 300 22V120H0Z"/>
+            <path class="wr-chart-line" pathLength="100" d="M0 100L30 92 55 96 80 78 105 84 130 64 155 70 180 50 205 56 230 36 255 40 280 18 300 22"/>
+        </svg>
+        <span class="wr-chart-dot"></span>
+        ${WRAPPED_TOKENS.map(t => t === "coin" ? '<i class="wr-coin">$</i>' : `<i class="wr-sym">${t}</i>`).join("")}
     </div>`;
 
 // Ilustración de cada historia: dibujo de línea muy transparente, como marca de

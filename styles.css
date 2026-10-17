@@ -12186,6 +12186,11 @@ body.wrapped-open { overflow: hidden; }
     --fx-blend: screen;
     --fx-art: #ffffff;
     --fx-art-opacity: 0.11;
+    --fx-chart: #2CCED2;
+    --fx-chart-fill: rgba(44, 206, 210, 0.22);
+    --fx-candle-up: rgba(44, 206, 210, 0.3);
+    --fx-candle-down: rgba(255, 255, 255, 0.14);
+    --fx-sym: rgba(255, 255, 255, 0.5);
 }
 
 .wr-teal {
@@ -12198,6 +12203,11 @@ body.wrapped-open { overflow: hidden; }
     --fx-blend: normal;
     --fx-art: #26474E;
     --fx-art-opacity: 0.13;
+    --fx-chart: #ffffff;
+    --fx-chart-fill: rgba(255, 255, 255, 0.26);
+    --fx-candle-up: rgba(255, 255, 255, 0.32);
+    --fx-candle-down: rgba(38, 71, 78, 0.16);
+    --fx-sym: rgba(38, 71, 78, 0.42);
 }
 
 .wr-pale {
@@ -12211,6 +12221,11 @@ body.wrapped-open { overflow: hidden; }
     --fx-blend: normal;
     --fx-art: #1E8C92;
     --fx-art-opacity: 0.14;
+    --fx-chart: #1E8C92;
+    --fx-chart-fill: rgba(44, 206, 210, 0.2);
+    --fx-candle-up: rgba(44, 206, 210, 0.32);
+    --fx-candle-down: rgba(38, 71, 78, 0.12);
+    --fx-sym: rgba(30, 140, 146, 0.55);
 }
 
 .wr-dark {
@@ -12270,49 +12285,137 @@ body.wrapped-open { overflow: hidden; }
     animation: wr-float-3 16s ease-in-out infinite alternate;
 }
 
-.wr-sheen {
+/* Velas de bolsa al fondo: suben y bajan como un mercado en vivo */
+.wr-candles {
+    position: absolute;
+    left: 6%;
+    right: 6%;
+    bottom: 0;
+    height: 40%;
+    display: flex;
+    align-items: flex-end;
+    gap: 5%;
+    -webkit-mask-image: linear-gradient(to top, #000 25%, transparent 100%);
+    mask-image: linear-gradient(to top, #000 25%, transparent 100%);
+}
+
+.wr-candles span {
+    position: relative;
+    flex: 1;
+    height: var(--h, 50%);
+    border-radius: 3px 3px 0 0;
+    background: var(--fx-candle-up);
+    transform-origin: bottom;
+    animation: wr-candle 3.4s ease-in-out infinite alternate;
+}
+
+/* Mecha de la vela */
+.wr-candles span::before {
+    content: "";
     position: absolute;
     left: 50%;
-    top: 50%;
-    width: 180%;
-    aspect-ratio: 1;
-    translate: -50% -50%;
-    background: conic-gradient(from 0deg, transparent 0 18%, var(--fx-sheen) 26%, transparent 34% 58%, var(--fx-sheen) 66%, transparent 74%);
-    -webkit-mask-image: radial-gradient(circle, transparent 16%, #000 40%, transparent 68%);
-    mask-image: radial-gradient(circle, transparent 16%, #000 40%, transparent 68%);
-    animation: wr-spin 28s linear infinite;
+    top: -16px;
+    width: 2px;
+    height: 16px;
+    margin-left: -1px;
+    border-radius: 2px;
+    background: inherit;
 }
 
-.wr-grid {
+.wr-candles span:nth-child(3n + 2) { background: var(--fx-candle-down); }
+.wr-candles span:nth-child(1) { --h: 26%; animation-delay: -0.4s; }
+.wr-candles span:nth-child(2) { --h: 40%; animation-delay: -1.8s; }
+.wr-candles span:nth-child(3) { --h: 34%; animation-delay: -1.1s; }
+.wr-candles span:nth-child(4) { --h: 52%; animation-delay: -2.6s; }
+.wr-candles span:nth-child(5) { --h: 46%; animation-delay: -0.9s; }
+.wr-candles span:nth-child(6) { --h: 64%; animation-delay: -2.2s; }
+.wr-candles span:nth-child(7) { --h: 56%; animation-delay: -1.4s; }
+.wr-candles span:nth-child(8) { --h: 78%; animation-delay: -3s; }
+.wr-candles span:nth-child(9) { --h: 70%; animation-delay: -0.6s; }
+
+/* Gráfica de tendencia: la línea se dibuja al alza, se rellena y vuelve a empezar */
+.wr-chart {
     position: absolute;
-    inset: -40px 0 0;
-    background-image: radial-gradient(var(--fx-dot) 1px, transparent 1.4px);
-    background-size: 22px 22px;
-    -webkit-mask-image: linear-gradient(to bottom, transparent 5%, #000 45%, transparent 95%);
-    mask-image: linear-gradient(to bottom, transparent 5%, #000 45%, transparent 95%);
-    animation: wr-drift 9s linear infinite;
+    left: 0;
+    bottom: 8%;
+    width: 100%;
+    height: 34%;
+    overflow: visible;
+    opacity: 0.7;
 }
 
+.wr-chart-area {
+    fill: var(--fx-chart-fill);
+    opacity: 0;
+    animation: wr-chart-fill 8s ease-in-out infinite;
+}
+
+.wr-chart-line {
+    fill: none;
+    stroke: var(--fx-chart);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
+    filter: drop-shadow(0 0 5px var(--fx-chart));
+    animation: wr-chart-draw 8s ease-in-out infinite;
+}
+
+/* Punto que late al final de la línea (x 280/300, y 18/120 de la gráfica) */
+.wr-chart-dot {
+    position: absolute;
+    left: 93.3%;
+    top: 63.1%;
+    width: 10px;
+    height: 10px;
+    margin: -5px 0 0 -5px;
+    border-radius: 50%;
+    background: var(--fx-chart);
+    box-shadow: 0 0 12px var(--fx-chart);
+    opacity: 0;
+    animation: wr-chart-dot 8s ease-in-out infinite;
+}
+
+.wr-chart-dot::after {
+    content: "";
+    position: absolute;
+    inset: -6px;
+    border: 2px solid var(--fx-chart);
+    border-radius: 50%;
+    opacity: 0;
+    animation: wr-chart-ping 1.6s ease-out infinite;
+}
+
+/* Monedas y símbolos que suben (las monedas giran como al lanzarlas) */
 .wr-fx i {
     position: absolute;
-    bottom: -12px;
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: var(--fx-spark);
-    box-shadow: 0 0 10px 2px var(--fx-glow);
+    bottom: -30px;
+    display: grid;
+    place-items: center;
+    font-family: "Manrope", sans-serif;
+    font-style: normal;
+    font-weight: 800;
+    line-height: 1;
     opacity: 0;
-    animation: wr-rise 10s linear infinite;
+    animation: wr-rise 11s linear infinite;
 }
 
-/* Cada tercer destello es una estrella de cuatro puntas */
-.wr-fx i:nth-of-type(3n) {
-    width: 12px;
-    height: 12px;
-    border-radius: 0;
-    box-shadow: none;
-    clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
-    filter: drop-shadow(0 0 6px var(--fx-glow));
+.wr-fx .wr-coin {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    font-size: 12px;
+    color: #7A5410;
+    background: radial-gradient(circle at 35% 30%, #FFF6D2 0%, #F4CF6E 45%, #C9952E 100%);
+    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.4), 0 0 14px rgba(244, 207, 110, 0.5);
+    animation-name: wr-coin-rise;
+}
+
+.wr-fx .wr-sym {
+    font-size: 19px;
+    color: var(--fx-sym);
 }
 
 .wr-fx i:nth-of-type(1)  { left: 6%;  animation-duration: 11s; animation-delay: -1s; }
@@ -12351,16 +12454,49 @@ body.wrapped-open { overflow: hidden; }
     100% { transform: translate(-12%, -6%) scale(1); }
 }
 
-@keyframes wr-spin { to { transform: rotate(360deg); } }
+@keyframes wr-candle {
+    from { transform: scaleY(0.72); }
+    to { transform: scaleY(1.06); }
+}
 
-@keyframes wr-drift { to { transform: translateY(22px); } }
+@keyframes wr-chart-draw {
+    0%   { stroke-dashoffset: 100; opacity: 0; }
+    8%   { opacity: 1; }
+    55%  { stroke-dashoffset: 0; opacity: 1; }
+    88%  { stroke-dashoffset: 0; opacity: 1; }
+    100% { stroke-dashoffset: 0; opacity: 0; }
+}
+
+@keyframes wr-chart-fill {
+    0%, 45% { opacity: 0; }
+    62%, 88% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+@keyframes wr-chart-dot {
+    0%, 52% { opacity: 0; transform: scale(0.4); }
+    58% { opacity: 1; transform: scale(1.25); }
+    64%, 88% { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; transform: scale(1); }
+}
+
+@keyframes wr-chart-ping {
+    from { opacity: 0.8; transform: scale(0.6); }
+    to { opacity: 0; transform: scale(1.8); }
+}
 
 @keyframes wr-rise {
-    0%   { transform: translateY(0) scale(0.5) rotate(0deg); opacity: 0; }
+    0%   { transform: translateY(0) scale(0.7); opacity: 0; }
+    12%  { opacity: 0.9; }
+    80%  { opacity: 0.55; }
+    100% { transform: translateY(-820px) scale(1.1); opacity: 0; }
+}
+
+@keyframes wr-coin-rise {
+    0%   { transform: translateY(0) rotateY(0deg) scale(0.75); opacity: 0; }
     12%  { opacity: 0.95; }
-    45%  { opacity: 0.35; }
-    65%  { opacity: 0.9; }
-    100% { transform: translateY(-820px) scale(1.15) rotate(180deg); opacity: 0; }
+    80%  { opacity: 0.7; }
+    100% { transform: translateY(-820px) rotateY(1080deg) scale(1.05); opacity: 0; }
 }
 
 /* Ilustración de la historia (marca de agua): esquina inferior derecha, tenue */
