@@ -395,7 +395,13 @@
                     <div class="limit-scale"><span id="limitMinLabel">—</span><span id="limitMaxLabel">—</span></div>
                 </div>
                 <div class="amount-chips" id="limitChips"></div>
-                <p class="modal-hint">Al guardar confirmamos el cambio con tu <b>clave dinámica</b>.</p>
+                <!-- Clave dinámica escrita por el cliente (la valida auth-service) -->
+                <div class="limit-key">
+                    <div data-dynamic-key></div>
+                    <label id="limitKeyLabel">Escribe tu clave dinámica para confirmar</label>
+                    <div class="pin-boxes code" id="limitKeyBoxes" data-length="6" data-visible role="group" aria-labelledby="limitKeyLabel"></div>
+                    <p class="modal-hint">Son 6 dígitos y cambian cada 60 segundos.</p>
+                </div>
                 <button class="btn primary full" type="submit" id="limitSubmit">Guardar límite</button>
             </form>
         </div>

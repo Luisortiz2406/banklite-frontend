@@ -5848,6 +5848,24 @@ button:focus-visible {
     font-size: 0.7rem;
 }
 
+/* Clave dinámica escrita al cambiar el límite de la tarjeta */
+.limit-key {
+    display: grid;
+    gap: 10px;
+    justify-items: center;
+    text-align: center;
+}
+
+.limit-key > label {
+    color: var(--dark);
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.limit-key .modal-hint {
+    margin: 0;
+}
+
 .limit-picker {
     display: grid;
     gap: 8px;

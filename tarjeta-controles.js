@@ -3,7 +3,7 @@
 // Mismo diseño y comportamiento que la versión simulada, contra card-service:
 //   GET   /cards/:id/controls               compras por internet, límite y uso de hoy
 //   PATCH /cards/:id/controls/online        interruptor de compras por internet
-//   PATCH /cards/:id/controls/daily-limit   límite diario (con clave dinámica)
+//   PATCH /cards/:id/controls/daily-limit   límite diario (clave dinámica escrita por el cliente)
 //   POST  /cards/:id/purchases              compra con la tarjeta (cobro real en el ledger)
 // Todas las reglas (congelada, internet, límite, saldo) las valida el servidor;
 // aquí solo se pintan. La tarjeta llega de dashboard.js con 'banklite:card'.
@@ -118,6 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // -----------------------------------------------------
 
     const range = $('limitRange');
+    const limitKey = initPinBoxes($('limitKeyBoxes'));
 
     function paintRange() {
         setText('limitPreview', money(Number(range.value)));
@@ -150,6 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .map(v => `<button type="button" data-limit="${v}">${escapeHTML(short(v).replace(' mil', 'K'))}</button>`)
             .join('');
         paintRange();
+        limitKey.clear();
         openModal('limitModal');
     });
 
@@ -165,15 +167,29 @@ document.addEventListener('DOMContentLoaded', () => {
     $('limitForm').addEventListener('submit', async event => {
         event.preventDefault();
         if (!card) return;
+        if (!limitKey.isComplete()) {
+            limitKey.error();
+            limitKey.focus();
+            return toast('Escribe los 6 dígitos de tu clave dinámica.', 'err');
+        }
         const dailyLimit = Number(range.value);
         const button = $('limitSubmit');
         button.disabled = true;
         try {
-            controls = await api('PATCH', `/cards/${card.id}/controls/daily-limit`, { dailyLimit, dynamicCode: await dynamicCode() });
+            controls = await api('PATCH', `/cards/${card.id}/controls/daily-limit`, { dailyLimit, dynamicCode: limitKey.value() });
             closeModalById('limitModal');
             toast(`Límite diario: ${money(controls.dailyLimit)}.`, 'ok');
         } catch (err) {
-            fail(err, 'No se pudo cambiar el límite.');
+            if (BlApi.handleAuthError(err)) return;
+            // Clave incorrecta, vencida o bloqueada: se queda en el modal para intentarlo de nuevo.
+            if (/clave dinámica/i.test(err?.message || '')) {
+                limitKey.clear();
+                limitKey.error();
+                limitKey.focus();
+                toast(err.message, 'err');
+            } else {
+                fail(err, 'No se pudo cambiar el límite.');
+            }
         } finally {
             button.disabled = false;
             paint();
