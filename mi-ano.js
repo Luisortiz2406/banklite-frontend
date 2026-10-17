@@ -20,7 +20,7 @@ const wrappedFx = scene => `
         ${"<i></i>".repeat(12)}
     </div>`;
 
-// Escenas de línea, muy transparentes: banco, cuenta y ahorro. Usan currentColor:
+// Escenas de línea, muy transparentes: banco, cuenta, gráfica, trofeo y lluvia de billetes. Usan currentColor:
 // el color y la opacidad salen del tema de la historia.
 const WRAPPED_SCENES = {
     // La fachada se levanta columna por columna y una moneda cae en la ranura del frontón.
@@ -52,18 +52,50 @@ const WRAPPED_SCENES = {
             <path d="M94.5 20.5l3.5 3.5 7-7.5"/>
         </g>`,
 
-    // Alcancía que respira mientras caen monedas; el anillo de la meta se va completando.
-    savings: `
-        <circle cx="22" cy="22" r="12"/>
-        <circle class="sv-goal" pathLength="100" cx="22" cy="22" r="12"/>
-        <circle class="sv-coin" cx="60" cy="8" r="5"/>
-        <circle class="sv-coin" cx="60" cy="8" r="5"/>
-        <circle class="sv-coin" cx="60" cy="8" r="5"/>
-        <g class="sv-pig">
-            <path d="M26 64c0-18 17-30 38-30 20 0 34 10 38 22h8v18h-9c-3 7-9 12-15 15v11H74v-8c-4 1-8 1-12 0v8H50V91c-14-5-24-15-24-27z"/>
-            <path d="M26 64c-7 0-11-4-10-10"/>
-            <circle cx="88" cy="58" r="2"/>
-            <path d="M53 40c4-1 10-1 14 0"/>
+    // Gráfica estadística: las barras crecen una a una y la tendencia se dibuja al alza.
+    growth: `
+        <path d="M16 20v84h92"/>
+        <path d="M16 80h4M16 56h4M16 32h4"/>
+        <rect class="gr-bar" x="24" y="86" width="11" height="18" rx="2"/>
+        <rect class="gr-bar" x="41" y="74" width="11" height="30" rx="2"/>
+        <rect class="gr-bar" x="58" y="62" width="11" height="42" rx="2"/>
+        <rect class="gr-bar" x="75" y="46" width="11" height="58" rx="2"/>
+        <rect class="gr-bar" x="92" y="28" width="11" height="76" rx="2"/>
+        <path class="gr-line" pathLength="1" d="M29 76L46 64 63 52 80 36 97 18"/>
+        <path class="gr-arrow" d="M88 17l9.5 1-1 9.5"/>`,
+
+    // Trofeo con su estrella brillando, rodeado de monedas y billetes que rebotan hacia arriba.
+    trophy: `
+        <g class="tr-cup">
+            <path d="M42 26h36v26c0 11-8 20-18 20s-18-9-18-20z"/>
+            <path d="M42 34H29c0 12 6 19 15 19M78 34h13c0 12-6 19-15 19"/>
+            <path d="M60 72v12M46 104h28l-4-20H50z"/>
+        </g>
+        <path class="tr-star" d="M60 36l3 6.5 7 .6-5.3 4.6 1.7 6.9L60 51l-6.4 3.6 1.7-6.9-5.3-4.6 7-.6z"/>
+        <circle class="tr-coin" cx="18" cy="84" r="6"/>
+        <circle class="tr-coin" cx="102" cy="78" r="6"/>
+        <circle class="tr-coin" cx="24" cy="44" r="5"/>
+        <circle class="tr-coin" cx="98" cy="38" r="5"/>
+        <g class="tr-bill"><rect x="4" y="58" width="20" height="11" rx="2"/><circle cx="14" cy="63.5" r="2.5"/></g>
+        <g class="tr-bill"><rect x="96" y="54" width="20" height="11" rx="2"/><circle cx="106" cy="59.5" r="2.5"/></g>
+        <g class="tr-bill"><rect x="82" y="98" width="20" height="11" rx="2"/><circle cx="92" cy="103.5" r="2.5"/></g>
+        <g class="tr-bill"><rect x="16" y="100" width="20" height="11" rx="2"/><circle cx="26" cy="105.5" r="2.5"/></g>`,
+
+    // Persona celebrando bajo una lluvia de billetes.
+    rain: `
+        <g class="rn-bill"><rect x="10" y="-14" width="18" height="10" rx="2"/><circle cx="19" cy="-9" r="2.2"/></g>
+        <g class="rn-bill"><rect x="30" y="-14" width="18" height="10" rx="2"/><circle cx="39" cy="-9" r="2.2"/></g>
+        <g class="rn-bill"><rect x="50" y="-14" width="18" height="10" rx="2"/><circle cx="59" cy="-9" r="2.2"/></g>
+        <g class="rn-bill"><rect x="70" y="-14" width="18" height="10" rx="2"/><circle cx="79" cy="-9" r="2.2"/></g>
+        <g class="rn-bill"><rect x="90" y="-14" width="18" height="10" rx="2"/><circle cx="99" cy="-9" r="2.2"/></g>
+        <g class="rn-bill"><rect x="20" y="-14" width="18" height="10" rx="2"/><circle cx="29" cy="-9" r="2.2"/></g>
+        <g class="rn-bill"><rect x="80" y="-14" width="18" height="10" rx="2"/><circle cx="89" cy="-9" r="2.2"/></g>
+        <g class="rn-person">
+            <circle cx="60" cy="62" r="10"/>
+            <path d="M40 112c0-16 9-28 20-28s20 12 20 28"/>
+            <path class="rn-arm-l" d="M46 92L34 72"/>
+            <path class="rn-arm-r" d="M74 92l12-20"/>
+            <path d="M56 64c2 2.5 6 2.5 8 0"/>
         </g>`
 };
 
@@ -251,7 +283,7 @@ function wrappedSlides(data) {
     if (data.isNew) {
         slides.push({
             theme: "teal",
-            scene: "bank",
+            scene: "growth",
             html: `
                 <span class="wr-kicker">Recién llegado</span>
                 <h2>Tu historia apenas empieza</h2>
@@ -318,7 +350,7 @@ function wrappedSlides(data) {
     if (data.savedIn > 0 || data.savingsNow > 0) {
         slides.push({
             theme: "dark",
-            scene: "savings",
+            scene: "trophy",
             html: `
                 <span class="wr-kicker">Tu ahorro</span>
                 <p>Este año apartaste</p>
@@ -329,7 +361,7 @@ function wrappedSlides(data) {
 
     slides.push({
         theme: "pale",
-        scene: "savings",
+        scene: "trophy",
         html: `
             <span class="wr-kicker">Puntos Banklite</span>
             <b class="wr-big" data-wr-count="${data.pointsEarned}">0</b>
@@ -340,7 +372,7 @@ function wrappedSlides(data) {
 
     slides.push({
         theme: "intro",
-        scene: data.persona.key === "saver" ? "savings" : "bank",
+        scene: "rain",
         html: `
             <span class="wr-kicker">Tu personalidad financiera</span>
             <span class="wr-icon wr-icon-lg">${data.persona.icon}</span>
