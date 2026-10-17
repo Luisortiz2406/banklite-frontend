@@ -50,7 +50,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         $('cardOnlineSwitch').checked = controls.onlineEnabled;
         setText('cardLimitValue', money(controls.dailyLimit));
-        setText('cardLimitUsed', `Usado hoy: ${money(controls.usedToday)} · Disponible: ${money(controls.availableToday)}`);
+        // dailyLimit ya es el que se aplica: el menor entre el de la tarjeta y el de la cuenta.
+        setText('cardLimitUsed', `Usado hoy: ${money(controls.usedToday)} · Disponible: ${money(controls.availableToday)}`
+            + (controls.cappedByAccount ? ' · Tope del límite diario de tu cuenta' : ''));
         const percent = controls.dailyLimit ? Math.min((controls.usedToday / controls.dailyLimit) * 100, 100) : 0;
         const bar = $('cardLimitBar');
         bar.style.width = `${percent}%`;
