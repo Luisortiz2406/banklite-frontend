@@ -602,6 +602,76 @@ const HOME_ARTICLES = {
 };
 
 /**
+ * Calculadora de bolsillos de la pestaña Emprendedores (index.html#emprendedores).
+ * Solo una guía: todo se calcula en el navegador, no se guarda ni se envía nada.
+ */
+function initBusinessCalculator() {
+    const form = document.getElementById("entCalc");
+    if (!form) return;
+
+    const DEFAULTS = { Tax: 15, Costs: 50, Save: 10 };
+    const LABELS = { Tax: "impuestos", Costs: "gastos del negocio", Save: "ahorro" };
+    const sales = document.getElementById("entSales");
+    const ranges = Array.from(form.querySelectorAll("[data-calc-pct]"));
+    const warn = document.getElementById("entCalcWarn");
+    const live = document.getElementById("entCalcLive");
+    const money = value => new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(value);
+    let liveTimer = null;
+
+    const salesValue = () => Number(sales.value.replace(/\D/g, "")) || 0;
+
+    function paint() {
+        const total = salesValue();
+        let used = 0;
+        let pct = 0;
+        const parts = [];
+
+        ranges.forEach(range => {
+            const key = range.dataset.calcPct;
+            const value = Number(range.value);
+            const amount = Math.round(total * value / 100);
+            pct += value;
+            used += amount;
+            document.getElementById(`entPct${key}Out`).textContent = `${value} %`;
+            document.getElementById(`entAmt${key}`).textContent = money(amount);
+            range.style.setProperty("--fill", `${value}%`);
+            parts.push(`${LABELS[key]} ${money(amount)}`);
+        });
+
+        const over = pct > 100;
+        warn.hidden = !over;
+        document.getElementById("entFree").textContent = over ? "—" : money(Math.max(total - used, 0));
+        form.classList.toggle("is-over", over);
+
+        // Lector de pantalla: un resumen cuando el usuario deja de mover los controles
+        clearTimeout(liveTimer);
+        liveTimer = setTimeout(() => {
+            live.textContent = total
+                ? `Con ventas de ${money(total)}: ${parts.join(", ")}. ${over ? "Los porcentajes suman más de 100 %." : `Te queda libre ${money(Math.max(total - used, 0))}.`}`
+                : "";
+        }, 500);
+    }
+
+    sales.addEventListener("input", () => {
+        const digits = sales.value.replace(/\D/g, "").slice(0, 12);
+        sales.value = digits ? Number(digits).toLocaleString("es-CO") : "";
+        paint();
+    });
+
+    ranges.forEach(range => range.addEventListener("input", paint));
+
+    document.getElementById("entCalcReset")?.addEventListener("click", () => {
+        sales.value = "";
+        ranges.forEach(range => { range.value = DEFAULTS[range.dataset.calcPct]; });
+        paint();
+        sales.focus();
+    });
+
+    form.addEventListener("submit", event => event.preventDefault());
+    paint();
+}
+
+/**
  * Carrusel principal de una pestaña del inicio. Devuelve start/stop para que
  * solo avance el de la pestaña visible.
  */
@@ -816,6 +886,8 @@ function initHome() {
         event.preventDefault();
         showMessage("Muy pronto", button.dataset.soonText || `${button.dataset.soon} estará disponible próximamente.`, "i");
     }));
+
+    initBusinessCalculator();
 
     // Si ya hay sesión abierta, "Ingresar" lleva directo al dashboard
     if (hasSession()) {
