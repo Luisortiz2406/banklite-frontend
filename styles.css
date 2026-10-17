@@ -9167,6 +9167,26 @@ body.home {
 
 .biz-tag.is-soon { background: rgba(242, 169, 59, 0.16); color: #8A5A00; }
 
+/* "En desarrollo": más discreto que "Próximamente", solo borde y texto suave */
+.biz-tag.is-dev {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-light);
+    font-weight: 700;
+}
+
+.biz-tag.is-dev::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--text-light);
+    opacity: 0.6;
+}
+
 .biz-icon {
     width: 44px;
     height: 44px;
