@@ -9165,9 +9165,8 @@ body.home {
     white-space: nowrap;
 }
 
-.biz-tag.is-soon { background: rgba(242, 169, 59, 0.16); color: #8A5A00; }
 
-/* "En desarrollo": más discreto que "Próximamente", solo borde y texto suave */
+/* "En desarrollo": discreto, solo borde y texto suave */
 .biz-tag.is-dev {
     display: inline-flex;
     align-items: center;
@@ -10005,7 +10004,6 @@ html[data-theme="dark"] .biz-top {
                 linear-gradient(135deg, #0B1A1D 0%, #10262A 55%, #173C40 100%);
 }
 
-html[data-theme="dark"] .biz-tag.is-soon,
 html[data-theme="dark"] .biz-pill,
 html[data-theme="dark"] .ent-calc-warn { color: #F7C77A; }
 html[data-theme="dark"] .biz-kicker,
