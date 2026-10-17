@@ -13,6 +13,8 @@ const GW = (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)
     ? "http://localhost:8080"
     : "https://api-gateway-production-dd7f.up.railway.app").replace(/\/+$/, "");
 
+// Las páginas se enlazan con .html: así funcionan con nginx (Railway) y con
+// cualquier servidor estático en local (python -m http.server), que no resuelve /admin/clientes.
 const BASE = "/admin/";
 const TOKEN_KEY = "banklite.staff.token";
 const LAST_KEY = "banklite.staff.last";
@@ -158,7 +160,7 @@ const SESSION = {
 
 function goLogin(reason) {
     SESSION.end();
-    location.replace(BASE + "login" + (reason ? `?${reason}=1` : ""));
+    location.replace(BASE + "login.html" + (reason ? `?${reason}=1` : ""));
 }
 
 async function api(method, path, body) {
@@ -391,14 +393,14 @@ const serviceRows = h => h?.services?.length
 
 const PAGES = [
     { id: "dashboard", title: "Tablero", href: BASE, group: "General" },
-    { id: "customers", title: "Clientes", href: BASE + "clientes", group: "Operación" },
-    { id: "accounts", title: "Cuentas", href: BASE + "cuentas", group: "Operación" },
-    { id: "movements", title: "Movimientos", href: BASE + "movimientos", group: "Operación" },
-    { id: "fraud", title: "Fraude", href: BASE + "fraude", group: "Operación" },
-    { id: "compliance", title: "Cumplimiento", href: BASE + "cumplimiento", group: "Operación" },
-    { id: "monitoring", title: "Monitoreo", href: BASE + "monitoreo", group: "Sistema" },
-    { id: "staff", title: "Empleados", href: BASE + "empleados", group: "Sistema", adminOnly: true },
-    { id: "audit", title: "Auditoría", href: BASE + "auditoria", group: "Sistema" }
+    { id: "customers", title: "Clientes", href: BASE + "clientes.html", group: "Operación" },
+    { id: "accounts", title: "Cuentas", href: BASE + "cuentas.html", group: "Operación" },
+    { id: "movements", title: "Movimientos", href: BASE + "movimientos.html", group: "Operación" },
+    { id: "fraud", title: "Fraude", href: BASE + "fraude.html", group: "Operación" },
+    { id: "compliance", title: "Cumplimiento", href: BASE + "cumplimiento.html", group: "Operación" },
+    { id: "monitoring", title: "Monitoreo", href: BASE + "monitoreo.html", group: "Sistema" },
+    { id: "staff", title: "Empleados", href: BASE + "empleados.html", group: "Sistema", adminOnly: true },
+    { id: "audit", title: "Auditoría", href: BASE + "auditoria.html", group: "Sistema" }
 ];
 
 function buildSide(alerts = 0) {
@@ -602,12 +604,12 @@ async function renderDashboard(el) {
     const names = await Promise.all(recent.map(c => tryApi("GET", `/kyc/admin/records/${c.idUser}`)));
 
     const alerts = [
-        ...services.filter(s => s.status !== "ok").map(s => ({ icon: "server", cls: "is-bad", title: `${s.name} caído`, sub: "Revisa el monitoreo", href: BASE + "monitoreo" })),
-        ...(h ? [] : [{ icon: "server", cls: "is-bad", title: "El API Gateway no responde", sub: "No se pudo consultar /health", href: BASE + "monitoreo" }]),
-        ...(dead ? [{ icon: "alert", cls: "is-warn", title: `${dead} mensaje(s) en colas de error (DLQ)`, sub: "Eventos que no se pudieron procesar", href: BASE + "monitoreo" }] : []),
-        ...(failedNotif ? [{ icon: "mail", cls: "is-warn", title: `${failedNotif} correo(s) fallido(s) en 7 días`, sub: "Se pueden reintentar", href: BASE + "monitoreo" }] : []),
-        ...(recon && !recon.ok ? [{ icon: "alert", cls: "is-bad", title: "El ledger tiene descuadres", sub: "Revisa el cuadre contable", href: BASE + "monitoreo" }] : []),
-        ...(pendingEvents ? [{ icon: "movements", cls: "is-warn", title: `${pendingEvents} evento(s) sin publicar`, sub: "Outbox de auth, kyc y ledger", href: BASE + "monitoreo" }] : [])
+        ...services.filter(s => s.status !== "ok").map(s => ({ icon: "server", cls: "is-bad", title: `${s.name} caído`, sub: "Revisa el monitoreo", href: BASE + "monitoreo.html" })),
+        ...(h ? [] : [{ icon: "server", cls: "is-bad", title: "El API Gateway no responde", sub: "No se pudo consultar /health", href: BASE + "monitoreo.html" }]),
+        ...(dead ? [{ icon: "alert", cls: "is-warn", title: `${dead} mensaje(s) en colas de error (DLQ)`, sub: "Eventos que no se pudieron procesar", href: BASE + "monitoreo.html" }] : []),
+        ...(failedNotif ? [{ icon: "mail", cls: "is-warn", title: `${failedNotif} correo(s) fallido(s) en 7 días`, sub: "Se pueden reintentar", href: BASE + "monitoreo.html" }] : []),
+        ...(recon && !recon.ok ? [{ icon: "alert", cls: "is-bad", title: "El ledger tiene descuadres", sub: "Revisa el cuadre contable", href: BASE + "monitoreo.html" }] : []),
+        ...(pendingEvents ? [{ icon: "movements", cls: "is-warn", title: `${pendingEvents} evento(s) sin publicar`, sub: "Outbox de auth, kyc y ledger", href: BASE + "monitoreo.html" }] : [])
     ];
 
     const hour = new Date().getHours();
@@ -641,7 +643,7 @@ async function renderDashboard(el) {
 
         <div class="grid g-main" style="margin-top:16px">
             <div class="card">
-                <div class="card-head"><div><h3>Volumen 24 h por tipo</h3><p>Movimientos del ledger en las últimas 24 horas</p></div><a href="${BASE}movimientos">Ver movimientos</a></div>
+                <div class="card-head"><div><h3>Volumen 24 h por tipo</h3><p>Movimientos del ledger en las últimas 24 horas</p></div><a href="${BASE}movimientos.html">Ver movimientos</a></div>
                 ${byType.length ? `<div class="hbars">${byType.map(t => `
                     <div class="hbar-row">
                         <div class="hbar-top"><span>${esc(TX[t.type] || t.type)} <small>· ${t.count} · ${esc(t.currency)}</small></span><b>${esc(money(t.amount, t.currency))}</b></div>
@@ -668,14 +670,14 @@ async function renderDashboard(el) {
                     : `<div class="empty">${svg("check")}<span>Todo en orden. No hay nada que atender.</span></div>`}
             </div>
             <div class="card">
-                <div class="card-head"><h3>Clientes nuevos</h3><a href="${BASE}clientes">Ver todos</a></div>
+                <div class="card-head"><h3>Clientes nuevos</h3><a href="${BASE}clientes.html">Ver todos</a></div>
                 ${recent.length ? `<ul class="feed">${recent.map((c, i) => {
                     const name = kycName(names[i]) || c.email;
                     return `<li class="clickable-li" data-user="${esc(c.idUser)}" style="cursor:pointer"><span class="avatar">${esc(initials(name))}</span><div class="feed-body"><strong>${esc(name)}</strong><small>${esc(c.email)}</small></div><span class="feed-side">${esc(ago(c.createdAt))}</span></li>`;
                 }).join("")}</ul>` : `<p class="muted">${customers ? "Aún no hay registros." : "Auth no disponible."}</p>`}
             </div>
             <div class="card">
-                <div class="card-head"><h3>Actividad del equipo</h3><a href="${BASE}auditoria">Auditoría</a></div>
+                <div class="card-head"><h3>Actividad del equipo</h3><a href="${BASE}auditoria.html">Auditoría</a></div>
                 ${activity.length ? `<ul class="feed">${activity.map(a => `
                     <li><span class="avatar">${esc(initials(a.staffUsername))}</span><div class="feed-body"><strong>${esc(ACTIONS[a.action] || a.action)}</strong><small>@${esc(a.staffUsername)} · ${esc(a.targetType)} ${short(a.targetId)}</small></div><span class="feed-side">${esc(ago(a.createdAt))}</span></li>`).join("")}</ul>`
                     : '<p class="muted">Todavía no hay acciones registradas.</p>'}
@@ -954,7 +956,7 @@ function openAccount(id) {
             <div class="section-title"><h3>Tarjetas</h3></div>
             ${cardTable(cards)}
 
-            <div class="section-title"><h3>Últimos movimientos</h3><a class="btn btn-sm" href="${BASE}movimientos?cuenta=${encodeURIComponent(id)}">Ver todos</a></div>
+            <div class="section-title"><h3>Últimos movimientos</h3><a class="btn btn-sm" href="${BASE}movimientos.html?cuenta=${encodeURIComponent(id)}">Ver todos</a></div>
             ${txs ? moveTable(txs.items, id) : '<div class="card"><p class="muted">Ledger no disponible.</p></div>'}`;
 
         bindMoveRows(body);
