@@ -665,6 +665,24 @@ button {
     white-space: nowrap;
 }
 
+/* Cambiar contraseña y cerrar sesión: compactos para dejar espacio al nombre */
+.me-actions {
+    display: flex;
+    flex: none;
+    gap: 4px;
+}
+
+.me-actions .icon-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+}
+
+.me-actions .icon-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
 .me-body span {
     font-size: 0.72rem;
 }

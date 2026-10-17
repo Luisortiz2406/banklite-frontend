@@ -107,6 +107,7 @@ function downloadCSV(name, rows) {
 }
 
 const ICON = {
+    key: '<circle cx="7.5" cy="15.5" r="4.5"/><path d="m10.7 12.3 9.3-9.3M16 7l3 3M14 9l2 2"/>',
     dashboard: '<path d="M3 13h8V3H3zM13 21h8V11h-8zM3 21h8v-6H3zM13 3v6h8V3z"/>',
     customers: '<circle cx="9" cy="8" r="4"/><path d="M1 21c0-4 4-6 8-6s8 2 8 6"/><path d="M17 3a4 4 0 0 1 0 8M23 21c0-3-2-5-5-5.6"/>',
     accounts: '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/>',
@@ -209,6 +210,7 @@ const ACTIONS = {
     "staff.login": "Ingresó al panel",
     "staff.create": "Creó un empleado",
     "staff.update": "Editó un empleado",
+    "staff.password_change": "Cambió su contraseña",
     "customer.disable": "Suspendió el acceso",
     "customer.enable": "Reactivó el acceso",
     "account.blocked": "Bloqueó la cuenta",
@@ -416,10 +418,36 @@ function buildSide(alerts = 0) {
         <div class="me">
             <span class="avatar">${esc(initials(ME.nombre))}</span>
             <div class="me-body"><strong>${esc(ME.nombre)}</strong><span>${esc(ROLE[ME.role] || ME.role)} · @${esc(ME.username)}</span></div>
-            <button class="icon-btn" id="logoutBtn" title="Cerrar sesión" aria-label="Cerrar sesión">${svg("logout")}</button>
+            <div class="me-actions">
+                <button class="icon-btn" id="passwordBtn" title="Cambiar mi contraseña" aria-label="Cambiar mi contraseña">${svg("key")}</button>
+                <button class="icon-btn" id="logoutBtn" title="Cerrar sesión" aria-label="Cerrar sesión">${svg("logout")}</button>
+            </div>
         </div>`;
 
+    $("passwordBtn").onclick = openChangePassword;
     $("logoutBtn").onclick = () => goLogin("salir");
+}
+
+// Cambio de la contraseña propia (cualquier empleado). Para la de otro empleado: Empleados → Editar.
+function openChangePassword() {
+    formModal({
+        title: "Cambiar mi contraseña",
+        desc: "Escribe tu contraseña actual y la nueva. Debe tener 12 o más caracteres, con mayúsculas, minúsculas y números, y ser distinta de la actual.",
+        icon: "key",
+        confirm: "Cambiar contraseña",
+        fields: [
+            { name: "current", label: "Contraseña actual", type: "password", required: true },
+            { name: "next", label: "Contraseña nueva", type: "password", required: true },
+            { name: "confirm", label: "Confirma la contraseña nueva", type: "password", required: true }
+        ],
+        onSubmit: async v => {
+            if (!PASSWORD_RULE.test(v.next)) throw new Error(PASSWORD_MESSAGE);
+            if (v.next !== v.confirm) throw new Error("La confirmación no coincide con la contraseña nueva.");
+            if (v.next === v.current) throw new Error("La contraseña nueva debe ser distinta de la actual.");
+            await api("POST", "/auth/admin/me/password", { currentPassword: v.current, newPassword: v.next });
+            toast("Tu contraseña se cambió. Úsala la próxima vez que ingreses.");
+        }
+    });
 }
 
 // Alertas técnicas para el contador del menú (servicios caídos, DLQ y correos fallidos)
