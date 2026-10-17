@@ -9099,33 +9099,6 @@ body.home {
 .hm-qr i { border-radius: 3px; }
 .hm-qr i.on { background: #26474E; }
 
-/* "Próximamente": no parece un botón normal (borde punteado, reloj) y abre un aviso corto */
-.soon-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    min-height: 48px;
-    padding: 0 20px;
-    border: 2px dashed rgba(242, 169, 59, 0.75);
-    border-radius: 12px;
-    background: rgba(242, 169, 59, 0.1);
-    color: #8A5A00;
-    font: inherit;
-    font-size: 0.9rem;
-    font-weight: 800;
-    cursor: help;
-    transition: background var(--transition);
-}
-
-.soon-btn:hover { background: rgba(242, 169, 59, 0.18); }
-.soon-btn:focus-visible { outline: 3px solid var(--warning); outline-offset: 2px; }
-
-.soon-btn.on-dark { color: #F7C77A; background: rgba(242, 169, 59, 0.12); }
-
-html[data-theme="dark"] .soon-btn { color: #F7C77A; }
-
-
 /* =========================================================
    EMPRESAS — sobria y profesional
    ========================================================= */
@@ -9154,6 +9127,7 @@ html[data-theme="dark"] .soon-btn { color: #F7C77A; }
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    gap: 8px;
     min-height: 48px;
     padding: 0 22px;
     border: 1px solid transparent;
@@ -9642,6 +9616,7 @@ html[data-theme="dark"] .soon-btn { color: #F7C77A; }
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    gap: 8px;
     min-height: 48px;
     padding: 0 24px;
     border: 2px solid transparent;
@@ -9981,7 +9956,7 @@ html[data-theme="dark"] .soon-btn { color: #F7C77A; }
     font-weight: 900;
 }
 
-.ent-soon-line {
+.ent-ask-line {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
@@ -9989,13 +9964,13 @@ html[data-theme="dark"] .soon-btn { color: #F7C77A; }
     gap: 16px;
     margin-top: 22px;
     padding: 18px 22px;
-    border: 1px dashed rgba(242, 169, 59, 0.6);
+    border: 1px solid var(--primary-pale);
     border-radius: 18px;
     background: var(--white);
 }
 
-.ent-soon-line p { color: var(--text); font-size: 0.9rem; }
-.ent-soon-line b { color: var(--dark); }
+.ent-ask-line p { flex: 1 1 320px; color: var(--text); font-size: 0.9rem; line-height: 1.55; }
+.ent-ask-line b { color: var(--dark); }
 
 /* 4. Preguntas en acordeón */
 .ent-faq-wrap { padding: 88px 0; background: var(--white); }
@@ -10106,8 +10081,7 @@ html[data-theme="dark"] .ent-vnum { border-color: var(--white); }
 @media (prefers-reduced-motion: reduce) {
     .biz-btn,
     .ent-btn,
-    .ent-tile,
-    .soon-btn { transition: none; }
+    .ent-tile { transition: none; }
     .biz-btn:hover,
     .ent-btn:hover,
     .ent-tile:hover { transform: none; }
