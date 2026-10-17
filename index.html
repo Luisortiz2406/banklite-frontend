@@ -36,9 +36,9 @@
     <div class="hm-topbar">
         <div class="hm-container hm-topbar-inner">
             <nav class="hm-segments" aria-label="Tipo de cliente">
-                <a href="index.html" class="active" aria-current="page">Personas</a>
-                <button type="button" data-soon="Banklite Empresas">Empresas</button>
-                <button type="button" data-soon="Banklite Emprendedores">Emprendedores</button>
+                <a href="#personas" data-segment-link="personas" class="active" aria-current="page">Personas</a>
+                <a href="#empresas" data-segment-link="empresas">Empresas</a>
+                <a href="#emprendedores" data-segment-link="emprendedores">Emprendedores</a>
             </nav>
             <div class="hm-toplinks">
                 <a href="sobre-nosotros.html">Sobre nosotros</a>
@@ -144,13 +144,17 @@
 
     <main id="contenido">
 
+        <!-- Cada pestaña de la barra superior (#personas, #empresas, #emprendedores) es un bloque;
+             java.js muestra uno a la vez sin recargar la página. -->
+        <div class="hm-segment" data-segment="personas">
+
         <!-- =================================================
              CARRUSEL PRINCIPAL
         ================================================== -->
 
         <section class="hm-hero" aria-roledescription="carrusel" aria-label="Novedades Banklite">
 
-            <div class="hm-slides" id="hmSlides">
+            <div class="hm-slides">
 
                 <!-- Slide 1 -->
                 <article class="hm-slide is-active" aria-roledescription="diapositiva" aria-label="1 de 3">
@@ -239,22 +243,21 @@
             </div>
 
             <div class="hm-container hm-hero-controls">
-                <button type="button" class="hm-arrow" id="hmPrev" aria-label="Anterior">
+                <button type="button" class="hm-arrow" data-hm-prev aria-label="Anterior">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
                 </button>
-                <div class="hm-dots" id="hmDots" role="tablist" aria-label="Elegir diapositiva">
+                <div class="hm-dots" role="tablist" aria-label="Elegir diapositiva">
                     <button type="button" class="is-active" role="tab" aria-selected="true" aria-label="Diapositiva 1"><span></span></button>
                     <button type="button" role="tab" aria-selected="false" aria-label="Diapositiva 2"><span></span></button>
                     <button type="button" role="tab" aria-selected="false" aria-label="Diapositiva 3"><span></span></button>
                 </div>
-                <button type="button" class="hm-arrow" id="hmNext" aria-label="Siguiente">
+                <button type="button" class="hm-arrow" data-hm-next aria-label="Siguiente">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
                 </button>
-                <button type="button" class="hm-arrow hm-pause" id="hmPause" aria-label="Pausar carrusel" aria-pressed="false">
+                <button type="button" class="hm-arrow hm-pause" data-hm-pause aria-label="Pausar carrusel" aria-pressed="false">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
                 </button>
             </div>
-
         </section>
 
 
@@ -354,7 +357,7 @@
                             <span class="hm-tag">Al instante</span>
                             <h3>Envía entre cuentas Banklite</h3>
                             <p>El dinero llega de inmediato a cualquier cliente Banklite.</p>
-                            <ul><li>Cuentas frecuentes</li><li>Comprobante en PDF</li><li>Sin costo</li></ul>
+                            <ul><li>Con número de cuenta, llave Bre-B o QR</li><li>Comprobante en PDF</li><li>Sin costo</li></ul>
                             <a href="transferir.html" class="hm-link">Transferir →</a>
                         </div>
                     </article>
@@ -648,6 +651,480 @@
 
             </div>
         </section>
+
+        </div>
+
+
+        <!-- =================================================
+             EMPRESAS (Banklite hoy solo tiene cuentas para personas: lo nuevo va como "Próximamente")
+        ================================================== -->
+
+        <div class="hm-segment" data-segment="empresas" hidden>
+
+        <section class="hm-hero" aria-roledescription="carrusel" aria-label="Banklite para empresas">
+
+            <div class="hm-slides">
+
+                <article class="hm-slide is-active" aria-roledescription="diapositiva" aria-label="1 de 3">
+                    <div class="hm-container hm-slide-inner">
+                        <div class="hm-slide-copy">
+                            <span class="hm-pill">Próximamente · Empresas</span>
+                            <h1>La cuenta de tu empresa,<br><span>100% digital.</span></h1>
+                            <p>Una cuenta para manejar la plata de tu negocio separada de la tuya, con los mismos controles y la seguridad de Banklite.</p>
+                            <div class="hm-slide-buttons">
+                                <button type="button" class="hm-btn hm-btn-primary hm-btn-lg" data-soon="La cuenta empresarial de Banklite" data-soon-text="Banklite es un proyecto académico y hoy solo ofrece cuentas para personas. La cuenta empresarial estará disponible próximamente.">Próximamente</button>
+                                <a href="#empresas-productos" class="hm-btn hm-btn-light hm-btn-lg">Ver productos</a>
+                            </div>
+                        </div>
+                        <div class="hm-art hm-art-phone" aria-hidden="true">
+                            <div class="hm-phone-frame">
+                                <div class="hm-phone-screen">
+                                    <div class="hm-phone-top"><span class="brand-logo">B</span><b>Tu empresa</b></div>
+                                    <div class="hm-phone-balance">
+                                        <small>Saldo disponible</small>
+                                        <strong>$ 8.420.000</strong>
+                                        <span>Cuenta empresarial</span>
+                                    </div>
+                                    <div class="hm-phone-actions"><i></i><i></i><i></i><i></i></div>
+                                    <div class="hm-phone-row"><i></i><span></span><b class="in">+$1.200.000</b></div>
+                                    <div class="hm-phone-row"><i></i><span></span><b>−$640.000</b></div>
+                                    <div class="hm-phone-row"><i></i><span></span><b>−$310.000</b></div>
+                                </div>
+                            </div>
+                            <div class="hm-float hm-float-a">
+                                <span>✓</span>
+                                <div><b>Pago a proveedor</b><small>Hace un momento</small></div>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="hm-slide hm-slide-2" aria-roledescription="diapositiva" aria-label="2 de 3">
+                    <div class="hm-container hm-slide-inner">
+                        <div class="hm-slide-copy">
+                            <span class="hm-pill">Próximamente</span>
+                            <h2>Paga la nómina<br><span>en un solo paso.</span></h2>
+                            <p>Carga a tu equipo una vez y págale a todos desde la cuenta de tu empresa, con el comprobante de cada pago.</p>
+                            <div class="hm-slide-buttons">
+                                <button type="button" class="hm-btn hm-btn-primary hm-btn-lg" data-soon="El pago de nómina" data-soon-text="Banklite es un proyecto académico y hoy solo ofrece cuentas para personas. La cuenta empresarial estará disponible próximamente.">Próximamente</button>
+                                <a href="#empresas-productos" class="hm-btn hm-btn-light hm-btn-lg">Ver productos</a>
+                            </div>
+                        </div>
+                        <div class="hm-art hm-art-bills" aria-hidden="true">
+                            <div class="hm-bill hm-bill-back"></div>
+                            <div class="hm-bill">
+                                <div class="hm-bill-head"><i></i><div><b>Nómina</b><small>Equipo de trabajo</small></div><span>Lista</span></div>
+                                <div class="hm-bill-line"></div>
+                                <div class="hm-bill-line short"></div>
+                                <div class="hm-bill-line"></div>
+                                <div class="hm-bill-total"><small>Total a pagar</small><b>$ 9.600.000</b></div>
+                            </div>
+                            <div class="hm-float hm-float-c">
+                                <span>✓</span>
+                                <div><b>Pagos enviados</b><small>Comprobante por empleado</small></div>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="hm-slide hm-slide-3" aria-roledescription="diapositiva" aria-label="3 de 3">
+                    <div class="hm-container hm-slide-inner">
+                        <div class="hm-slide-copy">
+                            <span class="hm-pill">Recaudo con QR</span>
+                            <h2>Tus clientes te pagan<br><span>con un QR.</span></h2>
+                            <p>Muestra tu código y recibe la plata al instante en tu cuenta. Hoy ya puedes cobrar con QR desde una cuenta personal Banklite.</p>
+                            <div class="hm-slide-buttons">
+                                <a href="registro.html" class="hm-btn hm-btn-primary hm-btn-lg">Crear mi cuenta personal</a>
+                                <a href="#empresas-productos" class="hm-btn hm-btn-light hm-btn-lg">Ver productos</a>
+                            </div>
+                        </div>
+                        <div class="hm-art hm-art-bills" aria-hidden="true">
+                            <div class="hm-bill hm-bill-back"></div>
+                            <div class="hm-bill hm-qr-card">
+                                <div class="hm-bill-head"><i></i><div><b>Cobra con QR</b><small>Escanea para pagar</small></div><span>Activo</span></div>
+                                <div class="hm-qr" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i class="on"></i><i></i><i class="on"></i><i></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i><i class="on"></i><i class="on"></i><i></i><i></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i class="on"></i><i></i><i class="on"></i><i class="on"></i><i></i><i class="on"></i><i></i><i></i><i class="on"></i><i></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i class="on"></i><i class="on"></i><i class="on"></i></div>
+                            </div>
+                            <div class="hm-float hm-float-c">
+                                <span>✓</span>
+                                <div><b>Pago recibido</b><small>Llega al instante</small></div>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+            </div>
+
+            <div class="hm-container hm-hero-controls">
+                <button type="button" class="hm-arrow" data-hm-prev aria-label="Anterior">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+                </button>
+                <div class="hm-dots" role="tablist" aria-label="Elegir diapositiva de empresas">
+                    <button type="button" class="is-active" role="tab" aria-selected="true" aria-label="Diapositiva 1"><span></span></button>
+                    <button type="button" role="tab" aria-selected="false" aria-label="Diapositiva 2"><span></span></button>
+                    <button type="button" role="tab" aria-selected="false" aria-label="Diapositiva 3"><span></span></button>
+                </div>
+                <button type="button" class="hm-arrow" data-hm-next aria-label="Siguiente">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                </button>
+                <button type="button" class="hm-arrow hm-pause" data-hm-pause aria-label="Pausar carrusel" aria-pressed="false">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+                </button>
+            </div>
+
+        </section>
+
+
+        <section class="hm-section" id="empresas-productos" aria-labelledby="companyProductsTitle">
+            <div class="hm-container">
+
+                <div class="hm-heading">
+                    <span class="hm-eyebrow">Productos para empresas</span>
+                    <h2 id="companyProductsTitle">Lo que viene para tu empresa</h2>
+                </div>
+
+                <div class="hm-tab-panel">
+                    <article class="hm-product">
+                        <div class="hm-product-art art-turquoise" aria-hidden="true">
+                            <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 9h1M14 9h1M9 13h1M14 13h1M9 17h1M14 17h1"/></svg>
+                        </div>
+                        <div class="hm-product-body">
+                            <span class="hm-tag is-soon">Próximamente</span>
+                            <h3>Cuenta empresarial</h3>
+                            <p>La plata de tu empresa en su propia cuenta, separada de la tuya.</p>
+                            <ul><li>Apertura digital</li><li>Extracto mensual en PDF</li><li>Tarjeta débito asociada</li></ul>
+                            <button type="button" class="hm-link hm-link-btn" data-soon="La cuenta empresarial de Banklite" data-soon-text="Banklite es un proyecto académico y hoy solo ofrece cuentas para personas. La cuenta empresarial estará disponible próximamente.">Próximamente</button>
+                        </div>
+                    </article>
+                    <article class="hm-product">
+                        <div class="hm-product-art art-dark" aria-hidden="true">
+                            <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h11v9H3z"/><path d="M14 10h4l3 3v3h-7"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>
+                        </div>
+                        <div class="hm-product-body">
+                            <span class="hm-tag is-soon">Próximamente</span>
+                            <h3>Pagos masivos a proveedores</h3>
+                            <p>Paga a varios proveedores a la vez con un solo archivo.</p>
+                            <ul><li>Un comprobante por pago</li><li>Seguimiento de cada envío</li></ul>
+                            <button type="button" class="hm-link hm-link-btn" data-soon="Los pagos masivos a proveedores" data-soon-text="Banklite es un proyecto académico y hoy solo ofrece cuentas para personas. La cuenta empresarial estará disponible próximamente.">Próximamente</button>
+                        </div>
+                    </article>
+                    <article class="hm-product">
+                        <div class="hm-product-art art-light" aria-hidden="true">
+                            <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></svg>
+                        </div>
+                        <div class="hm-product-body">
+                            <span class="hm-tag is-soon">Próximamente</span>
+                            <h3>Pago de nómina</h3>
+                            <p>Págale a tu equipo desde la cuenta de tu empresa.</p>
+                            <ul><li>Lista de empleados guardada</li><li>Comprobante para cada uno</li></ul>
+                            <button type="button" class="hm-link hm-link-btn" data-soon="El pago de nómina" data-soon-text="Banklite es un proyecto académico y hoy solo ofrece cuentas para personas. La cuenta empresarial estará disponible próximamente.">Próximamente</button>
+                        </div>
+                    </article>
+                    <article class="hm-product">
+                        <div class="hm-product-art art-turquoise" aria-hidden="true">
+                            <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3M21 14v.01M14 21h7v-4M17 21v-.01"/></svg>
+                        </div>
+                        <div class="hm-product-body">
+                            <span class="hm-tag">Disponible para personas</span>
+                            <h3>Recaudo con QR</h3>
+                            <p>Crea tu código de cobro y recibe pagos al instante entre cuentas Banklite.</p>
+                            <ul><li>QR con o sin valor</li><li>Comprobante en PDF</li></ul>
+                            <a href="registro.html" class="hm-link">Crear mi cuenta personal →</a>
+                        </div>
+                    </article>
+                    <article class="hm-product">
+                        <div class="hm-product-art art-dark" aria-hidden="true">
+                            <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="16" height="12" rx="2"/><path d="M6 3h14a2 2 0 0 1 2 2v10"/><path d="M2 11h16"/></svg>
+                        </div>
+                        <div class="hm-product-body">
+                            <span class="hm-tag is-soon">Próximamente</span>
+                            <h3>Tarjetas para empleados</h3>
+                            <p>Tarjetas débito virtuales para los gastos de tu equipo, con límites que tú defines.</p>
+                            <ul><li>Congélalas cuando quieras</li><li>Límite diario por tarjeta</li></ul>
+                            <button type="button" class="hm-link hm-link-btn" data-soon="Las tarjetas para empleados" data-soon-text="Banklite es un proyecto académico y hoy solo ofrece cuentas para personas. La cuenta empresarial estará disponible próximamente.">Próximamente</button>
+                        </div>
+                    </article>
+                </div>
+
+                <p class="hm-note">Banklite es un proyecto académico y no es una entidad financiera real. Hoy solo ofrece cuentas para personas; lo marcado como <b>Próximamente</b> todavía no existe.</p>
+
+            </div>
+        </section>
+
+
+        <section class="hm-section" id="empresas-beneficios" aria-labelledby="companyBenefitsTitle">
+            <div class="hm-container">
+
+                <div class="hm-heading">
+                    <span class="hm-eyebrow">Hecho para equipos</span>
+                    <h2 id="companyBenefitsTitle">Pensado para la forma en que trabaja tu empresa</h2>
+                </div>
+
+                <div class="hm-benefits is-three">
+                    <div class="hm-benefit">
+                        <b>Roles</b>
+                        <h3>Varios usuarios con permisos</h3>
+                        <p>Que cada persona de tu equipo entre con su usuario y solo vea o apruebe lo que le corresponde.</p>
+                        <span class="hm-tag is-soon">Próximamente</span>
+                    </div>
+                    <div class="hm-benefit">
+                        <b>Excel</b>
+                        <h3>Extractos y reportes</h3>
+                        <p>Hoy ya descargas tus movimientos en Excel (CSV) y tu extracto mensual en PDF con una cuenta personal. Los reportes para empresas llegarán con la cuenta empresarial.</p>
+                        <span class="hm-tag">Extractos disponibles para personas</span>
+                    </div>
+                    <div class="hm-benefit">
+                        <b>API</b>
+                        <h3>Conexión por API</h3>
+                        <p>Conecta tu sistema contable o tu tienda en línea con Banklite para consultar pagos sin hacerlo a mano.</p>
+                        <span class="hm-tag is-soon">Próximamente</span>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        </div>
+
+
+        <!-- =================================================
+             EMPRENDEDORES
+        ================================================== -->
+
+        <div class="hm-segment" data-segment="emprendedores" hidden>
+
+        <section class="hm-hero" aria-roledescription="carrusel" aria-label="Banklite para emprendedores">
+
+            <div class="hm-slides">
+
+                <article class="hm-slide is-active" aria-roledescription="diapositiva" aria-label="1 de 3">
+                    <div class="hm-container hm-slide-inner">
+                        <div class="hm-slide-copy">
+                            <span class="hm-pill">Disponible hoy</span>
+                            <h1>Cobra con QR,<br><span>sin datáfono.</span></h1>
+                            <p>Crea tu código de cobro y muéstralo: tus clientes Banklite te pagan al instante y te queda el comprobante.</p>
+                            <div class="hm-slide-buttons">
+                                <a href="registro.html" class="hm-btn hm-btn-primary hm-btn-lg">Crear mi cuenta personal</a>
+                                <a href="#emprendedores-pasos" class="hm-btn hm-btn-light hm-btn-lg">Cómo empezar</a>
+                            </div>
+                        </div>
+                        <div class="hm-art hm-art-bills" aria-hidden="true">
+                            <div class="hm-bill hm-bill-back"></div>
+                            <div class="hm-bill hm-qr-card">
+                                <div class="hm-bill-head"><i></i><div><b>Mi QR de cobro</b><small>Tu negocio</small></div><span>Activo</span></div>
+                                <div class="hm-qr" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i class="on"></i><i></i><i class="on"></i><i></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i><i class="on"></i><i class="on"></i><i></i><i></i><i></i><i class="on"></i><i class="on"></i><i></i><i></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i class="on"></i><i></i><i class="on"></i><i class="on"></i><i></i><i class="on"></i><i></i><i></i><i class="on"></i><i></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i class="on"></i><i class="on"></i><i class="on"></i></div>
+                            </div>
+                            <div class="hm-float hm-float-c">
+                                <span>✓</span>
+                                <div><b>Te pagaron</b><small>Al instante</small></div>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="hm-slide hm-slide-2" aria-roledescription="diapositiva" aria-label="2 de 3">
+                    <div class="hm-container hm-slide-inner">
+                        <div class="hm-slide-copy">
+                            <span class="hm-pill">Disponible hoy</span>
+                            <h2>Separa la plata<br><span>de tu negocio.</span></h2>
+                            <p>Crea bolsillos para los impuestos, la mercancía o los gastos del mes, y sabrás siempre qué plata es de qué.</p>
+                            <div class="hm-slide-buttons">
+                                <a href="registro.html" class="hm-btn hm-btn-primary hm-btn-lg">Crear mi cuenta personal</a>
+                                <a href="#emprendedores-productos" class="hm-btn hm-btn-light hm-btn-lg">Ver productos</a>
+                            </div>
+                        </div>
+                        <div class="hm-art hm-art-growth" aria-hidden="true">
+                            <div class="hm-bars"><i style="--h:34%"></i><i style="--h:48%"></i><i style="--h:62%"></i><i style="--h:78%"></i><i style="--h:100%"></i></div>
+                            <div class="hm-coin hm-coin-1">$</div>
+                            <div class="hm-coin hm-coin-2">$</div>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="hm-slide hm-slide-3" aria-roledescription="diapositiva" aria-label="3 de 3">
+                    <div class="hm-container hm-slide-inner">
+                        <div class="hm-slide-copy">
+                            <span class="hm-pill">Disponible hoy</span>
+                            <h2>Lleva tus ventas<br><span>y tus gastos.</span></h2>
+                            <p>Revisa cada movimiento con filtros, descárgalos en Excel (CSV) y baja el extracto de cada mes en PDF.</p>
+                            <div class="hm-slide-buttons">
+                                <a href="registro.html" class="hm-btn hm-btn-primary hm-btn-lg">Crear mi cuenta personal</a>
+                                <a href="#emprendedores-ayuda" class="hm-btn hm-btn-light hm-btn-lg">Preguntas frecuentes</a>
+                            </div>
+                        </div>
+                        <div class="hm-art hm-art-bills" aria-hidden="true">
+                            <div class="hm-bill hm-bill-back"></div>
+                            <div class="hm-bill">
+                                <div class="hm-bill-head"><i></i><div><b>Movimientos del mes</b><small>Ventas y gastos</small></div><span>Excel</span></div>
+                                <div class="hm-bill-line"></div>
+                                <div class="hm-bill-line short"></div>
+                                <div class="hm-bill-line"></div>
+                                <div class="hm-bill-total"><small>Entró este mes</small><b>$ 2.380.000</b></div>
+                            </div>
+                            <div class="hm-float hm-float-c">
+                                <span>✓</span>
+                                <div><b>Extracto listo</b><small>En PDF</small></div>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+            </div>
+
+            <div class="hm-container hm-hero-controls">
+                <button type="button" class="hm-arrow" data-hm-prev aria-label="Anterior">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+                </button>
+                <div class="hm-dots" role="tablist" aria-label="Elegir diapositiva de emprendedores">
+                    <button type="button" class="is-active" role="tab" aria-selected="true" aria-label="Diapositiva 1"><span></span></button>
+                    <button type="button" role="tab" aria-selected="false" aria-label="Diapositiva 2"><span></span></button>
+                    <button type="button" role="tab" aria-selected="false" aria-label="Diapositiva 3"><span></span></button>
+                </div>
+                <button type="button" class="hm-arrow" data-hm-next aria-label="Siguiente">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+                </button>
+                <button type="button" class="hm-arrow hm-pause" data-hm-pause aria-label="Pausar carrusel" aria-pressed="false">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+                </button>
+            </div>
+
+        </section>
+
+
+        <section class="hm-section" id="emprendedores-productos" aria-labelledby="entreProductsTitle">
+            <div class="hm-container">
+
+                <div class="hm-heading">
+                    <span class="hm-eyebrow">Productos para emprendedores</span>
+                    <h2 id="entreProductsTitle">Herramientas para tu negocio</h2>
+                </div>
+
+                <div class="hm-tab-panel is-two">
+                    <article class="hm-product">
+                        <div class="hm-product-art art-turquoise" aria-hidden="true">
+                            <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1.5-5h15L21 9"/><path d="M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/><path d="M5 12v9h14v-9"/><path d="M10 21v-5h4v5"/></svg>
+                        </div>
+                        <div class="hm-product-body">
+                            <span class="hm-tag is-soon">Próximamente</span>
+                            <h3>Cuenta para emprendedores</h3>
+                            <p>Una cuenta para tu negocio, separada de tu plata personal.</p>
+                            <ul><li>Apertura digital</li><li>Extracto mensual en PDF</li></ul>
+                            <button type="button" class="hm-link hm-link-btn" data-soon="La cuenta para emprendedores" data-soon-text="Banklite es un proyecto académico y hoy solo ofrece cuentas para personas. La cuenta para emprendedores estará disponible próximamente; mientras tanto, puedes cobrar con QR y separar tu plata en bolsillos con una cuenta personal.">Próximamente</button>
+                        </div>
+                    </article>
+                    <article class="hm-product">
+                        <div class="hm-product-art art-dark" aria-hidden="true">
+                            <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3M21 14v.01M14 21h7v-4M17 21v-.01"/></svg>
+                        </div>
+                        <div class="hm-product-body">
+                            <span class="hm-tag">QR disponible · links de pago próximamente</span>
+                            <h3>Cobros con QR y links de pago</h3>
+                            <p>Cobra con tu QR de Banklite; pronto también podrás enviar un link de pago por chat.</p>
+                            <ul><li>QR con o sin valor</li><li>Comprobante en PDF</li></ul>
+                            <a href="registro.html" class="hm-link">Crear mi cuenta personal →</a>
+                        </div>
+                    </article>
+                    <article class="hm-product">
+                        <div class="hm-product-art art-light" aria-hidden="true">
+                            <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0 0 4h14a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg>
+                        </div>
+                        <div class="hm-product-body">
+                            <span class="hm-tag">Disponible</span>
+                            <h3>Bolsillos para impuestos y gastos</h3>
+                            <p>Aparta la plata de los impuestos y los gastos del negocio en bolsillos que ganan intereses.</p>
+                            <ul><li>Sácala cuando la necesites</li><li>Hasta 8 bolsillos</li></ul>
+                            <a href="registro.html" class="hm-link">Crear mi cuenta personal →</a>
+                        </div>
+                    </article>
+                    <article class="hm-product">
+                        <div class="hm-product-art art-turquoise" aria-hidden="true">
+                            <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>
+                        </div>
+                        <div class="hm-product-body">
+                            <span class="hm-tag">Disponible</span>
+                            <h3>Metas de ahorro</h3>
+                            <p>Ponle valor y fecha a lo que quieres para tu negocio: una máquina, un local o mercancía.</p>
+                            <ul><li>Sigue tu avance</li><li>Abona cuando quieras</li></ul>
+                            <a href="registro.html" class="hm-link">Crear mi cuenta personal →</a>
+                        </div>
+                    </article>
+                </div>
+
+                <p class="hm-note">Banklite es un proyecto académico y no es una entidad financiera real. Hoy solo ofrece cuentas para personas; lo marcado como <b>Próximamente</b> todavía no existe.</p>
+
+            </div>
+        </section>
+
+
+        <section class="hm-section" id="emprendedores-pasos" aria-labelledby="entreStepsTitle">
+            <div class="hm-container">
+
+                <div class="hm-heading">
+                    <span class="hm-eyebrow">Empieza hoy</span>
+                    <h2 id="entreStepsTitle">Cómo empezar en 3 pasos</h2>
+                </div>
+
+                <div class="hm-benefits is-three">
+                    <div class="hm-benefit">
+                        <b>1</b>
+                        <h3>Abre tu cuenta personal</h3>
+                        <p>Es 100% digital: verificamos tu identidad, tu correo y tu celular, y eliges tu clave.</p>
+                    </div>
+                    <div class="hm-benefit">
+                        <b>2</b>
+                        <h3>Crea tu QR de cobro</h3>
+                        <p>Regístralo con una de tus llaves Bre-B o tu número de cuenta y muéstralo a tus clientes.</p>
+                    </div>
+                    <div class="hm-benefit">
+                        <b>3</b>
+                        <h3>Separa en bolsillos</h3>
+                        <p>Aparta lo de los impuestos y los gastos del negocio para no mezclarlo con tu plata.</p>
+                    </div>
+                </div>
+
+                <div class="hm-slide-buttons hm-center">
+                    <a href="registro.html" class="hm-btn hm-btn-primary hm-btn-lg">Crear mi cuenta personal</a>
+                    <button type="button" class="hm-btn hm-btn-light hm-btn-lg" data-soon="La cuenta para emprendedores" data-soon-text="Banklite es un proyecto académico y hoy solo ofrece cuentas para personas. La cuenta para emprendedores estará disponible próximamente; mientras tanto, puedes cobrar con QR y separar tu plata en bolsillos con una cuenta personal.">Cuenta para emprendedores: próximamente</button>
+                </div>
+
+            </div>
+        </section>
+
+
+        <section class="hm-section" id="emprendedores-ayuda" aria-labelledby="entreFaqTitle">
+            <div class="hm-container">
+
+                <div class="hm-heading">
+                    <span class="hm-eyebrow">Resolvemos tus dudas</span>
+                    <h2 id="entreFaqTitle">Preguntas frecuentes</h2>
+                </div>
+
+                <div class="hm-faq">
+                    <details>
+                        <summary>¿Ya puedo abrir una cuenta para mi negocio?</summary>
+                        <p>Todavía no. Banklite hoy solo ofrece cuentas para personas; la cuenta para emprendedores llegará próximamente. Mientras tanto puedes usar tu cuenta personal para cobrar con QR y separar la plata del negocio en bolsillos.</p>
+                    </details>
+                    <details>
+                        <summary>¿Necesito un datáfono para cobrar?</summary>
+                        <p>No. Creas tu código QR de cobro en la app y tu cliente lo escanea desde su cuenta Banklite. Por ahora los pagos con QR funcionan entre cuentas Banklite.</p>
+                    </details>
+                    <details>
+                        <summary>¿Cuánto me cuesta recibir pagos?</summary>
+                        <p>Nada. Banklite no cobra comisión por recibir ni por enviar plata entre cuentas Banklite.</p>
+                    </details>
+                    <details>
+                        <summary>¿Puedo separar la plata de los impuestos?</summary>
+                        <p>Sí. Crea un bolsillo para los impuestos y aparta ahí lo que te toque pagar. Puedes tener hasta 8 bolsillos y sacar la plata cuando la necesites.</p>
+                    </details>
+                    <details>
+                        <summary>¿Cómo llevo el control de mis ventas?</summary>
+                        <p>En Movimientos ves cada entrada y salida con filtros, la descargas en Excel (CSV) y bajas el extracto de cada mes en PDF.</p>
+                    </details>
+                </div>
+
+            </div>
+        </section>
+
+        </div>
 
     </main>
 

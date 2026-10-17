@@ -601,12 +601,81 @@ const HOME_ARTICLES = {
     }
 };
 
+/**
+ * Carrusel principal de una pestaña del inicio. Devuelve start/stop para que
+ * solo avance el de la pestaña visible.
+ */
+function homeCarousel(hero) {
+    const slides = Array.from(hero.querySelectorAll(".hm-slide"));
+    const dots = Array.from(hero.querySelectorAll(".hm-dots button"));
+    const pauseButton = hero.querySelector("[data-hm-pause]");
+    const slider = hero.querySelector(".hm-slides");
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let current = 0;
+    let paused = reduceMotion;
+    let running = false;
+    let timer = null;
+
+    function goTo(index) {
+        current = (index + slides.length) % slides.length;
+        slides.forEach((slide, i) => {
+            slide.classList.toggle("is-active", i === current);
+            slide.setAttribute("aria-hidden", String(i !== current));
+            slide.querySelectorAll("a, button").forEach(el => el.tabIndex = i === current ? 0 : -1);
+        });
+        hero.classList.toggle("is-dark", slides[current].classList.contains("hm-slide-2"));
+        dots.forEach((dot, i) => {
+            dot.classList.toggle("is-active", i === current);
+            dot.setAttribute("aria-selected", String(i === current));
+        });
+        restart();
+    }
+
+    function restart() {
+        clearInterval(timer);
+        hero.classList.toggle("is-paused", paused);
+        if (running && !paused) timer = setInterval(() => goTo(current + 1), 6500);
+    }
+
+    dots.forEach((dot, i) => dot.addEventListener("click", () => goTo(i)));
+    hero.querySelector("[data-hm-prev]")?.addEventListener("click", () => goTo(current - 1));
+    hero.querySelector("[data-hm-next]")?.addEventListener("click", () => goTo(current + 1));
+
+    pauseButton?.addEventListener("click", () => {
+        paused = !paused;
+        pauseButton.setAttribute("aria-pressed", String(paused));
+        pauseButton.setAttribute("aria-label", paused ? "Reanudar carrusel" : "Pausar carrusel");
+        pauseButton.innerHTML = paused
+            ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4v16l13-8z"/></svg>'
+            : '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>';
+        restart();
+    });
+
+    // Deslizar con el dedo en el celular
+    let touchX = null;
+    slider?.addEventListener("touchstart", event => { touchX = event.touches[0].clientX; }, { passive: true });
+    slider?.addEventListener("touchend", event => {
+        if (touchX === null) return;
+        const diff = event.changedTouches[0].clientX - touchX;
+        if (Math.abs(diff) > 50) goTo(current + (diff < 0 ? 1 : -1));
+        touchX = null;
+    });
+
+    goTo(0);
+
+    return {
+        start() { running = true; goTo(0); },
+        stop() { running = false; clearInterval(timer); }
+    };
+}
+
 function initHome() {
 
     // -----------------------------------------------------
     // MENÚ MÓVIL Y MEGAMENÚ
     // -----------------------------------------------------
 
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const header = document.getElementById("hmHeader");
     const burger = document.getElementById("hmBurger");
     const mobile = document.getElementById("hmMobile");
@@ -654,64 +723,64 @@ function initHome() {
 
 
     // -----------------------------------------------------
-    // CARRUSEL
+    // CARRUSELES (uno por pestaña; solo avanza el que se ve)
     // -----------------------------------------------------
 
-    const slides = Array.from(document.querySelectorAll(".hm-slide"));
-    const dots = Array.from(document.querySelectorAll("#hmDots button"));
-    const pauseButton = document.getElementById("hmPause");
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    let current = 0;
-    let paused = reduceMotion;
-    let timer = null;
+    const carousels = new Map(Array.from(document.querySelectorAll(".hm-hero")).map(hero => [hero, homeCarousel(hero)]));
 
-    function goTo(index) {
-        current = (index + slides.length) % slides.length;
-        slides.forEach((slide, i) => {
-            slide.classList.toggle("is-active", i === current);
-            slide.setAttribute("aria-hidden", String(i !== current));
-            slide.querySelectorAll("a, button").forEach(el => el.tabIndex = i === current ? 0 : -1);
-        });
-        document.querySelector(".hm-hero")?.classList.toggle("is-dark", slides[current].classList.contains("hm-slide-2"));
-        dots.forEach((dot, i) => {
-            dot.classList.toggle("is-active", i === current);
-            dot.setAttribute("aria-selected", String(i === current));
-        });
-        restart();
+
+    // -----------------------------------------------------
+    // PERSONAS, EMPRESAS Y EMPRENDEDORES
+    // Cada pestaña de la barra superior es un bloque [data-segment]. Se cambia
+    // sin recargar y la URL queda en #personas, #empresas o #emprendedores
+    // (se puede compartir y el botón Atrás funciona). Las anclas internas
+    // (#beneficios, #empresas-productos...) abren la pestaña que las contiene.
+    // -----------------------------------------------------
+
+    const segments = Array.from(document.querySelectorAll("[data-segment]"));
+    const segmentLinks = Array.from(document.querySelectorAll("[data-segment-link]"));
+    const SEGMENT_TITLES = { personas: "Personas", empresas: "Empresas", emprendedores: "Emprendedores" };
+    let currentSegment = null;
+
+    function segmentFromHash() {
+        const hash = decodeURIComponent(location.hash.slice(1));
+        if (!hash) return { name: "personas", target: null };
+        if (SEGMENT_TITLES[hash]) return { name: hash, target: null };
+        const target = document.getElementById(hash);
+        const owner = target?.closest("[data-segment]");
+        return owner ? { name: owner.dataset.segment, target } : null;
     }
 
-    function restart() {
-        clearInterval(timer);
-        document.querySelector(".hm-hero")?.classList.toggle("is-paused", paused);
-        if (!paused) timer = setInterval(() => goTo(current + 1), 6500);
+    function showSegment(name) {
+        if (name === currentSegment) return;
+        currentSegment = name;
+        segments.forEach(segment => {
+            const visible = segment.dataset.segment === name;
+            segment.hidden = !visible;
+            segment.querySelectorAll(".hm-hero").forEach(hero => carousels.get(hero)?.[visible ? "start" : "stop"]());
+        });
+        segmentLinks.forEach(link => {
+            const active = link.dataset.segmentLink === name;
+            link.classList.toggle("active", active);
+            if (active) link.setAttribute("aria-current", "page");
+            else link.removeAttribute("aria-current");
+        });
+        document.title = `Banklite | ${SEGMENT_TITLES[name]}`;
     }
 
-    dots.forEach((dot, i) => dot.addEventListener("click", () => goTo(i)));
-    document.getElementById("hmPrev")?.addEventListener("click", () => goTo(current - 1));
-    document.getElementById("hmNext")?.addEventListener("click", () => goTo(current + 1));
+    function syncSegment(scroll) {
+        const found = segmentFromHash();
+        if (!found) return;
+        showSegment(found.name);
+        if (!scroll) return;
+        // La sección estaba oculta cuando el navegador intentó llegar a ella: se baja ahora.
+        if (found.target) found.target.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth" });
+        else window.scrollTo({ top: 0, behavior: "auto" });
+    }
 
-    pauseButton?.addEventListener("click", () => {
-        paused = !paused;
-        pauseButton.setAttribute("aria-pressed", String(paused));
-        pauseButton.setAttribute("aria-label", paused ? "Reanudar carrusel" : "Pausar carrusel");
-        pauseButton.innerHTML = paused
-            ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4v16l13-8z"/></svg>'
-            : '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>';
-        restart();
-    });
-
-    // Deslizar con el dedo en el celular
-    let touchX = null;
-    const slider = document.getElementById("hmSlides");
-    slider?.addEventListener("touchstart", event => { touchX = event.touches[0].clientX; }, { passive: true });
-    slider?.addEventListener("touchend", event => {
-        if (touchX === null) return;
-        const diff = event.changedTouches[0].clientX - touchX;
-        if (Math.abs(diff) > 50) goTo(current + (diff < 0 ? 1 : -1));
-        touchX = null;
-    });
-
-    goTo(0);
+    window.addEventListener("hashchange", () => syncSegment(true));
+    // Al cargar con un enlace compartido (#empresas o #empresas-productos) se va directo ahí.
+    syncSegment(Boolean(location.hash));
 
 
     // -----------------------------------------------------
@@ -745,7 +814,7 @@ function initHome() {
 
     document.querySelectorAll("[data-soon]").forEach(button => button.addEventListener("click", event => {
         event.preventDefault();
-        showMessage("Muy pronto", `${button.dataset.soon} estará disponible próximamente.`, "i");
+        showMessage("Muy pronto", button.dataset.soonText || `${button.dataset.soon} estará disponible próximamente.`, "i");
     }));
 
     // Si ya hay sesión abierta, "Ingresar" lleva directo al dashboard
@@ -971,6 +1040,9 @@ const BOT_TOPICS = [
     { id: "suscripciones", keys: ["suscripcion", "suscripciones", "netflix", "spotify", "cobro recurrente", "cobros automaticos", "pausar", "cancelar suscripcion"],
       faq: "¿Cómo funcionan las suscripciones?", cat: "tarjeta",
       answer: () => ({ text: "En el inicio, sección **Suscripciones**, inscribes servicios como Netflix o Spotify a tu tarjeta. Pagas el primer mes al inscribir y luego se cobra solo cada mes el mismo día; te avisamos 3 días antes. Si un cobro falla (tarjeta congelada, compras por internet desactivadas, límite diario o sin saldo) lo reintentamos 3 días y después se suspende. Puedes **pausar**, **reanudar** o **cancelar** cuando quieras.", links: [{ label: "Mis suscripciones", href: "dashboard.html#suscripciones" }] }) },
+    { id: "empresas", keys: ["empresa", "empresas", "cuenta empresarial", "cuenta para empresas", "cuenta para mi empresa", "nomina", "pagar nomina", "proveedores", "emprendedor", "emprendedores", "cuenta para emprendedores", "mi negocio", "cuenta para mi negocio", "pyme", "pymes"],
+      faq: "¿Banklite tiene cuentas para empresas o emprendedores?", cat: "cuenta",
+      answer: () => ({ text: "Todavía no: Banklite hoy solo ofrece **cuentas para personas**. La cuenta empresarial (con nómina y pagos a proveedores) y la cuenta para emprendedores llegarán **próximamente**. Mientras tanto, con tu cuenta personal ya puedes **cobrar con QR**, separar la plata del negocio en **bolsillos** y descargar tus movimientos en Excel.", links: [{ label: "Banklite Empresas", href: "index.html#empresas" }, { label: "Banklite Emprendedores", href: "index.html#emprendedores" }] }) },
     { id: "credito", keys: ["credito", "prestamo", "prestan", "tarjeta de credito", "hipoteca", "libranza", "bitcoin", "cripto", "criptomonedas", "acciones", "seguro de vida", "dolares", "divisas"],
       faq: "¿Banklite ofrece créditos?", cat: "cuenta",
       answer: () => ({ text: "Banklite no ofrece créditos, tarjetas de crédito, criptomonedas ni cambio de divisas. Hoy tienes cuenta de ahorros o corriente, tarjeta débito, transferencias (a Banklite, con llave Bre-B y a otros bancos), pagos con QR, pago de facturas y recargas." }) }

@@ -9076,6 +9076,80 @@ body.home {
     font-size: 0.74rem;
 }
 
+/* ---------- Empresas y Emprendedores (pestañas de la barra superior) ---------- */
+
+.hm-segment[hidden] { display: none; }
+
+/* Lo que todavía no existe en la app */
+.hm-tag.is-soon {
+    background: #FFF4E0;
+    color: #8A5A00;
+}
+
+html[data-theme="dark"] .hm-tag.is-soon {
+    background: rgba(242, 194, 122, 0.16);
+    color: #F2C27A;
+}
+
+/* "Próximamente" como enlace de tarjeta (abre el aviso) */
+.hm-link-btn {
+    width: fit-content;
+    padding: 0;
+    border: 0;
+    background: none;
+    font-family: inherit;
+    cursor: pointer;
+}
+
+.hm-tab-panel.is-two { grid-template-columns: repeat(2, 1fr); }
+
+.hm-benefits.is-three { grid-template-columns: repeat(3, 1fr); }
+
+.hm-benefit .hm-tag { align-self: start; justify-self: start; margin-top: 4px; }
+
+.hm-center { justify-content: center; margin-top: 28px; }
+
+.hm-note {
+    max-width: 760px;
+    margin: 26px auto 0;
+    color: var(--text-light);
+    font-size: 0.8rem;
+    line-height: 1.6;
+    text-align: center;
+}
+
+/* Tarjeta con QR de dibujo (recaudo y cobro con QR) */
+.hm-qr-card { gap: 16px; }
+
+.hm-qr {
+    width: 150px;
+    aspect-ratio: 1;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin: 0 auto;
+    padding: 12px;
+    border-radius: 14px;
+    background: #FFFFFF;
+    box-shadow: inset 0 0 0 1px rgba(38, 71, 78, 0.12);
+}
+
+.hm-qr i { border-radius: 3px; }
+.hm-qr i.on { background: #26474E; }
+
+@media (max-width: 860px) {
+    .hm-benefits.is-three { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 600px) {
+    .hm-tab-panel.is-two { grid-template-columns: 1fr; }
+    /* Las tres pestañas caben en la barra; el teléfono sigue en Ayuda y en el pie de página */
+    .hm-toplinks { display: none; }
+    .hm-segments { width: 100%; justify-content: space-between; }
+    .hm-segments a { padding: 0 6px; font-size: 0.74rem; }
+    .hm-qr { width: 128px; }
+}
+
 /* ---------- Footer ---------- */
 
 .hm-footer {
