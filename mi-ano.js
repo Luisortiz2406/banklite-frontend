@@ -12,6 +12,17 @@
 const WRAPPED_MONTHS = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
 const WRAPPED_SLIDE_MS = 6500;
 
+// Fondo animado de cada historia (solo decorativo; los estilos están en styles.css, "wr-fx").
+const WRAPPED_FX = `
+    <div class="wr-fx" aria-hidden="true">
+        <span class="wr-aurora wr-aurora-1"></span>
+        <span class="wr-aurora wr-aurora-2"></span>
+        <span class="wr-aurora wr-aurora-3"></span>
+        <span class="wr-sheen"></span>
+        <span class="wr-grid"></span>
+        ${"<i></i>".repeat(12)}
+    </div>`;
+
 const WRAPPED_CATEGORIES = {
     transfer: { name: "Transferencias", icon: "↗" },
     bill: { name: "Facturas", icon: "◫" },
@@ -429,7 +440,7 @@ function openWrapped(data) {
                     <button type="button" class="wr-close" data-wr-close aria-label="Cerrar">×</button>
                 </div>
                 <div class="wr-slides" aria-live="polite">
-                    ${slides.map((s, i) => `<section class="wr-slide wr-${s.theme}" data-index="${i}" ${i ? "hidden" : ""}>${s.html}</section>`).join("")}
+                    ${slides.map((s, i) => `<section class="wr-slide wr-${s.theme}" data-index="${i}" ${i ? "hidden" : ""}>${WRAPPED_FX}${s.html}</section>`).join("")}
                 </div>
                 <button type="button" class="wr-nav wr-prev" data-wr-prev aria-label="Anterior"></button>
                 <button type="button" class="wr-nav wr-next" data-wr-next aria-label="Siguiente"></button>

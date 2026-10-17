@@ -12170,6 +12170,203 @@ body.wrapped-open { overflow: hidden; }
 .wr-pale { background: linear-gradient(160deg, #E8F8F8 0%, #B9EDED 100%); color: #26474E; }
 .wr-final { background: linear-gradient(160deg, #26474E 0%, #1E8C92 100%); align-items: center; }
 
+/* ---------- Fondo animado de cada historia (mi-ano.js, WRAPPED_FX) ----------
+   Capa transparente detrás del contenido: auroras difuminadas que flotan, un
+   brillo que gira, una trama de puntos que se desliza y destellos que suben.
+   Solo anima transform y opacity; se pausa con la historia y se apaga con
+   "reducir movimiento". */
+.wr-slide {
+    --fx-a: rgba(44, 206, 210, 0.55);
+    --fx-b: rgba(124, 111, 216, 0.32);
+    --fx-c: rgba(185, 237, 237, 0.35);
+    --fx-sheen: rgba(255, 255, 255, 0.14);
+    --fx-dot: rgba(255, 255, 255, 0.22);
+    --fx-spark: #ffffff;
+    --fx-glow: rgba(44, 206, 210, 0.9);
+    --fx-blend: screen;
+}
+
+.wr-teal {
+    --fx-a: rgba(255, 255, 255, 0.5);
+    --fx-b: rgba(38, 71, 78, 0.28);
+    --fx-c: rgba(232, 248, 248, 0.65);
+    --fx-sheen: rgba(255, 255, 255, 0.22);
+    --fx-dot: rgba(38, 71, 78, 0.16);
+    --fx-glow: rgba(255, 255, 255, 0.95);
+    --fx-blend: normal;
+}
+
+.wr-pale {
+    --fx-a: rgba(44, 206, 210, 0.45);
+    --fx-b: rgba(124, 111, 216, 0.2);
+    --fx-c: rgba(255, 255, 255, 0.85);
+    --fx-sheen: rgba(44, 206, 210, 0.16);
+    --fx-dot: rgba(38, 71, 78, 0.14);
+    --fx-spark: #2CCED2;
+    --fx-glow: rgba(44, 206, 210, 0.8);
+    --fx-blend: normal;
+}
+
+.wr-dark {
+    --fx-a: rgba(44, 206, 210, 0.45);
+    --fx-b: rgba(124, 111, 216, 0.38);
+    --fx-c: rgba(30, 140, 146, 0.5);
+}
+
+.wr-final {
+    --fx-a: rgba(44, 206, 210, 0.5);
+    --fx-b: rgba(242, 194, 122, 0.32);
+    --fx-c: rgba(255, 255, 255, 0.2);
+    --fx-glow: rgba(242, 194, 122, 0.9);
+}
+
+/* El contenido va encima de la capa (sin z-index: no tapa la navegación) */
+.wr-slide > :where(:not(.wr-fx)) { position: relative; }
+
+.wr-fx {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    animation: wr-fx-in 1.2s ease both;
+}
+
+.wr-aurora {
+    position: absolute;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    filter: blur(40px);
+    mix-blend-mode: var(--fx-blend);
+    will-change: transform;
+}
+
+.wr-aurora-1 {
+    width: 75%;
+    left: -22%;
+    top: -14%;
+    background: radial-gradient(circle, var(--fx-a), transparent 68%);
+    animation: wr-float-1 14s ease-in-out infinite alternate;
+}
+
+.wr-aurora-2 {
+    width: 85%;
+    right: -34%;
+    top: 28%;
+    background: radial-gradient(circle, var(--fx-b), transparent 68%);
+    animation: wr-float-2 18s ease-in-out infinite alternate;
+}
+
+.wr-aurora-3 {
+    width: 65%;
+    left: 6%;
+    bottom: -26%;
+    background: radial-gradient(circle, var(--fx-c), transparent 68%);
+    animation: wr-float-3 16s ease-in-out infinite alternate;
+}
+
+.wr-sheen {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 180%;
+    aspect-ratio: 1;
+    translate: -50% -50%;
+    background: conic-gradient(from 0deg, transparent 0 18%, var(--fx-sheen) 26%, transparent 34% 58%, var(--fx-sheen) 66%, transparent 74%);
+    -webkit-mask-image: radial-gradient(circle, transparent 16%, #000 40%, transparent 68%);
+    mask-image: radial-gradient(circle, transparent 16%, #000 40%, transparent 68%);
+    animation: wr-spin 28s linear infinite;
+}
+
+.wr-grid {
+    position: absolute;
+    inset: -40px 0 0;
+    background-image: radial-gradient(var(--fx-dot) 1px, transparent 1.4px);
+    background-size: 22px 22px;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 5%, #000 45%, transparent 95%);
+    mask-image: linear-gradient(to bottom, transparent 5%, #000 45%, transparent 95%);
+    animation: wr-drift 9s linear infinite;
+}
+
+.wr-fx i {
+    position: absolute;
+    bottom: -12px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--fx-spark);
+    box-shadow: 0 0 10px 2px var(--fx-glow);
+    opacity: 0;
+    animation: wr-rise 10s linear infinite;
+}
+
+/* Cada tercer destello es una estrella de cuatro puntas */
+.wr-fx i:nth-of-type(3n) {
+    width: 12px;
+    height: 12px;
+    border-radius: 0;
+    box-shadow: none;
+    clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+    filter: drop-shadow(0 0 6px var(--fx-glow));
+}
+
+.wr-fx i:nth-of-type(1)  { left: 6%;  animation-duration: 11s; animation-delay: -1s; }
+.wr-fx i:nth-of-type(2)  { left: 14%; animation-duration: 9s;  animation-delay: -6s; }
+.wr-fx i:nth-of-type(3)  { left: 22%; animation-duration: 13s; animation-delay: -3s; }
+.wr-fx i:nth-of-type(4)  { left: 31%; animation-duration: 10s; animation-delay: -8s; }
+.wr-fx i:nth-of-type(5)  { left: 39%; animation-duration: 12s; animation-delay: -2s; }
+.wr-fx i:nth-of-type(6)  { left: 47%; animation-duration: 9.5s; animation-delay: -5s; }
+.wr-fx i:nth-of-type(7)  { left: 56%; animation-duration: 11.5s; animation-delay: -9s; }
+.wr-fx i:nth-of-type(8)  { left: 64%; animation-duration: 10.5s; animation-delay: -4s; }
+.wr-fx i:nth-of-type(9)  { left: 72%; animation-duration: 14s; animation-delay: -7s; }
+.wr-fx i:nth-of-type(10) { left: 80%; animation-duration: 9s;  animation-delay: -2.5s; }
+.wr-fx i:nth-of-type(11) { left: 88%; animation-duration: 12.5s; animation-delay: -10s; }
+.wr-fx i:nth-of-type(12) { left: 94%; animation-duration: 11s; animation-delay: -6.5s; }
+
+@keyframes wr-fx-in {
+    from { opacity: 0; transform: scale(1.08); }
+    to { opacity: 1; transform: none; }
+}
+
+@keyframes wr-float-1 {
+    0%   { transform: translate(0, 0) scale(1); }
+    50%  { transform: translate(18%, 12%) scale(1.15); }
+    100% { transform: translate(6%, 26%) scale(0.95); }
+}
+
+@keyframes wr-float-2 {
+    0%   { transform: translate(0, 0) scale(1.05); }
+    50%  { transform: translate(-22%, -14%) scale(0.9); }
+    100% { transform: translate(-10%, 10%) scale(1.12); }
+}
+
+@keyframes wr-float-3 {
+    0%   { transform: translate(0, 0) scale(0.95); }
+    50%  { transform: translate(20%, -18%) scale(1.1); }
+    100% { transform: translate(-12%, -6%) scale(1); }
+}
+
+@keyframes wr-spin { to { transform: rotate(360deg); } }
+
+@keyframes wr-drift { to { transform: translateY(22px); } }
+
+@keyframes wr-rise {
+    0%   { transform: translateY(0) scale(0.5) rotate(0deg); opacity: 0; }
+    12%  { opacity: 0.95; }
+    45%  { opacity: 0.35; }
+    65%  { opacity: 0.9; }
+    100% { transform: translateY(-820px) scale(1.15) rotate(180deg); opacity: 0; }
+}
+
+/* Mantener presionado pausa también el fondo */
+.wrapped.is-paused .wr-fx,
+.wrapped.is-paused .wr-fx * { animation-play-state: paused; }
+
+@media (prefers-reduced-motion: reduce) {
+    .wr-fx,
+    .wr-fx * { animation: none !important; }
+    .wr-fx i { display: none; }
+}
+
 /* Barra superior legible sobre las pantallas claras */
 .wrapped[data-theme="teal"] .wr-top,
 .wrapped[data-theme="pale"] .wr-top { color: #26474E; }
