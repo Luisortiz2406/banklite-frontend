@@ -288,14 +288,33 @@
                             </label>
                         </div>
 
-                        <div class="control-row is-soon">
+                        <!-- Controles reales (GET/PATCH /cards/:id/controls) -->
+                        <div class="control-row">
                             <span class="control-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18"/><path d="M12 3a14 14 0 0 0 0 18"/></svg></span>
                             <span class="control-text">
-                                <strong>Compras por internet y límite de compras</strong>
-                                <small>Próximamente.</small>
+                                <strong>Compras por internet</strong>
+                                <small>Tiendas online, apps y suscripciones.</small>
                             </span>
-                            <span class="soon-chip">Próximamente</span>
+                            <label class="switch">
+                                <input type="checkbox" id="cardOnlineSwitch" aria-label="Permitir compras por internet" checked disabled>
+                                <span></span>
+                            </label>
                         </div>
+
+                        <div class="limit-box">
+                            <div class="limit-head">
+                                <span>Límite diario de compras</span>
+                                <button class="text-btn" type="button" id="editCardLimit" disabled>Cambiar</button>
+                            </div>
+                            <strong id="cardLimitValue">—</strong>
+                            <div class="limit-bar" aria-hidden="true"><span id="cardLimitBar"></span></div>
+                            <small id="cardLimitUsed">Cargando…</small>
+                        </div>
+
+                        <button class="btn soft full" type="button" id="simulatePurchase">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.7 12.4a2 2 0 0 0 2 1.6h8.6a2 2 0 0 0 2-1.6L22 7H6"/></svg>
+                            Simular compra con la tarjeta
+                        </button>
 
                         <p class="card-account" id="cardAccount"></p>
                     </div>
@@ -362,6 +381,46 @@
 
     
     <!-- Cambiar clave: código por correo o WhatsApp (POST /auth/password-recovery/*) -->
+    <!-- Límite diario de compras (PATCH /cards/:id/controls/daily-limit, con clave dinámica) -->
+    <div class="modal" id="limitModal" role="dialog" aria-modal="true" aria-labelledby="limitTitle">
+        <div class="modal-card">
+            <button class="modal-close" data-close type="button" aria-label="Cerrar">×</button>
+            <span class="eyebrow">Tarjeta débito</span>
+            <h2 id="limitTitle">Límite diario de compras</h2>
+            <p class="modal-hint" id="limitHint">Es lo máximo que puedes gastar con tu tarjeta en un día.</p>
+            <form id="limitForm" class="form-stack" novalidate>
+                <div class="limit-picker">
+                    <strong id="limitPreview">—</strong>
+                    <input type="range" id="limitRange" min="100000" max="5000000" step="100000" value="5000000" aria-label="Límite diario">
+                    <div class="limit-scale"><span id="limitMinLabel">—</span><span id="limitMaxLabel">—</span></div>
+                </div>
+                <div class="amount-chips" id="limitChips"></div>
+                <p class="modal-hint">Al guardar confirmamos el cambio con tu <b>clave dinámica</b>.</p>
+                <button class="btn primary full" type="submit" id="limitSubmit">Guardar límite</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Compra con la tarjeta (POST /cards/:id/purchases): se cobra de verdad en el ledger -->
+    <div class="modal" id="purchaseModal" role="dialog" aria-modal="true" aria-labelledby="purchaseTitle">
+        <div class="modal-card">
+            <button class="modal-close" data-close type="button" aria-label="Cerrar">×</button>
+            <span class="eyebrow">Simulación</span>
+            <h2 id="purchaseTitle">Comprar con tu tarjeta</h2>
+            <p class="modal-hint">Prueba cómo responden tus controles: congelada, compras por internet y límite diario. Si se aprueba, el valor <b>sí se descuenta de tu saldo</b>.</p>
+            <form id="purchaseForm" class="form-stack" novalidate>
+                <label>Comercio
+                    <select id="purchaseStore"></select>
+                </label>
+                <label>Valor de la compra
+                    <input id="purchaseAmount" type="text" inputmode="numeric" autocomplete="off" placeholder="Ej. 85000">
+                </label>
+                <p class="modal-hint">Se confirma con tu <b>clave dinámica</b>.</p>
+                <button class="btn primary full" type="submit" id="purchaseSubmit">Pagar</button>
+            </form>
+        </div>
+    </div>
+
     <!-- Detalle de una promoción (lo llena beneficios.js) -->
     <div class="modal benefit-modal" id="benefitModal" role="dialog" aria-modal="true" aria-labelledby="benefitTitle">
         <div class="modal-card benefit-card">
@@ -717,6 +776,7 @@
     <script src="comprobantes.js"></script>
     <script src="dynamic-key.js"></script>
     <script src="dashboard.js"></script>
+    <script src="tarjeta-controles.js"></script>
     <script src="subscriptions.js"></script>
     <script src="metas.js"></script>
     <script src="beneficios.js"></script>

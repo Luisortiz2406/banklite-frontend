@@ -10313,6 +10313,7 @@ html[data-theme="dark"] .notif-list .notif-icon,
 html[data-theme="dark"] .toast-info .toast-dot { background: var(--background-2); }
 
 html[data-theme="dark"] .switch span { background: #354F54; }
+html[data-theme="dark"] .switch input:checked + span { background: var(--primary); }
 
 html[data-theme="dark"] .session-notice.is-warning,
 html[data-theme="dark"] .legal-notice {

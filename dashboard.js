@@ -257,6 +257,7 @@ document.addEventListener('DOMContentLoaded', () => {
         $('cardLayout').hidden = !card;
         $('toggleCardNumber').hidden = !card;
         if (!card) {
+            document.dispatchEvent(new CustomEvent('banklite:card', { detail: null }));
             const canIssue = !!state.account && state.account.status === 'active';
             $('issueCardBtn').disabled = !canIssue;
             $('noCardText').textContent = canIssue
@@ -281,6 +282,8 @@ document.addEventListener('DOMContentLoaded', () => {
         $('cardAccount').textContent = `Cuenta ····${String(card.accountNumber).slice(-4)} · ${card.currency}`;
         $('toggleCardNumber').textContent = full && !issued ? 'Ocultar número' : 'Mostrar número';
         $('toggleCardNumber').hidden = !!issued;
+        // Los controles (internet, límite, compras) los maneja tarjeta-controles.js.
+        document.dispatchEvent(new CustomEvent('banklite:card', { detail: { ...card, justIssued: !!issued } }));
     }
 
     $('issueCardBtn').addEventListener('click', async () => {
