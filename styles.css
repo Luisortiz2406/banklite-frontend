@@ -12268,9 +12268,8 @@ body.wrapped-open { overflow: hidden; }
     stroke-width: 1.8;
 }
 
-/* La persona de la lluvia y la base de la pirámide se ven completas */
+/* La persona de la lluvia de billetes se ve completa */
 .wr-scene-rain { bottom: 6%; }
-.wr-scene-pyramid { bottom: 5%; }
 
 .wr-final .wr-scene {
     right: -14%;
@@ -12323,44 +12322,6 @@ body.wrapped-open { overflow: hidden; }
 .wr-scene .mb-bill:nth-of-type(1) { --x: -20px; --r: -28deg; }
 .wr-scene .mb-bill:nth-of-type(2) { --x: 0px; --r: 4deg; animation-delay: 0.9s; }
 .wr-scene .mb-bill:nth-of-type(3) { --x: 20px; --r: 30deg; animation-delay: 1.8s; }
-
-/* Pirámide de monedas: se arma fila por fila; los billetes flotan alrededor */
-.wr-scene .py-coin {
-    opacity: 0;
-    animation: wr-coin-stack 6s cubic-bezier(0.3, 1.4, 0.5, 1) infinite;
-}
-
-.wr-scene .py-coin:nth-of-type(2)  { animation-delay: 0.12s; }
-.wr-scene .py-coin:nth-of-type(3)  { animation-delay: 0.24s; }
-.wr-scene .py-coin:nth-of-type(4)  { animation-delay: 0.36s; }
-.wr-scene .py-coin:nth-of-type(5)  { animation-delay: 0.6s; }
-.wr-scene .py-coin:nth-of-type(6)  { animation-delay: 0.72s; }
-.wr-scene .py-coin:nth-of-type(7)  { animation-delay: 0.84s; }
-.wr-scene .py-coin:nth-of-type(8)  { animation-delay: 1.08s; }
-.wr-scene .py-coin:nth-of-type(9)  { animation-delay: 1.2s; }
-.wr-scene .py-coin:nth-of-type(10) { animation-delay: 1.44s; }
-
-.wr-scene .py-coin circle:first-child { fill: currentColor; fill-opacity: 0.18; }
-
-.wr-scene .py-bill { animation: wr-float-bill 3.2s ease-in-out infinite alternate; }
-.wr-scene .py-bill:nth-of-type(12) { animation-delay: -0.8s; }
-.wr-scene .py-bill:nth-of-type(13) { animation-delay: -1.6s; }
-.wr-scene .py-bill:nth-of-type(14) { animation-delay: -2.4s; }
-
-/* Mano con billetes: el abanico se abre y los billetes se mecen */
-.wr-scene .hd-bill {
-    transform-origin: 50% 100%;
-    transform: rotate(var(--r));
-    animation: wr-fan-open 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both, wr-fan-wave 1.6s ease-in-out 0.9s infinite alternate;
-}
-
-.wr-scene .hd-bill:nth-of-type(1) { --r: -34deg; }
-.wr-scene .hd-bill:nth-of-type(2) { --r: -17deg; animation-delay: 0s, 1.1s; }
-.wr-scene .hd-bill:nth-of-type(3) { --r: 0deg; animation-delay: 0s, 1.3s; }
-.wr-scene .hd-bill:nth-of-type(4) { --r: 17deg; animation-delay: 0s, 1.5s; }
-.wr-scene .hd-bill:nth-of-type(5) { --r: 34deg; animation-delay: 0s, 1.7s; }
-
-.wr-scene .hd-hand { animation: wr-bob 1.8s ease-in-out infinite; }
 
 /* Gráfica: las barras crecen una a una, la tendencia se dibuja y sale la flecha */
 .wr-scene .gr-bar {
@@ -12479,28 +12440,6 @@ body.wrapped-open { overflow: hidden; }
     100% { transform: translate(calc(var(--x) * 1.4), -28px) rotate(var(--r)); opacity: 0; }
 }
 
-@keyframes wr-coin-stack {
-    0%       { transform: translateY(-28px); opacity: 0; }
-    8%       { transform: translateY(0); opacity: 1; }
-    85%      { transform: translateY(0); opacity: 1; }
-    100%     { transform: translateY(0); opacity: 0; }
-}
-
-@keyframes wr-float-bill {
-    from { transform: translateY(0) rotate(-8deg); }
-    to { transform: translateY(-10px) rotate(8deg); }
-}
-
-@keyframes wr-fan-open {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(var(--r)); }
-}
-
-@keyframes wr-fan-wave {
-    from { transform: rotate(var(--r)); }
-    to { transform: rotate(calc(var(--r) + 5deg)); }
-}
-
 @keyframes wr-bar {
     0%       { transform: scaleY(0); opacity: 1; }
     28%, 88% { transform: scaleY(1); opacity: 1; }
@@ -12572,8 +12511,6 @@ body.wrapped-open { overflow: hidden; }
     .wr-fx * { animation: none !important; }
     .wr-fx i { display: none; }
     /* Quieto pero completo */
-    .wr-scene .py-coin { opacity: 1; }
-    .wr-scene .hd-bill { transform: rotate(var(--r)); }
     .wr-scene .gr-line { stroke-dashoffset: 0; }
     .wr-scene .gr-arrow { opacity: 1; }
 }

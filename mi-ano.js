@@ -20,8 +20,8 @@ const wrappedFx = scene => `
         ${"<i></i>".repeat(12)}
     </div>`;
 
-// Escenas de línea, muy transparentes: banco, bolsa de dinero, pirámide de monedas,
-// mano con billetes, gráfica, trofeo y lluvia de billetes. Usan currentColor:
+// Escenas de línea, muy transparentes: banco, bolsa de dinero, gráfica, trofeo
+// y lluvia de billetes. Usan currentColor:
 // el color y la opacidad salen del tema de la historia.
 const WRAPPED_SCENES = {
     // La fachada se levanta columna por columna y una moneda cae en la ranura del frontón.
@@ -48,37 +48,6 @@ const WRAPPED_SCENES = {
             <path d="M46 40h28"/>
             <path d="M47 42C31 53 24 69 26 84c2 14 16 22 34 22s32-8 34-22c2-15-5-31-21-42"/>
             <path class="mb-sign" d="M67 64c-2-3-5-4-8-4-4 0-7 2-7 5 0 7 15 4 15 11 0 3-3 5-7 5-3 0-6-1-8-4M59 56v4M59 81v4"/>
-        </g>`,
-
-    // Pirámide de monedas que se arma fila por fila, con billetes flotando alrededor.
-    pyramid: `
-        <g class="py-coin"><circle cx="36" cy="98" r="8"/><circle cx="36" cy="98" r="4"/></g>
-        <g class="py-coin"><circle cx="53" cy="98" r="8"/><circle cx="53" cy="98" r="4"/></g>
-        <g class="py-coin"><circle cx="70" cy="98" r="8"/><circle cx="70" cy="98" r="4"/></g>
-        <g class="py-coin"><circle cx="87" cy="98" r="8"/><circle cx="87" cy="98" r="4"/></g>
-        <g class="py-coin"><circle cx="44.5" cy="82" r="8"/><circle cx="44.5" cy="82" r="4"/></g>
-        <g class="py-coin"><circle cx="61.5" cy="82" r="8"/><circle cx="61.5" cy="82" r="4"/></g>
-        <g class="py-coin"><circle cx="78.5" cy="82" r="8"/><circle cx="78.5" cy="82" r="4"/></g>
-        <g class="py-coin"><circle cx="53" cy="66" r="8"/><circle cx="53" cy="66" r="4"/></g>
-        <g class="py-coin"><circle cx="70" cy="66" r="8"/><circle cx="70" cy="66" r="4"/></g>
-        <g class="py-coin"><circle cx="61.5" cy="50" r="8"/><circle cx="61.5" cy="50" r="4"/></g>
-        <g class="py-bill"><rect x="6" y="40" width="20" height="11" rx="2"/><circle cx="16" cy="45.5" r="2.5"/></g>
-        <g class="py-bill"><rect x="96" y="30" width="20" height="11" rx="2"/><circle cx="106" cy="35.5" r="2.5"/></g>
-        <g class="py-bill"><rect x="4" y="74" width="20" height="11" rx="2"/><circle cx="14" cy="79.5" r="2.5"/></g>
-        <g class="py-bill"><rect x="98" y="66" width="20" height="11" rx="2"/><circle cx="108" cy="71.5" r="2.5"/></g>`,
-
-    // Mano agarrando un abanico de billetes que se mecen.
-    hand: `
-        <g class="hd-bill"><rect x="50" y="16" width="20" height="58" rx="3"/><circle cx="60" cy="38" r="5"/><path d="M55 24h10M55 60h10"/></g>
-        <g class="hd-bill"><rect x="50" y="16" width="20" height="58" rx="3"/><circle cx="60" cy="38" r="5"/><path d="M55 24h10M55 60h10"/></g>
-        <g class="hd-bill"><rect x="50" y="16" width="20" height="58" rx="3"/><circle cx="60" cy="38" r="5"/><path d="M55 24h10M55 60h10"/></g>
-        <g class="hd-bill"><rect x="50" y="16" width="20" height="58" rx="3"/><circle cx="60" cy="38" r="5"/><path d="M55 24h10M55 60h10"/></g>
-        <g class="hd-bill"><rect x="50" y="16" width="20" height="58" rx="3"/><circle cx="60" cy="38" r="5"/><path d="M55 24h10M55 60h10"/></g>
-        <g class="hd-hand">
-            <path d="M38 78c0-5 4-8 8-8h28c5 0 9 3 9 8v8c0 11-8 19-18 19H55c-10 0-17-7-17-17z"/>
-            <path d="M47 70v9M56 70v9M65 70v9M74 70v9"/>
-            <path d="M38 82c-6-1-10 3-9 8 1 4 5 6 11 5"/>
-            <path d="M50 105v13M72 105v13"/>
         </g>`,
 
     // Gráfica estadística: las barras crecen una a una y la tendencia se dibuja al alza.
@@ -336,7 +305,7 @@ function wrappedSlides(data) {
             const max = Math.max(...data.months, 1);
             slides.push({
                 theme: "dark",
-                scene: "pyramid",
+                // Sin escena: solo los punticos brillantes.
                 html: `
                     <span class="wr-kicker">Tu mes más activo fue</span>
                     <h2 class="wr-title-cap">${data.topMonth.name}</h2>
@@ -350,7 +319,7 @@ function wrappedSlides(data) {
         if (data.topPerson) {
             slides.push({
                 theme: "pale",
-                scene: "hand",
+                // Sin escena: solo los punticos brillantes.
                 html: `
                     <span class="wr-kicker">Tu persona favorita para transferir</span>
                     <span class="wr-avatar">${escapeHTML(data.topPerson.name.split(/\s+/).map(w => w[0]).slice(0, 2).join("").toUpperCase())}</span>
