@@ -12184,6 +12184,8 @@ body.wrapped-open { overflow: hidden; }
     --fx-spark: #ffffff;
     --fx-glow: rgba(44, 206, 210, 0.9);
     --fx-blend: screen;
+    --fx-art: #ffffff;
+    --fx-art-opacity: 0.11;
 }
 
 .wr-teal {
@@ -12194,6 +12196,8 @@ body.wrapped-open { overflow: hidden; }
     --fx-dot: rgba(38, 71, 78, 0.16);
     --fx-glow: rgba(255, 255, 255, 0.95);
     --fx-blend: normal;
+    --fx-art: #26474E;
+    --fx-art-opacity: 0.13;
 }
 
 .wr-pale {
@@ -12205,6 +12209,8 @@ body.wrapped-open { overflow: hidden; }
     --fx-spark: #2CCED2;
     --fx-glow: rgba(44, 206, 210, 0.8);
     --fx-blend: normal;
+    --fx-art: #1E8C92;
+    --fx-art-opacity: 0.14;
 }
 
 .wr-dark {
@@ -12355,6 +12361,38 @@ body.wrapped-open { overflow: hidden; }
     45%  { opacity: 0.35; }
     65%  { opacity: 0.9; }
     100% { transform: translateY(-820px) scale(1.15) rotate(180deg); opacity: 0; }
+}
+
+/* Ilustración de la historia (marca de agua): esquina inferior derecha, tenue */
+.wr-art {
+    position: absolute;
+    right: -16%;
+    bottom: -8%;
+    width: 80%;
+    height: auto;
+    color: var(--fx-art);
+    opacity: var(--fx-art-opacity);
+    stroke-width: 1.6;
+    transform-origin: 60% 60%;
+    animation: wr-art-in 1.1s cubic-bezier(0.2, 0.8, 0.2, 1) both, wr-art-float 10s ease-in-out 1.1s infinite alternate;
+}
+
+/* En la tarjeta final va arriba para no quedar detrás de los botones */
+.wr-final .wr-art {
+    right: -22%;
+    top: -6%;
+    bottom: auto;
+    width: 64%;
+}
+
+@keyframes wr-art-in {
+    from { opacity: 0; transform: translate(10%, 8%) rotate(4deg) scale(0.92); }
+    to { opacity: var(--fx-art-opacity); transform: rotate(-8deg); }
+}
+
+@keyframes wr-art-float {
+    from { transform: rotate(-8deg) translateY(0); }
+    to { transform: rotate(-4deg) translateY(-12px); }
 }
 
 /* Mantener presionado pausa también el fondo */

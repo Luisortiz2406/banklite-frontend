@@ -13,8 +13,9 @@ const WRAPPED_MONTHS = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "
 const WRAPPED_SLIDE_MS = 6500;
 
 // Fondo animado de cada historia (solo decorativo; los estilos están en styles.css, "wr-fx").
-const WRAPPED_FX = `
+const wrappedFx = art => `
     <div class="wr-fx" aria-hidden="true">
+        ${wrappedArt(art)}
         <span class="wr-aurora wr-aurora-1"></span>
         <span class="wr-aurora wr-aurora-2"></span>
         <span class="wr-aurora wr-aurora-3"></span>
@@ -22,6 +23,38 @@ const WRAPPED_FX = `
         <span class="wr-grid"></span>
         ${"<i></i>".repeat(12)}
     </div>`;
+
+// Ilustración de cada historia: dibujo de línea muy transparente, como marca de
+// agua (solo decorativo). Usa currentColor: el color y la opacidad salen del tema.
+const WRAPPED_ART = {
+    hello: '<rect x="32" y="56" width="56" height="42" rx="4"/><rect x="27" y="44" width="66" height="13" rx="3"/><path d="M60 44v54"/><path d="M60 44c-6-12-20-14-20-5s14 5 20 5zM60 44c6-12 20-14 20-5s-14 5-20 5z"/><path d="M18 30l5 4M98 22l-3 6M104 52l6-2M14 64l6 1M86 10l1 6M30 14l4 5"/>',
+    seed: '<path d="M40 82h40l-6 26H46z"/><path d="M60 82V52"/><path d="M60 62c-14 0-22-10-22-22 12 0 22 8 22 22zM60 54c0-16 10-26 26-26 0 16-10 26-26 26z"/>',
+    coins: '<ellipse cx="46" cy="88" rx="22" ry="7"/><path d="M24 88v10c0 4 10 7 22 7s22-3 22-7V88"/><path d="M24 76v12M68 76v12"/><ellipse cx="46" cy="76" rx="22" ry="7"/><ellipse cx="74" cy="56" rx="22" ry="7"/><path d="M52 56v10c0 4 10 7 22 7s22-3 22-7V56"/><path d="M86 18v22M80 24l6-6 6 6M30 58V36M24 52l6 6 6-6"/>',
+    calendar: '<rect x="20" y="28" width="80" height="72" rx="8"/><path d="M20 48h80M42 20v16M78 20v16"/><path d="M36 62h.01M52 62h.01M68 62h.01M84 62h.01M36 76h.01M52 76h.01M84 76h.01M36 90h.01M52 90h.01M68 90h.01"/><circle cx="68" cy="76" r="7"/>',
+    people: '<circle cx="42" cy="44" r="13"/><path d="M18 96c0-14 11-25 24-25s24 11 24 25"/><circle cx="80" cy="50" r="11"/><path d="M62 96c2-12 9-20 18-20 11 0 20 9 20 20"/><path d="M60 22c-3-5-11-4-11 2 0 5 11 11 11 11s11-6 11-11c0-6-8-7-11-2z"/>',
+    send: '<path d="M104 18L16 54l32 12 12 34z"/><path d="M104 18L48 66"/><path d="M14 92c10-2 18 2 22 8M8 76c6 0 10 2 13 5"/>',
+    receipt: '<path d="M32 14h56v92l-7-5-7 5-7-5-7 5-7-5-7 5-7-5-7 5z"/><path d="M44 34h32M44 48h32M44 62h20M44 78h14M72 78h4"/>',
+    phone: '<rect x="38" y="16" width="44" height="88" rx="8"/><path d="M54 24h12M56 94h8"/><path d="M90 40c6 6 6 18 0 24M98 32c11 11 11 29 0 40"/>',
+    card: '<rect x="14" y="32" width="92" height="58" rx="8"/><rect x="26" y="48" width="16" height="12" rx="2"/><path d="M26 76h22M56 76h12"/><path d="M80 50c4 4 4 10 0 14M88 44c7 7 7 19 0 26"/>',
+    play: '<rect x="14" y="24" width="92" height="62" rx="8"/><path d="M52 42v26l22-13z"/><path d="M40 100h40M60 86v14"/>',
+    qr: '<rect x="18" y="18" width="32" height="32" rx="4"/><rect x="70" y="18" width="32" height="32" rx="4"/><rect x="18" y="70" width="32" height="32" rx="4"/><rect x="28" y="28" width="12" height="12"/><rect x="80" y="28" width="12" height="12"/><rect x="28" y="80" width="12" height="12"/><path d="M70 70h10v10M92 70h10M70 92h10v10M90 84v18h12M102 80v.01"/>',
+    piggy: '<path d="M26 64c0-18 17-30 38-30 20 0 34 10 38 22h8v18h-9c-3 7-9 12-15 15v11H74v-8c-4 1-8 1-12 0v8H50V91c-14-5-24-15-24-27z"/><path d="M26 64c-7 0-11-4-10-10"/><circle cx="88" cy="58" r="2"/><path d="M52 40c4-1 10-1 14 0"/><circle cx="60" cy="18" r="9"/><path d="M60 14v8"/>',
+    trophy: '<path d="M40 18h40v28c0 12-9 22-20 22S40 58 40 46z"/><path d="M40 28H24c0 14 7 22 18 22M80 28h16c0 14-7 22-18 22"/><path d="M60 68v14M44 102h32l-4-20H48z"/><path d="M60 30l3 7 7 .5-5.5 4.5 2 7-6.5-4-6.5 4 2-7L50 37.5l7-.5z"/>',
+    hearts: '<path d="M46 98S16 78 16 56c0-10 8-18 17-18 6 0 10 3 13 8 3-5 7-8 13-8 9 0 17 8 17 18 0 22-30 42-30 42z"/><path d="M84 52s-14-10-14-21c0-5 4-9 8-9 3 0 5 1 6 4 1-3 3-4 6-4 4 0 8 4 8 9 0 11-14 21-14 21z"/>',
+    checklist: '<rect x="26" y="20" width="68" height="88" rx="8"/><rect x="46" y="12" width="28" height="14" rx="4"/><path d="M38 48l5 5 9-10M60 48h22M38 70l5 5 9-10M60 70h22M38 92l5 5 9-10M60 92h22"/>',
+    compass: '<circle cx="60" cy="60" r="44"/><circle cx="60" cy="60" r="36"/><path d="M60 16v8M60 96v8M16 60h8M96 60h8"/><path d="M74 46L66 66 46 74l8-20z"/><circle cx="60" cy="60" r="2"/>',
+    rocket: '<path d="M60 12c16 12 22 32 18 56H42c-4-24 2-44 18-56z"/><circle cx="60" cy="42" r="8"/><path d="M42 68l-12 14 14-2M78 68l12 14-14-2"/><path d="M52 76c0 12 8 22 8 22s8-10 8-22"/>',
+    stars: '<path d="M60 14c3 22 10 29 32 32-22 3-29 10-32 32-3-22-10-29-32-32 22-3 29-10 32-32z"/><path d="M96 74c1.5 9 4.5 12 14 13.5-9.5 1.5-12.5 4.5-14 14-1.5-9.5-4.5-12.5-14-14 9.5-1.5 12.5-4.5 14-13.5z"/><path d="M26 82c1 6 3 8 9 9-6 1-8 3-9 9-1-6-3-8-9-9 6-1 8-3 9-9z"/>'
+};
+
+const WRAPPED_CATEGORY_ART = { transfer: "send", bill: "receipt", recharge: "phone", purchase: "card", subs: "play", qr: "qr" };
+const WRAPPED_PERSONA_ART = { saver: "piggy", social: "hearts", organized: "checklist", explorer: "compass", starter: "rocket" };
+
+function wrappedArt(key) {
+    const paths = WRAPPED_ART[key];
+    if (!paths) return "";
+    return `<svg class="wr-art wr-art-${key}" viewBox="0 0 120 120" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths}</svg>`;
+}
 
 const WRAPPED_CATEGORIES = {
     transfer: { name: "Transferencias", icon: "↗" },
@@ -190,6 +223,7 @@ function wrappedSlides(data) {
 
     slides.push({
         theme: "intro",
+        art: "hello",
         html: `
             <span class="wr-kicker">Tu año en Banklite ${data.year}</span>
             <h2>Hola, ${escapeHTML(data.name)} 👋</h2>
@@ -200,6 +234,7 @@ function wrappedSlides(data) {
     if (data.isNew) {
         slides.push({
             theme: "teal",
+            art: "seed",
             html: `
                 <span class="wr-kicker">Recién llegado</span>
                 <h2>Tu historia apenas empieza</h2>
@@ -208,6 +243,7 @@ function wrappedSlides(data) {
     } else {
         slides.push({
             theme: "teal",
+            art: "coins",
             html: `
                 <span class="wr-kicker">Este año moviste</span>
                 <b class="wr-big" data-wr-count="${Math.round(data.moved)}" data-wr-money>${money(0)}</b>
@@ -222,6 +258,7 @@ function wrappedSlides(data) {
             const max = Math.max(...data.months, 1);
             slides.push({
                 theme: "dark",
+                art: "calendar",
                 html: `
                     <span class="wr-kicker">Tu mes más activo fue</span>
                     <h2 class="wr-title-cap">${data.topMonth.name}</h2>
@@ -235,6 +272,7 @@ function wrappedSlides(data) {
         if (data.topPerson) {
             slides.push({
                 theme: "pale",
+                art: "people",
                 html: `
                     <span class="wr-kicker">Tu persona favorita para transferir</span>
                     <span class="wr-avatar">${escapeHTML(data.topPerson.name.split(/\s+/).map(w => w[0]).slice(0, 2).join("").toUpperCase())}</span>
@@ -247,6 +285,7 @@ function wrappedSlides(data) {
         if (data.topCategory) {
             slides.push({
                 theme: "teal",
+                art: WRAPPED_CATEGORY_ART[data.topCategory.key],
                 html: `
                     <span class="wr-kicker">Donde más usaste tu plata</span>
                     <span class="wr-icon">${data.topCategory.icon}</span>
@@ -262,6 +301,7 @@ function wrappedSlides(data) {
     if (data.savedIn > 0 || data.savingsNow > 0) {
         slides.push({
             theme: "dark",
+            art: "piggy",
             html: `
                 <span class="wr-kicker">Tu ahorro</span>
                 <p>Este año apartaste</p>
@@ -272,6 +312,7 @@ function wrappedSlides(data) {
 
     slides.push({
         theme: "pale",
+        art: "trophy",
         html: `
             <span class="wr-kicker">Puntos Banklite</span>
             <b class="wr-big" data-wr-count="${data.pointsEarned}">0</b>
@@ -282,6 +323,7 @@ function wrappedSlides(data) {
 
     slides.push({
         theme: "intro",
+        art: WRAPPED_PERSONA_ART[data.persona.key],
         html: `
             <span class="wr-kicker">Tu personalidad financiera</span>
             <span class="wr-icon wr-icon-lg">${data.persona.icon}</span>
@@ -292,6 +334,7 @@ function wrappedSlides(data) {
     slides.push({
         theme: "final",
         final: true,
+        art: "stars",
         html: `
             <div class="wr-card">
                 <div class="wr-card-head"><span class="logo">B</span><b>Mi año en Banklite ${data.year}</b></div>
@@ -440,7 +483,7 @@ function openWrapped(data) {
                     <button type="button" class="wr-close" data-wr-close aria-label="Cerrar">×</button>
                 </div>
                 <div class="wr-slides" aria-live="polite">
-                    ${slides.map((s, i) => `<section class="wr-slide wr-${s.theme}" data-index="${i}" ${i ? "hidden" : ""}>${WRAPPED_FX}${s.html}</section>`).join("")}
+                    ${slides.map((s, i) => `<section class="wr-slide wr-${s.theme}" data-index="${i}" ${i ? "hidden" : ""}>${wrappedFx(s.art)}${s.html}</section>`).join("")}
                 </div>
                 <button type="button" class="wr-nav wr-prev" data-wr-prev aria-label="Anterior"></button>
                 <button type="button" class="wr-nav wr-next" data-wr-next aria-label="Siguiente"></button>
