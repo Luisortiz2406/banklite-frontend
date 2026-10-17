@@ -34,12 +34,16 @@ const BlLayout = (() => {
         tarjetas: '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>',
         suscripciones: '<rect x="3" y="5" width="18" height="15" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M8 14h3"/>',
         puntos: '<path d="m12 2 3 7h7l-5.5 4.5 2 7.5-6.5-4.5L5.5 21l2-7.5L2 9h7z"/>',
+        'mi-ano': '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
         perfil: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
         configuracion: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
         campana: '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
         menu: '<path d="M4 6h16M4 12h16M4 18h16"/>',
         chevron: '<path d="m6 9 6 6 6-6"/>',
     };
+
+    // Año en curso en hora de Colombia, para "Mi año".
+    const year = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Bogota', year: 'numeric' }).format(new Date());
 
     // Menú: un solo lugar para todas las vistas. "spy" es la clave que se marca como activa.
     const MENU = [
@@ -59,11 +63,17 @@ const BlLayout = (() => {
             { spy: 'tarjetas', label: 'Tarjetas', href: dash('tarjetas') },
             { spy: 'suscripciones', label: 'Suscripciones', href: dash('suscripciones') },
             { spy: 'puntos', label: 'Mis puntos', href: 'puntos.html' },
+            // Resumen del año (mi-ano.js, solo en el dashboard): se abre encima de la vista.
+            // No es una sección (data-action en vez de data-spy): no queda marcada como activa.
+            { action: 'mi-ano', label: `Mi año ${year}`, href: dash('mi-ano') },
         ] },
     ];
 
-    const link = item =>
-        `<a class="side" href="${item.href}" data-spy="${item.spy}">${svg(ICONS[item.icon || item.spy])}<span>${item.label}</span></a>`;
+    const link = item => {
+        const key = item.spy || item.action;
+        const attr = item.action ? `data-action="${item.action}"` : `data-spy="${item.spy}"`;
+        return `<a class="side" href="${item.href}" ${attr}>${svg(ICONS[item.icon || key])}<span>${item.label}</span></a>`;
+    };
 
     const menuHtml = MENU.map(entry => {
         if (!entry.group) return link(entry);

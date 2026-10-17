@@ -12391,7 +12391,9 @@ body.wrapped-open { overflow: hidden; }
 
 .wr-prev { left: 0; width: 32%; }
 .wr-next { right: 0; width: 68%; }
-.wr-nav:focus-visible { outline: 2px solid rgba(255, 255, 255, 0.6); outline-offset: -6px; }
+/* Solo cuando se navega con el teclado (mi-ano.js pone is-keyboard): al abrir, el foco va a "Siguiente". */
+.wrapped .wr-nav:focus-visible { outline: none; }
+.wrapped.is-keyboard .wr-nav:focus-visible { outline: 2px solid rgba(255, 255, 255, 0.6); outline-offset: -6px; }
 
 .wrapped.is-final .wr-nav { bottom: 50%; }
 .wrapped.is-paused .wr-slide { filter: brightness(0.92); }
