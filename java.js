@@ -360,7 +360,7 @@ function applyTheme(preference = themePreference()) {
 }
 
 function setTheme(preference) {
-    try { localStorage.setItem(THEME_KEY, preference); } catch {}
+    try { localStorage.setItem(THEME_KEY, preference); } catch { /* sin almacenamiento */ }
     applyTheme(preference);
 }
 

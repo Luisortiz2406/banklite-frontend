@@ -205,7 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const payment = extras.payments.get(m.transactionId);
         const isQR = /^Pago QR/.test(m.description || '');
         const concept = String(m.description || '').replace(/^Pago QR · /, '');
-        let title; let sub; let rows = [];
+        let title; let sub; let rows;
 
         if (payment?.kind === 'bill') {
             title = '¡Factura pagada!';

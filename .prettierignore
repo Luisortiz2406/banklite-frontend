@@ -1,0 +1,4 @@
+node_modules/
+package-lock.json
+# Librerías de terceros: no se editan a mano
+qr-lib.js

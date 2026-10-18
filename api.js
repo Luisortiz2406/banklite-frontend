@@ -92,7 +92,7 @@ const BlApi = (function () {
             res = await fetch(baseUrl + path, { method, headers, body: body ? JSON.stringify(body) : undefined });
             data = await res.json().catch(() => ({}));
         } catch (err) {
-            throw new Error(`No se pudo contactar el servicio (${baseUrl}). Verifica que esté encendido e inténtalo de nuevo.`);
+            throw new Error(`No se pudo contactar el servicio (${baseUrl}). Verifica que esté encendido e inténtalo de nuevo.`, { cause: err });
         }
         // Token de la sesión vencido: se renueva una vez y se repite la petición.
         if (res.status === 401 && token && !isRetry && session.refreshToken) {
@@ -119,7 +119,7 @@ const BlApi = (function () {
     // secuencias y sin los más comunes.
     function isSecurePin(pin) {
         if (!/^\d{4}$/.test(pin)) return false;
-        if (/^(\d){3}$/.test(pin)) return false;
+        if (/^(\d)\1{3}$/.test(pin)) return false;
         const digits = pin.split('').map(Number);
         const ascending = digits.every((d, i) => i === 0 || d === digits[i - 1] + 1);
         const descending = digits.every((d, i) => i === 0 || d === digits[i - 1] - 1);

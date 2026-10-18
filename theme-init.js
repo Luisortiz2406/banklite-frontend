@@ -6,4 +6,4 @@ try {
         document.documentElement.dataset.theme = "dark";
         document.documentElement.style.background = "#0D1B1E";
     }
-} catch (e) {}
+} catch (e) { /* sin almacenamiento: queda el tema claro */ }

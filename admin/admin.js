@@ -77,7 +77,7 @@ const qs = obj => {
 
 const store = {
     get(key) { try { return sessionStorage.getItem(key); } catch { return null; } },
-    set(key, value) { try { value ? sessionStorage.setItem(key, value) : sessionStorage.removeItem(key); } catch {} }
+    set(key, value) { try { value ? sessionStorage.setItem(key, value) : sessionStorage.removeItem(key); } catch { /* sin almacenamiento */ } }
 };
 
 function toast(message, isError = false) {
@@ -175,7 +175,7 @@ async function api(method, path, body) {
         throw new Error("No se pudo conectar con el servidor. Revisa tu conexión.");
     }
     let data = null;
-    try { data = await res.json(); } catch {}
+    try { data = await res.json(); } catch { /* respuesta sin cuerpo JSON */ }
     if (res.status === 401 && TOKEN && path !== "/auth/admin/login") {
         goLogin("expirada");
         throw new Error("Tu sesión expiró.");
@@ -489,7 +489,7 @@ function buildTop() {
         if (next === "dark") document.documentElement.dataset.theme = "dark";
         else delete document.documentElement.dataset.theme;
         document.documentElement.style.background = "";
-        try { localStorage.setItem("bankliteTheme", next); } catch {}
+        try { localStorage.setItem("bankliteTheme", next); } catch { /* sin almacenamiento */ }
         buildTop();
     };
 

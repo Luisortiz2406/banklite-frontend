@@ -155,7 +155,7 @@ function benefitScene(item) {
     const sun = `<circle cx="248" cy="44" r="20" fill="#FFF3C4" opacity="0.95"/>`;
     const clouds = `<g fill="#FFFFFF" opacity="0.85"><ellipse cx="70" cy="40" rx="26" ry="9"/><ellipse cx="88" cy="34" rx="16" ry="9"/><ellipse cx="180" cy="58" rx="20" ry="6"/></g>`;
     const palm = (x, s = 1) => `<g transform="translate(${x} ${118 - 40 * s}) scale(${s})" fill="none" stroke="#2F5D3A" stroke-width="3.2" stroke-linecap="round"><path d="M0 40c2-14 1-26-2-36"/><path d="M-2 4c-10-6-20-4-26 2M-2 4c8-8 18-9 26-5M-2 4c-4-9-12-13-20-13M-2 4c4-9 12-12 20-10M-2 4c-12 2-18 10-20 16"/></g>`;
-    let art = "";
+    let art;
 
     if (item.scene === "beach") {
         art = `${sun}${clouds}
