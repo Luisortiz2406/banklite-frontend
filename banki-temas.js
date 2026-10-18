@@ -878,7 +878,7 @@ const BOT_TOPICS = [
         faq: "¿Puedo pagar facturas o recargar el celular?",
         cat: "transferencias",
         answer: () => ({
-            text: "Sí. En **Pagos y recargas** pagas facturas de servicios públicos, internet y administración con la referencia del recibo, o recargas tu celular Claro, Movistar, Tigo, WOM o Virgin Mobile (de $1.000 a $500.000). Se descuenta de tu saldo, se confirma con tu clave dinámica y te queda el comprobante en PDF. Las facturas son de demostración: Banklite no está conectado a los convenios reales.",
+            text: `Sí. En **Pagos y recargas** pagas facturas de servicios públicos, internet y administración con la referencia del recibo, o recargas tu celular Claro, Movistar, Tigo, WOM o Virgin Mobile${BL_CATALOG?.payments ? ` (de ${catalogText("topupMin")} a ${catalogText("topupMax")})` : ""}. Se descuenta de tu saldo, se confirma con tu clave dinámica y te queda el comprobante en PDF. Las facturas son de demostración: Banklite no está conectado a los convenios reales.`,
             links: [{ label: "Ir a pagos", href: "pagos.html" }],
         }),
     },
@@ -903,7 +903,7 @@ const BOT_TOPICS = [
         faq: "¿Tienen bolsillos, CDT o metas de ahorro?",
         cat: "ahorro",
         answer: () => ({
-            text: "Sí. En **Bolsillos y CDT** apartas plata en bolsillos que ganan 9% E.A. y puedes sacar cuando quieras, o abres un CDT desde $500.000 a 30, 60, 90, 180 o 360 días (de 8,5% a 11% E.A., con retención del 4% sobre los intereses); el CDT no se puede retirar antes de vencer. En el inicio, sección **Mis metas**, creas metas de ahorro con monto y fecha y les abonas cuando quieras. Lo que apartas sale de tu saldo disponible y vuelve cuando lo sacas.",
+            text: `Sí. En **Bolsillos y CDT** apartas plata en bolsillos que ganan ${catalogText("pocketRate", "intereses")} y puedes sacar cuando quieras, o abres un CDT${BL_CATALOG?.savings ? ` desde ${catalogText("cdtMin")} a ${catalogText("cdtTermDays")} (de ${catalogText("cdtMinRate")} a ${catalogText("cdtMaxRate")}, con retención del ${catalogText("cdtTax")} sobre los intereses)` : " a plazo fijo (con retención en la fuente sobre los intereses)"}; el CDT no se puede retirar antes de vencer. En el inicio, sección **Mis metas**, creas metas de ahorro con monto y fecha y les abonas cuando quieras. Lo que apartas sale de tu saldo disponible y vuelve cuando lo sacas.`,
             links: [
                 { label: "Bolsillos y CDT", href: "inversiones.html" },
                 { label: "Mis metas", href: "dashboard.html#ahorro" },
@@ -1003,7 +1003,7 @@ const BOT_TOPICS = [
         faq: "¿Cuándo recibo los intereses de mi bolsillo?",
         cat: "ahorro",
         answer: () => ({
-            text: "Los bolsillos ganan **9% E.A.** y los intereses se causan **cada día**: los ves crecer en Bolsillos y CDT y se suman al bolsillo cuando le agregas o le sacas plata. Las **metas de ahorro no generan intereses**; son para organizar tu plata.",
+            text: `Los bolsillos ganan **${catalogText("pocketRate", "intereses")}** y los intereses se causan **cada día**: los ves crecer en Bolsillos y CDT y se suman al bolsillo cuando le agregas o le sacas plata. Las **metas de ahorro no generan intereses**; son para organizar tu plata.`,
             links: [{ label: "Bolsillos y CDT", href: "inversiones.html" }],
         }),
     },
@@ -1023,7 +1023,7 @@ const BOT_TOPICS = [
         faq: "¿Qué pasa cuando vence mi CDT?",
         cat: "ahorro",
         answer: () => ({
-            text: "Cuando llega la fecha de vencimiento, entra a **Bolsillos y CDT** y toca **Cobrar**: te devolvemos el capital y los intereses (ya con la retención del 4%) a tu saldo. Antes de vencer **no se puede retirar**.",
+            text: `Cuando llega la fecha de vencimiento, entra a **Bolsillos y CDT** y toca **Cobrar**: te devolvemos el capital y los intereses (ya con la retención${BL_CATALOG?.savings ? ` del ${catalogText("cdtTax")}` : " en la fuente"}) a tu saldo. Antes de vencer **no se puede retirar**.`,
             links: [{ label: "Bolsillos y CDT", href: "inversiones.html" }],
         }),
     },
@@ -1044,7 +1044,9 @@ const BOT_TOPICS = [
         faq: "¿Cuántos bolsillos y metas puedo tener?",
         cat: "ahorro",
         answer: () => ({
-            text: "Puedes tener hasta **8 bolsillos** y **10 metas de ahorro** activas. El valor mínimo para agregar o sacar plata es **$1.000**, y un CDT se abre desde **$500.000**.",
+            text: BL_CATALOG?.savings
+                ? `Puedes tener hasta **${catalogText("maxPockets")} bolsillos** y **${catalogText("maxGoals")} metas de ahorro** activas. El valor mínimo para agregar o sacar plata es **${catalogText("minMove")}**, y un CDT se abre desde **${catalogText("cdtMin")}**.`
+                : "Los topes de bolsillos, metas y CDT los ves en **Bolsillos y CDT** al crear cada uno.",
             links: [
                 { label: "Bolsillos y CDT", href: "inversiones.html" },
                 { label: "Mis metas", href: "dashboard.html#ahorro" },

@@ -446,7 +446,7 @@
                     <input id="goalName" required maxlength="40" placeholder="Ej. Viaje a Cartagena">
                 </label>
                 <label>Monto objetivo
-                    <input id="goalTarget" type="number" min="10000" step="1000" inputmode="numeric" required placeholder="0">
+                    <input id="goalTarget" type="number" min="0" step="1000" inputmode="numeric" required placeholder="0">
                 </label>
                 <label>Monto inicial
                     <input id="goalSaved" type="number" min="0" step="1000" inputmode="numeric" value="0">
@@ -473,7 +473,7 @@
             <form id="goalDepositForm" class="form-stack">
                 <input type="hidden" id="goalDepositId">
                 <label>Monto a abonar
-                    <input id="goalDepositAmount" type="number" min="1000" step="1000" inputmode="numeric" required placeholder="0">
+                    <input id="goalDepositAmount" type="number" min="0" step="1000" inputmode="numeric" required placeholder="0">
                 </label>
                 <div class="goal-quick" id="goalQuick" aria-label="Montos rápidos"></div>
                 <button class="btn primary full" type="submit">Abonar</button>

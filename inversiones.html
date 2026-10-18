@@ -64,7 +64,7 @@
                 <div>
                     <span class="eyebrow">Disponibles cuando quieras</span>
                     <h2 id="pocketsTitle">Bolsillos</h2>
-                    <p>La plata que apartas deja de estar en tu saldo, gana <b id="pocketRateText">9% E.A.</b> y la puedes sacar en cualquier momento.</p>
+                    <p>La plata que apartas deja de estar en tu saldo, gana <b id="pocketRateText">intereses</b> y la puedes sacar en cualquier momento.</p>
                 </div>
                 <button class="btn primary" type="button" id="newPocket">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
@@ -103,7 +103,7 @@
                             <input id="cdtAmount" type="text" inputmode="numeric" autocomplete="off" placeholder="1.000.000">
                         </span>
                     </label>
-                    <small class="cdt-min" id="cdtMinText">Mínimo $ 500.000</small>
+                    <small class="cdt-min" id="cdtMinText"></small>
 
                     <span class="cdt-label" id="cdtTermLabel">Plazo</span>
                     <div class="term-options" id="cdtTerms" role="radiogroup" aria-labelledby="cdtTermLabel"></div>
@@ -111,7 +111,7 @@
                     <div class="cdt-result">
                         <div><span>Tasa efectiva anual</span><strong id="cdtRate">-</strong></div>
                         <div><span>Intereses</span><strong id="cdtGross">$ 0</strong></div>
-                        <div><span>Retención en la fuente (4%)</span><strong id="cdtTax">$ 0</strong></div>
+                        <div><span>Retención en la fuente<span data-catalog="cdtTax" data-template=" ({})"></span></span><strong id="cdtTax">$ 0</strong></div>
                         <div><span>Fecha de vencimiento</span><strong id="cdtDate">-</strong></div>
                         <div class="cdt-total"><span>Recibirás al final</span><strong id="cdtTotal">$ 0</strong></div>
                     </div>

@@ -10,7 +10,10 @@ const HOME_ARTICLES = {
     },
     cdt: {
         title: "¿CDT o bolsillo?",
-        text: "Bolsillo: apartas plata para algo concreto y la puedes sacar cuando quieras. Sirve para emergencias o metas cercanas.\n\nCDT: la plata queda quieta hasta el final del plazo a cambio de una tasa fija. Sirve para dinero que no vas a necesitar pronto.\n\nMuchas personas combinan los dos. En Banklite tienes bolsillos que ganan 9% E.A. y CDT de hasta 11% E.A., en Bolsillos y CDT.",
+        // Las tasas vienen del backend (catalogText, comun.js)
+        text: () =>
+            "Bolsillo: apartas plata para algo concreto y la puedes sacar cuando quieras. Sirve para emergencias o metas cercanas.\n\nCDT: la plata queda quieta hasta el final del plazo a cambio de una tasa fija. Sirve para dinero que no vas a necesitar pronto.\n\n" +
+            `Muchas personas combinan los dos. En Banklite tienes bolsillos que ganan ${catalogText("pocketRate", "intereses")} y CDT ${catalogText("cdtMaxRate") ? `de hasta ${catalogText("cdtMaxRate")}` : "a plazo fijo"}, en Bolsillos y CDT.`,
     },
     fraude: {
         title: "5 señales de fraude",
@@ -310,7 +313,8 @@ function initHome() {
     document.querySelectorAll("[data-article]").forEach(button =>
         button.addEventListener("click", () => {
             const article = HOME_ARTICLES[button.dataset.article];
-            if (article) showMessage(article.title, article.text, "i");
+            if (article)
+                showMessage(article.title, typeof article.text === "function" ? article.text() : article.text, "i");
         })
     );
 

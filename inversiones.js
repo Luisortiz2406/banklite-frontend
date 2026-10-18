@@ -168,7 +168,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const name = byId("pocketName").value.trim();
         const initial = parseMoney(byId("pocketInitial").value);
         if (name.length < 2) return toast("Ponle un nombre a tu bolsillo.", "err");
-        if (initial && initial < 1000) return toast("El valor mínimo es $1.000.", "err");
+        const { minMove } = state.data.config;
+        if (initial && initial < minMove) return toast(`El valor mínimo es ${formatMoney(minMove)}.`, "err");
         if (initial > state.balance)
             return toast(`No tienes saldo suficiente. Disponible: ${formatMoney(state.balance)}.`, "err");
 
@@ -251,7 +252,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const id = byId("pocketMoveId").value;
         const mode = byId("pocketMoveMode").value;
         const pocket = state.data.pockets.find(item => item.id === id);
-        if (amount < 1000) return toast("El valor mínimo es $1.000.", "err");
+        const { minMove } = state.data.config;
+        if (amount < minMove) return toast(`El valor mínimo es ${formatMoney(minMove)}.`, "err");
         if (mode === "add" && amount > state.balance)
             return toast(`No tienes saldo suficiente. Disponible: ${formatMoney(state.balance)}.`, "err");
         if (mode === "take" && amount > Math.floor(pocket.balance))

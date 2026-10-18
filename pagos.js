@@ -41,7 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
         kyc: null,
         services: [],
         billers: [],
-        topup: { min: 1000, max: 500000 },
+        topup: null, // topes de recarga: llegan del backend con el catálogo
         payments: [],
         saved: [],
         lastMovement: null,
@@ -543,6 +543,11 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
+        if (!state.topup) {
+            toast("Todavía estamos cargando los topes de recarga. Intenta de nuevo.", "err");
+            return;
+        }
+
         if (amount < state.topup.min) {
             toast(`La recarga mínima es de ${formatMoney(state.topup.min)}.`, "err");
             rcAmount.focus();
@@ -651,12 +656,15 @@ document.addEventListener("DOMContentLoaded", () => {
     // CARGAR Y PINTAR TODO
     // -----------------------------------------------------
 
-    async function loadCatalog() {
+    async function loadBillers() {
         try {
             const catalog = await BlApi.authed(api, "GET", "/payments/billers");
             state.services = catalog.services || [];
             state.billers = catalog.billers || [];
-            if (catalog.topup) state.topup = catalog.topup;
+            if (catalog.topup) {
+                state.topup = catalog.topup;
+                setText("topupRange", `De ${formatMoney(state.topup.min)} a ${formatMoney(state.topup.max)}.`);
+            }
         } catch (err) {
             fail(err, "No se pudo cargar el catálogo de empresas.");
             return;
@@ -690,6 +698,6 @@ document.addEventListener("DOMContentLoaded", () => {
         renderRecentNumbers();
     }
 
-    loadCatalog();
+    loadBillers();
     refresh();
 });

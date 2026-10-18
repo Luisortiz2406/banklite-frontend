@@ -9,19 +9,13 @@
 // solo queda la preferencia de tema.
 // =========================================================
 
-// El frontend solo habla con el API Gateway, que enruta a cada microservicio.
-// Si la página se sirve desde localhost se usa el gateway de docker-compose.
-if (!/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) {
-    window.BANKLITE_CONFIG = window.BANKLITE_CONFIG || {
-        apiGateway: "https://api-gateway-production-dd7f.up.railway.app",
-    };
-}
+// El frontend solo habla con el API Gateway (gatewayUrl() en comun.js).
 
 const BlApi = (function () {
     "use strict";
 
     // ---------- configuración (igual que el index) ----------
-    const API_GATEWAY = ((window.BANKLITE_CONFIG || {}).apiGateway || "http://localhost:8080").replace(/\/+$/, "");
+    const API_GATEWAY = gatewayUrl();
     const DEFAULT_CONFIG = {
         authApi: API_GATEWAY,
         kycApi: API_GATEWAY,

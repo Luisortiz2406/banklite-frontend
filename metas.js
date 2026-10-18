@@ -68,7 +68,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const { config } = BlApi;
     const api = config.savingsApi || config.transferApi;
-    const state = { goals: [], balance: null, busy: false, depositKey: null };
+    // config: topes de ahorro de savings-service (goalMinTarget, minMove...)
+    const state = { goals: [], balance: null, busy: false, depositKey: null, config: null };
     const goalDrawn = {};
 
     const uuid = () =>
@@ -96,6 +97,11 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const data = await BlApi.authed(api, "GET", "/savings");
             state.goals = data.goals || [];
+            state.config = data.config || null;
+            if (state.config) {
+                byId("goalTarget").min = state.config.goalMinTarget;
+                byId("goalDepositAmount").min = state.config.minMove;
+            }
             render();
         } catch (err) {
             if (BlApi.handleAuthError(err)) return;
@@ -302,11 +308,14 @@ document.addEventListener("DOMContentLoaded", () => {
         const date = goalDateInput.value || "";
 
         if (!name) return showMessage("Meta inválida", "Ingresa un nombre para tu meta.", "!");
-        if (target < 10000) return showMessage("Monto inválido", "El objetivo mínimo es de $10.000.", "!");
+        const minTarget = state.config?.goalMinTarget ?? 0;
+        const minMove = state.config?.minMove ?? 0;
+        if (target < minTarget)
+            return showMessage("Monto inválido", `El objetivo mínimo es de ${formatMoney(minTarget)}.`, "!");
         if (initial < 0 || initial > target)
             return showMessage("Monto inicial inválido", "El monto inicial no puede ser mayor que el objetivo.", "!");
-        if (initial > 0 && initial < 1000)
-            return showMessage("Monto inicial inválido", "El abono mínimo es de $1.000.", "!");
+        if (initial > 0 && initial < minMove)
+            return showMessage("Monto inicial inválido", `El abono mínimo es de ${formatMoney(minMove)}.`, "!");
         if (state.balance !== null && initial > state.balance)
             return showMessage("Saldo insuficiente", "No tienes saldo suficiente para el monto inicial.", "!");
         if (date && date < tomorrow)
@@ -428,7 +437,9 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!goal) return;
         const missing = Math.max(0, Math.ceil(goal.target - goal.balance));
 
-        if (amount < 1000) return showMessage("Monto inválido", "El abono mínimo es de $1.000.", "!");
+        const minMove = state.config?.minMove ?? 0;
+        if (amount < minMove)
+            return showMessage("Monto inválido", `El abono mínimo es de ${formatMoney(minMove)}.`, "!");
         if (state.balance !== null && amount > state.balance)
             return showMessage("Saldo insuficiente", "No tienes saldo suficiente para este abono.", "!");
         if (amount > missing)

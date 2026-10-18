@@ -50,6 +50,96 @@ function formatMoney(value, currency) {
     }).format(Number(value) || 0);
 }
 
+// Tasa efectiva anual: 0.09 -> "9% E.A."
+function formatRate(rate) {
+    return `${(rate * 100).toLocaleString("es-CO", { maximumFractionDigits: 1 })}% E.A.`;
+}
+
+// =========================================================
+// API GATEWAY Y CATÁLOGO (TASAS Y TOPES DESDE EL BACKEND)
+// =========================================================
+
+// El frontend solo habla con el API Gateway. Si la página se sirve desde
+// localhost se usa el gateway de docker-compose. api.js usa esta misma dirección.
+if (!/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) {
+    window.BANKLITE_CONFIG = window.BANKLITE_CONFIG || {
+        apiGateway: "https://api-gateway-production-dd7f.up.railway.app",
+    };
+}
+
+function gatewayUrl() {
+    return ((window.BANKLITE_CONFIG || {}).apiGateway || "http://localhost:8080").replace(/\/+$/, "");
+}
+
+// Tasas y topes de ahorro (savings-service) y de recargas (payment-service).
+// Son públicos: los usan el inicio, el Centro de ayuda y Banki. Se guardan 10
+// minutos en la pestaña para no pedirlos en cada página.
+const CATALOG_KEY = "bl.catalog";
+const CATALOG_TTL_MS = 10 * 60 * 1000;
+let BL_CATALOG = null;
+let catalogRequest = null;
+
+function loadCatalog() {
+    if (catalogRequest) return catalogRequest;
+    catalogRequest = (async () => {
+        try {
+            const cached = JSON.parse(sessionStorage.getItem(CATALOG_KEY));
+            if (cached && Date.now() - cached.at < CATALOG_TTL_MS) return (BL_CATALOG = cached.data);
+        } catch {
+            /* sin almacenamiento */
+        }
+        const get = path =>
+            fetch(gatewayUrl() + path)
+                .then(res => (res.ok ? res.json() : null))
+                .catch(() => null);
+        const [savings, payments] = await Promise.all([get("/savings/catalog"), get("/payments/catalog")]);
+        BL_CATALOG = { savings, payments };
+        if (savings && payments) {
+            try {
+                sessionStorage.setItem(CATALOG_KEY, JSON.stringify({ at: Date.now(), data: BL_CATALOG }));
+            } catch {
+                /* sin almacenamiento */
+            }
+        }
+        return BL_CATALOG;
+    })();
+    return catalogRequest;
+}
+
+// Cada cifra del catálogo ya con formato; null si todavía no llegó.
+const CATALOG_VALUES = {
+    pocketRate: ({ savings }) => savings && formatRate(savings.pocketRate),
+    cdtMinRate: ({ savings }) => savings && formatRate(Math.min(...savings.cdtTerms.map(term => term.rate))),
+    cdtMaxRate: ({ savings }) => savings && formatRate(Math.max(...savings.cdtTerms.map(term => term.rate))),
+    cdtTermDays: ({ savings }) => {
+        if (!savings) return null;
+        const days = savings.cdtTerms.map(term => term.days);
+        return `${days.slice(0, -1).join(", ")} o ${days[days.length - 1]} días`;
+    },
+    cdtMin: ({ savings }) => savings && formatMoney(savings.cdtMin),
+    cdtTax: ({ savings }) => savings && `${(savings.cdtTax * 100).toLocaleString("es-CO")}%`,
+    minMove: ({ savings }) => savings && formatMoney(savings.minMove),
+    maxPockets: ({ savings }) => savings && String(savings.maxPockets),
+    maxGoals: ({ savings }) => savings && String(savings.maxGoals),
+    goalMinTarget: ({ savings }) => savings && formatMoney(savings.goalMinTarget),
+    topupMin: ({ payments }) => payments && formatMoney(payments.topup.min),
+    topupMax: ({ payments }) => payments && formatMoney(payments.topup.max),
+};
+
+// Valor del catálogo con formato, o `fallback` (texto sin cifras) si no está.
+function catalogText(key, fallback = "") {
+    return (BL_CATALOG && CATALOG_VALUES[key]?.(BL_CATALOG)) || fallback;
+}
+
+// Rellena los <span data-catalog="clave" data-template="Hasta {}">. Su texto inicial
+// no lleva cifras: si el catálogo no llega, se lee el texto neutro.
+function applyCatalog(root = document) {
+    root.querySelectorAll("[data-catalog]").forEach(element => {
+        const value = catalogText(element.dataset.catalog);
+        if (value) element.textContent = (element.dataset.template || "{}").replace("{}", value);
+    });
+}
+
 function initials(name) {
     if (!name) return "";
 
@@ -519,6 +609,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Cada página se inicia en su propio script (inicio.js, ayuda.js, login.js,
     // dashboard.js, ...), conectado al backend con api.js.
+
+    // Tasas y topes del backend: en las páginas que los muestran y donde está Banki.
+    if (document.querySelector("[data-catalog]") || typeof BOT_TOPICS !== "undefined") {
+        loadCatalog().then(() => applyCatalog());
+    }
 
     // Sin banki.js (páginas públicas), los botones de chat llevan al Centro de ayuda.
     if (typeof initBotBubble !== "function") {
