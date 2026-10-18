@@ -187,6 +187,10 @@ let TOKEN = store.get(TOKEN_KEY);
 let ME = null;
 
 const isAdmin = () => ME?.role === "admin";
+// Permisos según el rol. El backend los vuelve a validar y responde 403.
+const hasRole = (...roles) => roles.includes(ME?.role);
+// Cumplimiento y Administración: identidad completa (KYC), fraude y SAR
+const canCompliance = () => hasRole("compliance", "admin");
 
 const SESSION = {
     touch() {
@@ -282,7 +286,9 @@ const TX = {
 };
 const NOTIF = { pending: ["Pendiente", "b-warn"], sent: ["Enviada", "b-good"], failed: ["Fallida", "b-bad"] };
 const CHANNEL = { in_app: "App", email: "Correo", whatsapp: "WhatsApp" };
-const ROLE = { admin: "Administrador", support: "Soporte" };
+const ROLE = { admin: "Administrador", compliance: "Cumplimiento", support: "Soporte" };
+const ROLE_BADGE = { admin: "b-info", compliance: "b-warn", support: "b-gray" };
+const roleBadge = role => `<span class="badge ${ROLE_BADGE[role] || "b-gray"}">${esc(ROLE[role] || role)}</span>`;
 
 const ACTIONS = {
     "staff.login": "Ingresó al panel",
@@ -304,6 +310,8 @@ const ACTIONS = {
     "sar.filed": "Radicó un SAR",
     "sar.dismissed": "Descartó un SAR",
     "report.generate": "Generó un reporte AML",
+    "kyc.view": "Abrió los datos de identidad",
+    "kyc.manual_approve": "Aprobó a mano una verificación",
 };
 
 const badge = (map, key, extra) => {
@@ -506,10 +514,16 @@ const PAGES = [
     { id: "customers", title: "Clientes", href: BASE + "clientes.html", group: "Operación" },
     { id: "accounts", title: "Cuentas", href: BASE + "cuentas.html", group: "Operación" },
     { id: "movements", title: "Movimientos", href: BASE + "movimientos.html", group: "Operación" },
-    { id: "fraud", title: "Fraude", href: BASE + "fraude.html", group: "Operación" },
-    { id: "compliance", title: "Cumplimiento", href: BASE + "cumplimiento.html", group: "Operación" },
+    { id: "fraud", title: "Fraude", href: BASE + "fraude.html", group: "Operación", roles: ["compliance", "admin"] },
+    {
+        id: "compliance",
+        title: "Cumplimiento",
+        href: BASE + "cumplimiento.html",
+        group: "Operación",
+        roles: ["compliance", "admin"],
+    },
     { id: "monitoring", title: "Monitoreo", href: BASE + "monitoreo.html", group: "Sistema" },
-    { id: "staff", title: "Empleados", href: BASE + "empleados.html", group: "Sistema", adminOnly: true },
+    { id: "staff", title: "Empleados", href: BASE + "empleados.html", group: "Sistema", roles: ["admin"] },
     { id: "audit", title: "Auditoría", href: BASE + "auditoria.html", group: "Sistema" },
 ];
 
@@ -517,7 +531,7 @@ function buildSide(alerts = 0) {
     const current = document.body.dataset.page;
     let lastGroup = "";
 
-    const links = PAGES.filter(p => !p.adminOnly || isAdmin())
+    const links = PAGES.filter(p => !p.roles || hasRole(...p.roles))
         .map(p => {
             const label = p.group !== lastGroup ? `<p class="nav-label">${esc(p.group)}</p>` : "";
             lastGroup = p.group;
@@ -725,7 +739,7 @@ async function renderDashboard(el) {
 
     // Nombres de los clientes nuevos (viven en kyc-service)
     const recent = customers?.items || [];
-    const names = await Promise.all(recent.map(c => tryApi("GET", `/kyc/admin/records/${c.idUser}`)));
+    const names = await Promise.all(recent.map(c => tryApi("GET", `/kyc/admin/records/${c.idUser}/resumen`)));
 
     const alerts = [
         ...services
@@ -971,22 +985,20 @@ async function renderCustomers(el) {
             [...rows.entries()]
                 .filter(([, r]) => !r.kyc)
                 .map(async ([id, r]) => {
-                    r.kyc = await tryApi("GET", `/kyc/admin/records/${id}`);
+                    r.kyc = await tryApi("GET", `/kyc/admin/records/${id}/resumen`);
                 })
         );
         const list = [...rows.entries()];
 
         $("cres").innerHTML = list.length
             ? `<div class="table-wrap"><table>
-            <thead><tr><th>Cliente</th><th>Documento</th><th>Correo</th><th>Celular</th><th>Acceso</th><th>Identidad</th><th>Cliente desde</th></tr></thead>
+            <thead><tr><th>Cliente</th><th>Correo</th><th>Acceso</th><th>Identidad</th><th>Cliente desde</th></tr></thead>
             <tbody>${list
                 .map(
                     ([id, r]) => `
                 <tr class="clickable" data-user="${esc(id)}">
                     <td>${who(kycName(r.kyc) || "Sin datos de identidad", `<span class="mono">${short(id)}</span>`)}</td>
-                    <td class="mono">${esc(r.kyc ? `${r.kyc.tipoDocumento} ${r.kyc.numeroDocumento}` : "—")}</td>
-                    <td>${esc(r.auth?.email || r.kyc?.email || "—")}</td>
-                    <td class="mono">${esc(r.kyc?.telefono || "—")}</td>
+                    <td>${esc(r.auth?.email || "—")}</td>
                     <td>${r.auth ? badge(ACCESS, r.auth.access) : '<span class="badge b-gray">Sin credenciales</span>'}</td>
                     <td>${r.kyc ? badge(KYC, r.kyc.status) : '<span class="badge b-gray">Sin KYC</span>'}</td>
                     <td>${fdate(r.auth?.createdAt || r.kyc?.createdAt, "day")}</td>
@@ -1005,13 +1017,12 @@ async function renderCustomers(el) {
         $("exportC").disabled = !list.length;
         $("exportC").onclick = () =>
             downloadCSV("clientes-banklite.csv", [
-                ["ID", "Nombre", "Documento", "Correo", "Celular", "Acceso", "Identidad", "Cliente desde"],
+                ["ID", "Nombre", "Tipo de documento", "Correo", "Acceso", "Identidad", "Cliente desde"],
                 ...list.map(([id, r]) => [
                     id,
                     kycName(r.kyc),
-                    r.kyc ? `${r.kyc.tipoDocumento} ${r.kyc.numeroDocumento}` : "",
-                    r.auth?.email || r.kyc?.email,
-                    r.kyc?.telefono,
+                    r.kyc?.tipoDocumento || "",
+                    r.auth?.email,
                     ACCESS[r.auth?.access]?.[0] || "",
                     KYC[r.kyc?.status]?.[0] || "",
                     fdate(r.auth?.createdAt || r.kyc?.createdAt, "day"),
@@ -1026,7 +1037,7 @@ function openCustomer(idUser) {
     openDrawer("Ficha del cliente", async body => {
         const [auth, kyc, accounts, cards, notifs] = await Promise.all([
             tryApi("GET", `/auth/admin/customers/${idUser}`),
-            tryApi("GET", `/kyc/admin/records/${idUser}`),
+            tryApi("GET", `/kyc/admin/records/${idUser}/resumen`),
             tryApi("GET", "/accounts/admin/accounts" + qs({ q: idUser, limit: 50 })),
             tryApi("GET", "/cards/admin/cards" + qs({ userId: idUser, limit: 50 })),
             tryApi("GET", "/notifications/admin/notifications" + qs({ idUser, limit: 5 })),
@@ -1056,19 +1067,7 @@ function openCustomer(idUser) {
             </div>
 
             <div class="section-title"><h3>Identidad (KYC)</h3></div>
-            <div class="card">${
-                kyc
-                    ? `<dl class="kv">
-                <dt>Documento</dt><dd class="mono">${esc(kyc.tipoDocumento)} ${esc(kyc.numeroDocumento)}</dd>
-                <dt>Nacimiento</dt><dd>${esc(kyc.fechaNacimiento || "—")}</dd>
-                <dt>Expedición</dt><dd>${esc(kyc.fechaExpedicion || "—")}</dd>
-                <dt>Correo</dt><dd>${esc(kyc.email || "—")}</dd>
-                <dt>Celular</dt><dd class="mono">${esc(kyc.telefono || "—")}</dd>
-                <dt>Estado</dt><dd>${badge(KYC, kyc.status)}</dd>
-                <dt>Verificado el</dt><dd>${fdate(kyc.updatedAt)}</dd>
-            </dl>`
-                    : '<p class="muted">El cliente no tiene verificación de identidad.</p>'
-            }</div>
+            <div class="card" id="kycBox">${kycSummaryHtml(kyc)}</div>
 
             <div class="section-title"><h3>Acceso a la app</h3></div>
             <div class="card">${
@@ -1114,6 +1113,8 @@ function openCustomer(idUser) {
             }`;
 
         body.querySelectorAll("tr[data-acc]").forEach(tr => (tr.onclick = () => openAccount(tr.dataset.acc)));
+        bindDeclines(body);
+        bindKycActions(idUser, name, kyc);
 
         $("cDisable")?.addEventListener("click", () =>
             formModal({
@@ -1148,14 +1149,140 @@ function openCustomer(idUser) {
 }
 
 // Tarjetas (solo lectura: card-service no expone acciones de administración)
+// ---------- Identidad (KYC) en la ficha del cliente ----------
+// Cualquier empleado ve el resumen. Cumplimiento y Administración abren los datos
+// personales (cada apertura queda en la auditoría) y aprueban a mano los rechazos
+// por validaciones fallidas o datos que no coincidieron.
+
+function kycSummaryHtml(k) {
+    if (!k) return '<p class="muted">El cliente no tiene verificación de identidad.</p>';
+    const manual = k.reviewedBy
+        ? `<dt>Aprobada a mano</dt><dd>@${esc(k.reviewedBy)} (${esc(ROLE[k.reviewedByRole] || k.reviewedByRole || "—")}) · ${fdate(k.reviewedAt)}</dd>`
+        : "";
+    const reason =
+        k.status === "rejected" || k.reviewedBy
+            ? `<dt>Motivo del rechazo</dt><dd>${esc(k.rejectionLabel || "Motivo no registrado")}</dd>`
+            : "";
+    let actions;
+    if (!canCompliance()) {
+        actions =
+            '<p class="muted" style="margin-top:12px">Los datos personales solo los ve Cumplimiento o un administrador.</p>';
+    } else {
+        const approve = k.approvable
+            ? `<button class="btn btn-sm btn-primary" id="kycApprove">${svg("check")} Aprobar verificación</button>`
+            : "";
+        const hard =
+            k.status === "rejected" && !k.approvable
+                ? '<p class="muted" style="margin-top:10px">Este rechazo no se puede aprobar a mano.</p>'
+                : "";
+        actions = `<div class="actions" style="margin-top:14px"><button class="btn btn-sm" id="kycFull">${svg("user")} Ver datos de identidad</button>${approve}</div>${hard}`;
+    }
+    return `<dl class="kv">
+        <dt>Nombre</dt><dd>${esc(kycName(k))}</dd>
+        <dt>Tipo de documento</dt><dd>${esc(k.tipoDocumento)}</dd>
+        <dt>Estado</dt><dd>${badge(KYC, k.status)}</dd>
+        ${reason}${manual}
+        <dt>Actualizado</dt><dd>${fdate(k.updatedAt)}</dd>
+    </dl>${actions}`;
+}
+
+function kycFullHtml(k) {
+    return `<dl class="kv">
+        <dt>Nombre</dt><dd>${esc(kycName(k))}</dd>
+        <dt>Documento</dt><dd class="mono">${esc(k.tipoDocumento)} ${esc(k.numeroDocumento)}</dd>
+        <dt>Nacimiento</dt><dd>${esc(k.fechaNacimiento || "—")}</dd>
+        <dt>Expedición</dt><dd>${esc(k.fechaExpedicion || "—")}</dd>
+        <dt>Correo</dt><dd>${esc(k.email || "—")}</dd>
+        <dt>Celular</dt><dd class="mono">${esc(k.telefono || "—")}</dd>
+        <dt>Estado</dt><dd>${badge(KYC, k.status)}</dd>
+        ${k.rejectionCode ? `<dt>Motivo del rechazo</dt><dd>${esc(k.rejectionLabel)}${k.rejectionMessage ? `<div class="muted">${esc(k.rejectionMessage)}</div>` : ""}</dd>` : ""}
+        <dt>Actualizado</dt><dd>${fdate(k.updatedAt)}</dd>
+    </dl>
+    <p class="muted" style="margin-top:10px">Esta consulta quedó registrada en la auditoría.</p>
+    ${k.approvable ? `<div class="actions" style="margin-top:12px"><button class="btn btn-sm btn-primary" id="kycApprove">${svg("check")} Aprobar verificación</button></div>` : ""}`;
+}
+
+function bindKycActions(idUser, name, kyc) {
+    const box = $("kycBox");
+    if (!box || !kyc) return;
+
+    const bindApprove = current =>
+        $("kycApprove")?.addEventListener("click", () =>
+            formModal({
+                title: "Aprobar verificación de identidad",
+                confirm: "Aprobar",
+                icon: "check",
+                desc:
+                    `Se activará la cuenta de ${esc(name)}. Motivo del rechazo: <strong>${esc(current.rejectionLabel || "—")}</strong>.` +
+                    (ME?.hasDocumento
+                        ? ""
+                        : "<br><br>Tu usuario no tiene documento registrado: pídele a un administrador que lo agregue para poder aprobar."),
+                fields: [
+                    {
+                        ...reasonField,
+                        label: "Motivo de la aprobación (mínimo 10 caracteres; queda en la auditoría)",
+                        placeholder: "Ej.: Revisé el documento con el cliente; el nombre tenía una tilde de más",
+                    },
+                ],
+                onSubmit: async v => {
+                    if (v.reason.length < 10)
+                        throw new Error("Explica el motivo de la aprobación (mínimo 10 caracteres).");
+                    await api("POST", `/kyc/admin/records/${idUser}/approve`, { reason: v.reason });
+                    toast("Verificación aprobada. La cuenta se activa en unos segundos.");
+                    refreshAll();
+                },
+            })
+        );
+
+    $("kycFull")?.addEventListener("click", async () => {
+        box.innerHTML = loadingBox;
+        try {
+            const full = await api("GET", `/kyc/admin/records/${idUser}`);
+            box.innerHTML = kycFullHtml(full);
+            bindApprove(full);
+        } catch (err) {
+            box.innerHTML = errorBox(err);
+        }
+    });
+    bindApprove(kyc);
+}
+
+// ---------- Intentos de cargo rechazados de una tarjeta ----------
+function bindDeclines(container) {
+    container.querySelectorAll("[data-declines]").forEach(button =>
+        button.addEventListener("click", async () => {
+            const data = await tryApi("GET", `/cards/admin/cards/${button.dataset.declines}/declines`);
+            const rows = data?.items || [];
+            formModal({
+                title: `Cargos rechazados · •••• ${data?.card?.lastFour || ""}`,
+                confirm: "Cerrar",
+                icon: "card",
+                desc: rows.length
+                    ? `<div class="table-wrap"><table class="mini-table">
+                        <thead><tr><th>Fecha</th><th>Comercio</th><th>Monto</th><th>Canal</th><th>Motivo</th></tr></thead>
+                        <tbody>${rows
+                            .map(
+                                d =>
+                                    `<tr><td>${fdate(d.createdAt)}</td><td>${esc(d.merchantName)}</td><td>${money(d.amount, d.currency)}</td><td>${d.channel === "online" ? "Internet" : "Tienda física"}</td><td>${esc(d.reason || "—")}</td></tr>`
+                            )
+                            .join("")}</tbody></table></div>`
+                    : data
+                      ? "Esta tarjeta no tiene cargos rechazados."
+                      : "No se pudieron consultar los cargos rechazados.",
+                onSubmit: async () => {},
+            });
+        })
+    );
+}
+
 const cardTable = cards =>
     cards?.items?.length
         ? `<div class="table-wrap"><table class="mini-table">
-    <thead><tr><th>Tarjeta</th><th>Cuenta</th><th>Vence</th><th>Estado</th></tr></thead>
+    <thead><tr><th>Tarjeta</th><th>Cuenta</th><th>Vence</th><th>Estado</th><th>Cargos rechazados</th></tr></thead>
     <tbody>${cards.items
         .map(
             c => `
-        <tr><td class="mono">•••• ${esc(c.lastFour)}</td><td class="mono">${esc(c.accountNumber)}</td><td class="mono">${esc(c.expiry)}</td><td>${c.status === "active" ? '<span class="badge b-good">Activa</span>' : '<span class="badge b-info">Congelada</span>'}</td></tr>`
+        <tr><td class="mono">•••• ${esc(c.lastFour)}</td><td class="mono">${esc(c.accountNumber)}</td><td class="mono">${esc(c.expiry)}</td><td>${c.status === "active" ? '<span class="badge b-good">Activa</span>' : '<span class="badge b-info">Congelada</span>'}</td><td>${c.declinedCount ? `<button class="btn btn-sm" data-declines="${esc(c.id)}">${esc(c.declinedCount)}</button>` : '<span class="muted">0</span>'}</td></tr>`
         )
         .join("")}
     </tbody></table></div>`
@@ -1273,7 +1400,7 @@ function openAccount(id) {
         const [bal, txs, kyc, cards] = await Promise.all([
             tryApi("GET", `/ledger/admin/accounts/${id}/balance`),
             tryApi("GET", "/ledger/admin/transactions" + qs({ accountId: id, limit: 8 })),
-            tryApi("GET", `/kyc/admin/records/${acc.idUser}`),
+            tryApi("GET", `/kyc/admin/records/${acc.idUser}/resumen`),
             tryApi("GET", "/cards/admin/cards" + qs({ accountId: id, limit: 20 })),
         ]);
         const canEdit = isAdmin() && acc.status !== "closed";
@@ -1700,7 +1827,7 @@ async function renderMonitoring(el) {
             <td>${esc(n.deliveryAttempts ?? 0)}</td>
             <td style="color:var(--bad)">${esc(n.lastError || "—")}${n.nextAttemptAt ? `<div class="muted">Próximo: ${fdate(n.nextAttemptAt)}</div>` : ""}</td>
             <td>${fdate(n.createdAt)}</td>
-            <td><button class="btn btn-sm" data-retry="${esc(n.id)}">Reintentar</button></td></tr>`
+            <td>${hasRole("support", "admin") ? `<button class="btn btn-sm" data-retry="${esc(n.id)}">Reintentar</button>` : ""}</td></tr>`
             )
             .join("")}
         </tbody></table></div>`
@@ -1857,17 +1984,19 @@ async function renderStaff(el) {
         ) +
         `
         <div class="perm-card">
-            <div class="perm"><strong><span class="badge b-gray">Soporte</span></strong><ul><li>Consulta clientes, cuentas y movimientos</li><li>Ve el monitoreo y reintenta correos</li><li>Exporta reportes</li></ul></div>
-            <div class="perm"><strong><span class="badge b-info">Administrador</span></strong><ul><li>Todo lo de soporte</li><li>Suspende clientes, bloquea o cierra cuentas, abona y cambia límites</li><li>Reversa movimientos, reprocesa colas y gestiona empleados</li></ul></div>
+            <div class="perm"><strong><span class="badge b-gray">Soporte</span></strong><ul><li>Consulta clientes (sin datos de identidad), cuentas, movimientos y tarjetas</li><li>Ve el monitoreo y reintenta correos</li><li>No ve fraude ni cumplimiento</li></ul></div>
+            <div class="perm"><strong><span class="badge b-warn">Cumplimiento</span></strong><ul><li>Ve la identidad completa de los clientes (queda en la auditoría)</li><li>Aprueba a mano verificaciones rechazadas por validaciones fallidas</li><li>Resuelve alertas de fraude y reportes de actividad sospechosa</li><li>Ve las tarjetas en solo lectura</li></ul></div>
+            <div class="perm"><strong><span class="badge b-info">Administrador</span></strong><ul><li>Todo lo de soporte y cumplimiento</li><li>Suspende clientes, bloquea o cierra cuentas, abona y cambia límites</li><li>Reversa movimientos, reprocesa colas y gestiona empleados</li></ul></div>
         </div>
         <div class="table-wrap"><table>
-            <thead><tr><th>Empleado</th><th>Rol</th><th>Estado</th><th>Último ingreso</th><th>Creado</th><th></th></tr></thead>
+            <thead><tr><th>Empleado</th><th>Rol</th><th>Documento</th><th>Estado</th><th>Último ingreso</th><th>Creado</th><th></th></tr></thead>
             <tbody>${list
                 .map(
                     s => `
                 <tr>
                     <td>${who(s.nombre, "@" + esc(s.username))}</td>
-                    <td>${s.role === "admin" ? '<span class="badge b-info">Administrador</span>' : '<span class="badge b-gray">Soporte</span>'}</td>
+                    <td>${roleBadge(s.role)}</td>
+                    <td>${s.hasDocumento ? '<span class="badge b-good">Registrado</span>' : '<span class="badge b-gray">Falta</span>'}</td>
                     <td>${!s.active ? '<span class="badge b-bad">Desactivado</span>' : s.locked ? '<span class="badge b-warn">Bloqueado 15 min</span>' : '<span class="badge b-good">Activo</span>'}</td>
                     <td>${fdate(s.lastLoginAt)}</td>
                     <td>${fdate(s.createdAt, "day")}</td>
@@ -1899,12 +2028,18 @@ async function renderStaff(el) {
                     required: true,
                 },
                 {
+                    name: "numeroDocumento",
+                    label: "Documento de identidad (necesario para aprobar verificaciones; no se guarda en claro)",
+                    placeholder: "Opcional para Soporte",
+                },
+                {
                     name: "role",
                     label: "Rol",
                     type: "select",
                     value: "support",
                     options: [
                         ["support", "Soporte"],
+                        ["compliance", "Cumplimiento"],
                         ["admin", "Administrador"],
                     ],
                 },
@@ -1914,7 +2049,9 @@ async function renderStaff(el) {
                 if (!/^[a-z0-9._-]{3,40}$/.test(username))
                     throw new Error("El usuario solo admite minúsculas, números, punto, guion y guion bajo (3 a 40).");
                 if (!PASSWORD_RULE.test(v.password)) throw new Error(PASSWORD_MESSAGE);
-                await api("POST", "/auth/admin/staff", { ...v, username });
+                const body = { ...v, username };
+                if (!body.numeroDocumento) delete body.numeroDocumento;
+                await api("POST", "/auth/admin/staff", body);
                 toast("Empleado creado.");
                 refreshAll();
             },
@@ -1936,6 +2073,7 @@ async function renderStaff(el) {
                             value: s.role,
                             options: [
                                 ["support", "Soporte"],
+                                ["compliance", "Cumplimiento"],
                                 ["admin", "Administrador"],
                             ],
                         },
@@ -1954,9 +2092,16 @@ async function renderStaff(el) {
                             label: "Nueva contraseña (opcional; también lo desbloquea)",
                             type: "password",
                         },
+                        {
+                            name: "numeroDocumento",
+                            label: s.hasDocumento
+                                ? "Documento de identidad (ya registrado; escribe uno solo para cambiarlo)"
+                                : "Documento de identidad (necesario para aprobar verificaciones)",
+                        },
                     ],
                     onSubmit: async v => {
                         const changes = { role: v.role, active: v.active === "true" };
+                        if (v.numeroDocumento) changes.numeroDocumento = v.numeroDocumento;
                         if (v.password) {
                             if (!PASSWORD_RULE.test(v.password)) throw new Error(PASSWORD_MESSAGE);
                             changes.password = v.password;
@@ -1982,6 +2127,7 @@ const AUDIT_SOURCES = [
     ["notifications", "/notifications/admin/audit"],
     ["fraud", "/fraud/admin/audit"],
     ["compliance", "/compliance/admin/audit"],
+    ["kyc", "/kyc/admin/audit"],
 ];
 
 async function loadAudit({ q = "", limit = 100 } = {}) {
@@ -2063,7 +2209,7 @@ async function renderAudit(el) {
                     a => `
                 <tr>
                     <td style="white-space:nowrap">${fdate(a.createdAt)}</td>
-                    <td>${who(a.staffUsername, "@" + esc(a.staffUsername))}</td>
+                    <td>${who(a.staffUsername, (a.staffRole ? esc(ROLE[a.staffRole] || a.staffRole) + " · " : "") + "@" + esc(a.staffUsername))}</td>
                     <td><strong>${esc(ACTIONS[a.action] || a.action)}</strong>${a.details ? `<div class="muted mono" style="font-size:.7rem">${esc(JSON.stringify(a.details).slice(0, 120))}</div>` : ""}</td>
                     <td class="mono">${esc(a.targetType || "")} ${short(a.targetId)}</td>
                     <td>${esc(a.reason || "—")}</td>
@@ -2193,7 +2339,7 @@ function openFlag(id) {
             </table></div>
 
             ${
-                x.status === "pending" && isAdmin()
+                x.status === "pending" && canCompliance()
                     ? `<div class="actions" style="margin-top:16px">
                 <button class="btn btn-sm btn-primary" id="frConfirm">Confirmar fraude</button>
                 <button class="btn btn-sm" id="frDismiss">Descartar</button>
@@ -2393,7 +2539,7 @@ function openSar(id) {
             </dl></div>
 
             ${
-                s.status === "open" && isAdmin()
+                s.status === "open" && canCompliance()
                     ? `<div class="actions" style="margin-top:16px">
                 <button class="btn btn-sm btn-primary" id="sarFile">Radicar</button>
                 <button class="btn btn-sm" id="sarDismiss">Descartar</button>
@@ -2470,7 +2616,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     SESSION.touch();
 
     const page = PAGES.find(p => p.id === pageId);
-    if (page?.adminOnly && !isAdmin()) {
+    if (page?.roles && !hasRole(...page.roles)) {
         location.replace(BASE);
         return;
     }
