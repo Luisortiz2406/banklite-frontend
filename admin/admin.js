@@ -312,6 +312,7 @@ const ACTIONS = {
     "report.generate": "Generó un reporte AML",
     "kyc.view": "Abrió los datos de identidad",
     "kyc.manual_approve": "Aprobó a mano una verificación",
+    "staff.document_registered": "Registró el documento de un administrador (consola)",
 };
 
 const badge = (map, key, extra) => {
