@@ -2,7 +2,7 @@
 // Va en .mjs (no .js) para que el Dockerfile, que publica frontend/*.js, no lo sirva.
 //
 // Los scripts no son módulos: se cargan con <script> y comparten funciones
-// globales (escapeHTML de java.js, BlApi de api.js, ...). Para que no-undef
+// globales (escapeHTML de comun.js, BlApi de api.js, ...). Para que no-undef
 // detecte nombres mal escritos sin falsas alarmas, cada archivo recibe como
 // globales lo que declaran en el nivel superior los demás archivos de su grupo.
 import js from "@eslint/js";

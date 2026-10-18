@@ -2,7 +2,7 @@
 // BANKLITE - COMPROBANTES Y EXTRACTOS EN PDF
 // Genera los PDF directamente en el navegador, sin librerías
 // externas, así que funciona aunque no haya internet.
-// Necesita java.js cargado antes.
+// Necesita comun.js cargado antes.
 // =========================================================
 
 // ---------------------------------------------------------

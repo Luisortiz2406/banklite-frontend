@@ -2,8 +2,8 @@
 // LAYOUT COMPARTIDO DE LAS VISTAS INTERNAS
 // Encabezado (notificaciones, nombre, Salir), menú lateral y menú ☰ en celular.
 // Cada página solo declara <body class="app" data-page="..."> y su <main>;
-// este script arma el resto. Se carga después de java.js y api.js y corre de
-// inmediato (antes de DOMContentLoaded) para que java.js conecte los modales
+// este script arma el resto. Se carga después de comun.js y api.js y corre de
+// inmediato (antes de DOMContentLoaded) para que comun.js conecte los modales
 // que inyecta aquí (data-close, clic en el fondo, Escape).
 // =========================================================
 
@@ -341,3 +341,100 @@ const BlLayout = (() => {
 
     return { page, setUser, refreshNotifications };
 })();
+
+// -----------------------------------------------------
+// MENÚ LATERAL DEL DASHBOARD
+// Grupos desplegables (uno abierto a la vez) y la sección
+// en la que está la persona queda marcada mientras baja.
+// -----------------------------------------------------
+
+function initSidebar() {
+    const sidebar = document.querySelector(".sidebar");
+    if (!sidebar || sidebar.dataset.ready) return;
+    sidebar.dataset.ready = "1";
+
+    const groups = [...sidebar.querySelectorAll(".side-group")];
+
+    function setOpen(group, open) {
+        group.classList.toggle("is-open", open);
+        group.querySelector(".side-toggle").setAttribute("aria-expanded", String(open));
+    }
+
+    groups.forEach(group => {
+        group.querySelector(".side-toggle").addEventListener("click", () => {
+            const open = !group.classList.contains("is-open");
+            groups.forEach(other => {
+                setOpen(other, other === group && open);
+                other.dataset.auto = "";
+            });
+        });
+    });
+
+    // Marcar el elemento activo (y abrir su grupo)
+    const spyLinks = [...sidebar.querySelectorAll("[data-spy]")];
+
+    function activate(key) {
+        spyLinks.forEach(link => {
+            const on = link.dataset.spy === key;
+            link.classList.toggle("active", on);
+            if (on) link.setAttribute("aria-current", "page");
+            else link.removeAttribute("aria-current");
+        });
+        const owner = groups.find(group => group.querySelector(`[data-spy="${key}"]`));
+        groups.forEach(group => {
+            group.classList.toggle("has-active", group === owner);
+            // Abre el grupo de la sección actual; cierra los que se abrieron solos
+            if (owner) setOpen(group, group === owner);
+            else if (group.dataset.auto) setOpen(group, false);
+            group.dataset.auto = owner === group ? "1" : "";
+        });
+    }
+
+    spyLinks.forEach(link => link.addEventListener("click", () => activate(link.dataset.spy)));
+
+    // Fuera del dashboard (layout.js): se marca la vista actual y no hay secciones que vigilar
+    const page = sidebar.dataset.page;
+    if (page && page !== "dashboard") {
+        activate(page);
+        return;
+    }
+
+    // Cada sección del dashboard es una vista propia, así que no hay secciones que vigilar
+    const sections = [].map(([id, key]) => ({ el: document.getElementById(id), key })).filter(item => item.el);
+
+    let ticking = false;
+    function onScroll() {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(() => {
+            ticking = false;
+            const line = window.innerHeight * 0.35;
+            const view = document.querySelector("main.dashboard")?.dataset.currentView || "inicio";
+            let current = "inicio";
+
+            if (view !== "inicio") {
+                if (sidebar.dataset.current !== view) {
+                    sidebar.dataset.current = view;
+                    activate(view);
+                }
+                return;
+            }
+
+            // La última sección que ya pasó la línea es la actual
+            sections.forEach(({ el, key }) => {
+                if (el.getBoundingClientRect().top <= line) current = key;
+            });
+            // Las metas solo cuentan mientras se ven en pantalla
+            const goals = document.getElementById("ahorro");
+            if (current === "ahorro" && goals && goals.getBoundingClientRect().bottom < 80) current = "inicio";
+            if (sidebar.dataset.current !== current) {
+                sidebar.dataset.current = current;
+                activate(current);
+            }
+        });
+    }
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    document.addEventListener("banklite:view", onScroll);
+    onScroll();
+}

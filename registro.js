@@ -3,7 +3,7 @@
 // Flujo: datos → identidad (KYC) → correo → WhatsApp → usuario → clave.
 // Endpoints: POST /kyc/submit, /auth/email/check|send|verify,
 // /auth/phone/check, /auth/whatsapp/send|verify, /auth/username/check,
-// /auth/register. Usa BlApi (api.js) y las utilidades visuales de java.js.
+// /auth/register. Usa BlApi (api.js) y las utilidades visuales de comun.js.
 // =========================================================
 
 document.addEventListener("DOMContentLoaded", () => {

@@ -1,7 +1,7 @@
 // =========================================================
 // BANKLITE - LOGIN Y RECUPERACIÓN DE CLAVE (login.html)
 // Endpoints: POST /auth/login, /auth/password-recovery/send y /reset.
-// Usa BlApi (api.js) y las utilidades visuales de java.js.
+// Usa BlApi (api.js) y las utilidades visuales de comun.js.
 // =========================================================
 
 document.addEventListener("DOMContentLoaded", () => {

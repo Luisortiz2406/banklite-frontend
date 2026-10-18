@@ -4,7 +4,7 @@
 // mes), /cards (emitir, reveal, congelar),
 // y cambio de clave con /auth/password-recovery. Encabezado, menú y
 // notificaciones: layout.js.
-// Usa BlApi (api.js) y las utilidades visuales de java.js.
+// Usa BlApi (api.js) y las utilidades visuales de comun.js.
 // =========================================================
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -642,3 +642,244 @@ document.addEventListener("DOMContentLoaded", () => {
         openFromHash();
     })();
 });
+
+// =========================================================
+// VISTAS DEL DASHBOARD
+// Inicio, Metas, Tarjetas y Suscripciones se muestran por separado
+// según el enlace del panel izquierdo (#ahorro, #tarjetas, #suscripciones).
+// =========================================================
+
+const DASH_VIEWS = { tarjetas: "tarjetas", suscripciones: "suscripciones", ahorro: "ahorro" };
+
+function initDashboardViews() {
+    const main = document.querySelector("main.dashboard");
+    if (!main || !main.querySelector("[data-view]")) return;
+
+    function show(scroll) {
+        const hash = location.hash.replace("#", "");
+        const view = DASH_VIEWS[hash] || "inicio";
+        const changed = main.dataset.currentView !== view;
+
+        main.dataset.currentView = view;
+
+        if (scroll || changed) {
+            window.scrollTo({ top: 0, behavior: changed ? "auto" : "smooth" });
+        }
+
+        document.dispatchEvent(new CustomEvent("banklite:view", { detail: view }));
+    }
+
+    window.addEventListener("hashchange", () => show(true));
+
+    // Volver a hacer clic en la vista actual también sube al inicio
+    document.querySelectorAll('.sidebar a[href^="#"]').forEach(link => {
+        link.addEventListener("click", () => {
+            if (link.getAttribute("href") === location.hash) setTimeout(() => show(true), 0);
+        });
+    });
+
+    show(false);
+}
+
+// =========================================================
+// CARRUSEL DE FUNCIONES DEL BANCO
+// =========================================================
+
+// Solo funciones reales; lo que no tiene backend va como "Próximamente".
+const FEATURE_SLIDES = [
+    {
+        eyebrow: "Al instante",
+        title: "Transfiere entre cuentas Banklite",
+        text: "Envía plata con el número de cuenta, revisa antes de confirmar y descarga el comprobante.",
+        cta: "Transferir",
+        href: "transferir.html",
+        tone: "t1",
+        icon: "m22 2-7 20-4-9-9-4ZM22 2 11 13",
+    },
+    {
+        eyebrow: "Tus soportes",
+        title: "Extractos y comprobantes",
+        text: "Descarga el extracto de cualquier mes en PDF o tus movimientos en Excel.",
+        cta: "Ver movimientos",
+        href: "movimientos.html",
+        tone: "t2",
+        icon: "M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zM14 2v6h6M12 18v-6M9 15l3 3 3-3",
+    },
+    {
+        eyebrow: "Nuevo",
+        title: "Cobra y paga con QR",
+        text: "Muestra tu código para que te paguen o escanea uno para pagar en segundos.",
+        cta: "Ir a QR",
+        href: "qr.html",
+        tone: "t3",
+        icon: "M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h3v3h-3zM18 18h3v3h-3zM18 14h3M14 18v3",
+    },
+    {
+        eyebrow: "Nuevo",
+        title: "Llaves Bre-B",
+        text: "Recibir plata con tu celular o correo, sin dar tu número de cuenta.",
+        cta: "Mis llaves",
+        href: "llaves.html",
+        tone: "t3",
+        icon: "m21 2-9.6 9.6M15.5 7.5l3 3L22 7l-3-3M12.4 12.6a5.5 5.5 0 1 1-7.8 7.8 5.5 5.5 0 0 1 7.8-7.8z",
+    },
+    {
+        eyebrow: "Nuevo",
+        title: "Bolsillos y CDT",
+        text: "Aparta plata que gana 9% E.A. o invierte a plazo fijo hasta 11% E.A.",
+        cta: "Ahorrar ahora",
+        href: "inversiones.html",
+        tone: "t4",
+        icon: "M3 17l6-6 4 4 8-8M15 7h6v6",
+    },
+    {
+        eyebrow: "Nuevo",
+        title: "Pagos y recargas",
+        text: "Facturas de servicios y recargas de celular sin salir de Banklite.",
+        cta: "Pagar ahora",
+        href: "pagos.html",
+        tone: "t5",
+        icon: "M4 2v20l3-2 3 2 2-2 2 2 3-2 3 2V2l-3 2-3-2-2 2-2-2-3 2ZM8 9h8M8 13h6",
+    },
+    {
+        eyebrow: "Ayuda 24/7",
+        title: "Habla con Banki",
+        text: "Nuestro asistente responde tus dudas sobre la cuenta, la tarjeta y las transferencias.",
+        cta: "Abrir chat",
+        href: "#",
+        bot: true,
+        tone: "t6",
+        icon: "M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2zM8 9h8M8 13h5",
+    },
+];
+
+function initFeatureCarousel() {
+    const track = document.getElementById("fcTrack");
+    const dots = document.getElementById("fcDots");
+    if (!track || !dots) return;
+
+    track.innerHTML = FEATURE_SLIDES.map(
+        (slide, index) => `
+        <article class="fc-slide ${slide.tone}" role="group" aria-roledescription="diapositiva" aria-label="${index + 1} de ${FEATURE_SLIDES.length}: ${slide.title}">
+            <div class="fc-text">
+                <span class="fc-eyebrow">${slide.eyebrow}</span>
+                <h3>${slide.title}</h3>
+                <p>${slide.text}</p>
+                <a class="fc-cta" href="${slide.href}"${slide.bot ? " data-open-bot" : ""}>${slide.cta}
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                </a>
+            </div>
+            <span class="fc-bubble b1" aria-hidden="true"></span>
+            <span class="fc-bubble b2" aria-hidden="true"></span>
+            <span class="fc-bubble b3" aria-hidden="true"></span>
+            <div class="fc-art" aria-hidden="true">
+                <span class="fc-ring"></span>
+                <span class="fc-ring r2"></span>
+                <span class="fc-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="${slide.icon}"/></svg></span>
+            </div>
+        </article>`
+    ).join("");
+
+    dots.innerHTML = FEATURE_SLIDES.map(
+        (slide, index) =>
+            `<button type="button" class="fc-dot" role="tab" aria-label="${slide.title}" data-fc="${index}"></button>`
+    ).join("");
+
+    const slides = [...track.children];
+    const dotButtons = [...dots.children];
+    let current = 0;
+    let timer = null;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    function go(index, smooth = true) {
+        current = (index + slides.length) % slides.length;
+        track.scrollTo({
+            left: slides[current].offsetLeft - track.offsetLeft,
+            behavior: smooth && !reduced ? "smooth" : "auto",
+        });
+        mark();
+    }
+
+    function mark() {
+        dotButtons.forEach((dot, i) => {
+            dot.classList.toggle("active", i === current);
+            dot.setAttribute("aria-selected", String(i === current));
+        });
+        // Reinicia la animación de entrada de la diapositiva visible
+        slides.forEach((slide, i) => {
+            slide.classList.remove("is-active");
+            if (i === current) {
+                void slide.offsetWidth;
+                slide.classList.add("is-active");
+            }
+        });
+        restartDot();
+    }
+
+    // La barrita del punto activo se llena mientras corre el tiempo
+    function restartDot() {
+        const dot = dotButtons[current];
+        if (!dot) return;
+        dot.classList.remove("is-running");
+        void dot.offsetWidth;
+        if (timer) dot.classList.add("is-running");
+    }
+
+    function play() {
+        stop();
+        if (!reduced) timer = setInterval(() => go(current + 1), 5500);
+        restartDot();
+    }
+
+    function stop() {
+        clearInterval(timer);
+        timer = null;
+        dotButtons.forEach(dot => dot.classList.remove("is-running"));
+    }
+
+    document.getElementById("fcPrev")?.addEventListener("click", () => {
+        go(current - 1);
+        play();
+    });
+    document.getElementById("fcNext")?.addEventListener("click", () => {
+        go(current + 1);
+        play();
+    });
+    dots.addEventListener("click", event => {
+        const dot = event.target.closest("[data-fc]");
+        if (dot) {
+            go(Number(dot.dataset.fc));
+            play();
+        }
+    });
+
+    // Al deslizar con el dedo se actualiza el punto activo
+    let scrollTimer;
+    track.addEventListener(
+        "scroll",
+        () => {
+            clearTimeout(scrollTimer);
+            scrollTimer = setTimeout(() => {
+                const index = Math.round(track.scrollLeft / track.clientWidth);
+                if (index !== current && slides[index]) {
+                    current = index;
+                    mark();
+                }
+            }, 120);
+        },
+        { passive: true }
+    );
+
+    const box = track.closest(".feature-carousel");
+    box.addEventListener("mouseenter", stop);
+    box.addEventListener("mouseleave", play);
+    box.addEventListener("focusin", stop);
+    box.addEventListener("focusout", play);
+    box.addEventListener("touchstart", stop, { passive: true });
+
+    // Solo avanza cuando se ve la vista de inicio
+    document.addEventListener("banklite:view", event => (event.detail === "inicio" ? play() : stop()));
+
+    mark();
+    play();
+}
