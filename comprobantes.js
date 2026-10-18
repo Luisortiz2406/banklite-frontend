@@ -343,8 +343,6 @@ function downloadReceipt(movement, holder) {
 // label: "Octubre 2026"
 // ---------------------------------------------------------
 
-const MONTH_NAMES = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-
 function downloadStatement(statement, holder, label, fileKey) {
 
     const c = PDF_COLORS;

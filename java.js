@@ -274,11 +274,6 @@ function maskEmail(email) {
     return `${name.slice(0, 2)}${"•".repeat(Math.max(name.length - 2, 2))}@${domain}`;
 }
 
-function maskPhone(phone, country = "+57") {
-    const digits = String(phone).replace(/\D/g, "");
-    return `${country} ${"•".repeat(Math.max(digits.length - 4, 3))} ${digits.slice(-4)}`;
-}
-
 
 // Contador de vencimiento (05:00). El botón de reenviar se
 // habilita a los 30 segundos.
@@ -569,16 +564,6 @@ function escapeHTML(value) {
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
-}
-
-// Cerrar sesión desde cualquier página: api.js limpia sessionStorage
-// y lleva al ingreso.
-function endSession(reason = "cerrada") {
-    if (typeof BlApi !== "undefined") BlApi.logout(reason);
-    else {
-        try { sessionStorage.clear(); } catch {}
-        window.location.href = `login.html?sesion=${reason}`;
-    }
 }
 
 
@@ -922,7 +907,6 @@ function botLogged() {
 
 // Cada tema: palabras clave (con peso), pregunta frecuente y respuesta.
 // Solo describe funciones que existen; lo demás se marca "Próximamente".
-const BOT_SOON = "Esta función estará disponible **próximamente** en Banklite.";
 
 const BOT_TOPICS = [
     // --- Conversación ---
