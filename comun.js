@@ -71,7 +71,8 @@ function gatewayUrl() {
     return ((window.BANKLITE_CONFIG || {}).apiGateway || "http://localhost:8080").replace(/\/+$/, "");
 }
 
-// Tasas y topes de ahorro (savings-service) y de recargas (payment-service).
+// Tasas y topes públicos de cada servicio: ahorro (savings), recargas (payment),
+// transferencias (transfer), tarjeta (card) y Puntos Banklite (rewards).
 // Son públicos: los usan el inicio, el Centro de ayuda y Banki. Se guardan 10
 // minutos en la pestaña para no pedirlos en cada página.
 const CATALOG_KEY = "bl.catalog";
@@ -92,9 +93,13 @@ function loadCatalog() {
             fetch(gatewayUrl() + path)
                 .then(res => (res.ok ? res.json() : null))
                 .catch(() => null);
-        const [savings, payments] = await Promise.all([get("/savings/catalog"), get("/payments/catalog")]);
-        BL_CATALOG = { savings, payments };
-        if (savings && payments) {
+        const [savings, payments, transfers, cards, rewards] = await Promise.all(
+            ["/savings/catalog", "/payments/catalog", "/transfers/catalog", "/cards/catalog", "/rewards/catalog"].map(
+                get
+            )
+        );
+        BL_CATALOG = { savings, payments, transfers, cards, rewards };
+        if (Object.values(BL_CATALOG).every(Boolean)) {
             try {
                 sessionStorage.setItem(CATALOG_KEY, JSON.stringify({ at: Date.now(), data: BL_CATALOG }));
             } catch {
@@ -124,11 +129,25 @@ const CATALOG_VALUES = {
     goalMinTarget: ({ savings }) => savings && formatMoney(savings.goalMinTarget),
     topupMin: ({ payments }) => payments && formatMoney(payments.topup.min),
     topupMax: ({ payments }) => payments && formatMoney(payments.topup.max),
+    transferMin: ({ transfers }) => transfers && formatMoney(transfers.min),
+    cardDailyLimitMin: ({ cards }) => cards && formatMoney(cards.dailyLimit.min),
+    pointValue: ({ rewards }) => rewards && formatMoney(rewards.pointValue),
+    pointsPer: ({ rewards }) => rewards && formatMoney(rewards.pointsPer),
+    // Por nivel: data-catalog="levelMultiplier:Plata" -> "x1,25"; "levelMin:Oro" -> "5.000"
+    levelMultiplier: ({ rewards }, name) => {
+        const level = rewards?.levels.find(item => item.name === name);
+        return level && `x${level.multiplier.toLocaleString("es-CO")}`;
+    },
+    levelMin: ({ rewards }, name) => {
+        const level = rewards?.levels.find(item => item.name === name);
+        return level && level.min.toLocaleString("es-CO");
+    },
 };
 
 // Valor del catálogo con formato, o `fallback` (texto sin cifras) si no está.
 function catalogText(key, fallback = "") {
-    return (BL_CATALOG && CATALOG_VALUES[key]?.(BL_CATALOG)) || fallback;
+    const [name, arg] = key.split(":");
+    return (BL_CATALOG && CATALOG_VALUES[name]?.(BL_CATALOG, arg)) || fallback;
 }
 
 // Rellena los <span data-catalog="clave" data-template="Hasta {}">. Su texto inicial

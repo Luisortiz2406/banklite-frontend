@@ -561,7 +561,7 @@ const BOT_TOPICS = [
         faq: "¿Cómo cambio el límite diario de mi tarjeta?",
         cat: "tarjeta",
         answer: () => ({
-            text: "En el inicio, **Tarjeta débito → Límite diario de compras**, toca *Cambiar*. Eliges entre $100.000 y el límite diario de tu cuenta, y lo confirmas escribiendo tu clave dinámica de 6 dígitos. Ahí mismo ves cuánto llevas usado hoy; cuentan las compras y los cobros de suscripciones del día (hora de Colombia).",
+            text: `En el inicio, **Tarjeta débito → Límite diario de compras**, toca *Cambiar*. Eliges ${catalogText("cardDailyLimitMin") ? `entre ${catalogText("cardDailyLimitMin")} y` : "un valor hasta"} el límite diario de tu cuenta, y lo confirmas escribiendo tu clave dinámica de 6 dígitos. Ahí mismo ves cuánto llevas usado hoy; cuentan las compras y los cobros de suscripciones del día (hora de Colombia).`,
             links: [{ label: "Ir a mi tarjeta", href: "dashboard.html#tarjetas" }],
         }),
     },
@@ -943,7 +943,7 @@ const BOT_TOPICS = [
         faq: "¿Hay programa de puntos?",
         cat: "ahorro",
         answer: () => ({
-            text: "Sí. Con **Puntos Banklite** ganas 1 punto por cada $1.000 en compras con tarjeta, facturas, recargas y pagos con QR (las transferencias no suman). Tu nivel multiplica: Plata x1,25 y Oro x1,5. Cada punto vale $10: cámbialos por plata a tu cuenta, una recarga a tu celular verificado o bonos. También hay retos de bienvenida que suman puntos extra.",
+            text: `Sí. Con **Puntos Banklite** ganas ${BL_CATALOG?.rewards ? `1 punto por cada ${catalogText("pointsPer")}` : "puntos"} en compras con tarjeta, facturas, recargas y pagos con QR (las transferencias no suman). ${BL_CATALOG?.rewards ? `Tu nivel multiplica: Plata ${catalogText("levelMultiplier:Plata")} y Oro ${catalogText("levelMultiplier:Oro")}. Cada punto vale ${catalogText("pointValue")}: cámbialos` : "Tu nivel multiplica los puntos que ganas. Cámbialos"} por plata a tu cuenta, una recarga a tu celular verificado o bonos. También hay retos de bienvenida que suman puntos extra.`,
             links: [{ label: "Mis puntos", href: "puntos.html" }],
         }),
     },
@@ -961,7 +961,9 @@ const BOT_TOPICS = [
         faq: "¿Cómo subo de nivel en Puntos Banklite?",
         cat: "ahorro",
         answer: () => ({
-            text: "Tu nivel depende de los puntos que **has ganado** en total: **Bronce** desde 0, **Plata** desde 1.500 (x1,25 puntos) y **Oro** desde 5.000 (x1,5 puntos). Canjear puntos no te baja de nivel.",
+            text: BL_CATALOG?.rewards
+                ? `Tu nivel depende de los puntos que **has ganado** en total: **Bronce** desde ${catalogText("levelMin:Bronce")}, **Plata** desde ${catalogText("levelMin:Plata")} (${catalogText("levelMultiplier:Plata")} puntos) y **Oro** desde ${catalogText("levelMin:Oro")} (${catalogText("levelMultiplier:Oro")} puntos). Canjear puntos no te baja de nivel.`
+                : "Tu nivel depende de los puntos que **has ganado** en total: Bronce, Plata y Oro; cada nivel multiplica los puntos que ganas. Canjear puntos no te baja de nivel. Los detalles los ves en **Puntos Banklite**.",
             links: [{ label: "Mis puntos", href: "puntos.html" }],
         }),
     },

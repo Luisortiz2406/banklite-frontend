@@ -303,6 +303,8 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         if (step === 3) {
             if (!Number.isFinite(amount()) || amount() <= 0) return "Ingresa un monto válido.";
+            const min = BL_CATALOG?.transfers?.min;
+            if (min && amount() < min) return `El valor mínimo por envío es de ${formatMoney(min)}.`;
             if (state.balance && amount() > Number(state.balance.balance))
                 return "El monto supera tu saldo disponible.";
         }

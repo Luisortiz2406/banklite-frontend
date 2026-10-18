@@ -48,8 +48,8 @@
                 <div class="points-bar" role="progressbar" aria-label="Progreso al siguiente nivel" aria-valuemin="0" aria-valuemax="100" id="pointsBar"><span></span></div>
                 <div class="points-levels" aria-hidden="true">
                     <span data-level="0">Bronce<small>x1</small></span>
-                    <span data-level="1">Plata<small>x1,25</small></span>
-                    <span data-level="2">Oro<small>x1,5</small></span>
+                    <span data-level="1">Plata<small data-catalog="levelMultiplier:Plata"></small></span>
+                    <span data-level="2">Oro<small data-catalog="levelMultiplier:Oro"></small></span>
                 </div>
             </div>
         </section>
@@ -68,19 +68,19 @@
                     <div class="earn-grid">
                         <div class="earn-item">
                             <span class="earn-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></span>
-                            <div><b>Compras con tarjeta</b><small>1 punto por cada $1.000</small></div>
+                            <div><b>Compras con tarjeta</b><small><span data-catalog="pointsPer" data-template="1 punto por cada {}">Suman puntos</span></small></div>
                         </div>
                         <div class="earn-item">
                             <span class="earn-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l3-2 3 2 2-2 2 2 3-2 3 2V2l-3 2-3-2-2 2-2-2-3 2Z"/><path d="M8 9h8M8 13h6"/></svg></span>
-                            <div><b>Facturas y recargas</b><small>1 punto por cada $1.000</small></div>
+                            <div><b>Facturas y recargas</b><small><span data-catalog="pointsPer" data-template="1 punto por cada {}">Suman puntos</span></small></div>
                         </div>
                         <div class="earn-item">
                             <span class="earn-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3M21 14v.01M14 21h7v-4"/></svg></span>
-                            <div><b>Pagos con QR</b><small>1 punto por cada $1.000</small></div>
+                            <div><b>Pagos con QR</b><small><span data-catalog="pointsPer" data-template="1 punto por cada {}">Suman puntos</span></small></div>
                         </div>
                         <div class="earn-item">
                             <span class="earn-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 3 7h7l-5.5 4.5 2 7.5-6.5-4.5L5.5 21l2-7.5L2 9h7z"/></svg></span>
-                            <div><b>Tu nivel multiplica</b><small>Plata x1,25 y Oro x1,5</small></div>
+                            <div><b>Tu nivel multiplica</b><small>Plata <span data-catalog="levelMultiplier:Plata">y Oro</span><span data-catalog="levelMultiplier:Oro" data-template=" y Oro {}"> te dan más puntos</span></small></div>
                         </div>
                     </div>
                     <p class="earn-note">Las transferencias, las consignaciones y los canjes no suman puntos. Si una compra se reversa, se descuentan los puntos que te dio.</p>
