@@ -7,30 +7,36 @@
 // clave de idempotencia: un doble clic nunca canjea dos veces.
 // =========================================================
 
-document.addEventListener('DOMContentLoaded', () => {
-    if (!document.getElementById('pointsPage')) return;
+document.addEventListener("DOMContentLoaded", () => {
+    if (!document.getElementById("pointsPage")) return;
     if (!BlApi.protectPage()) return;
 
     const { config } = BlApi;
     const api = config.rewardsApi || config.transferApi;
     const $ = id => document.getElementById(id);
-    const levelNames = ['is-bronze', 'is-silver', 'is-gold'];
+    const levelNames = ["is-bronze", "is-silver", "is-gold"];
     const state = { data: null, busy: false };
 
-    const money = v => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(Number(v) || 0);
-    const formatPoints = v => Number(v || 0).toLocaleString('es-CO');
-    const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2));
+    const money = v =>
+        new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(
+            Number(v) || 0
+        );
+    const formatPoints = v => Number(v || 0).toLocaleString("es-CO");
+    const uuid = () =>
+        crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2);
 
     function fail(err, fallback) {
         if (BlApi.handleAuthError(err)) return;
-        showMessage('No se pudo completar', err?.message || fallback, '!');
+        showMessage("No se pudo completar", err?.message || fallback, "!");
     }
 
     async function load() {
         try {
-            state.data = await BlApi.authed(api, 'GET', '/rewards');
+            state.data = await BlApi.authed(api, "GET", "/rewards");
             render();
-        } catch (err) { fail(err, 'No se pudieron cargar tus puntos.'); }
+        } catch (err) {
+            fail(err, "No se pudieron cargar tus puntos.");
+        }
     }
 
     function render() {
@@ -40,83 +46,101 @@ document.addEventListener('DOMContentLoaded', () => {
         const next = data.next;
         const progress = next ? Math.min(100, ((data.earned - level.min) / (next.min - level.min)) * 100) : 100;
 
-        setText('pointsTotal', formatPoints(data.balance));
-        setText('pointsValue', money(data.value));
-        setText('pointsLevel', `Nivel ${level.name}`);
-        setText('pointsMultiplier', `x${String(level.multiplier).replace('.', ',')} puntos`);
-        setText('pointsNextText', next
-            ? `Te faltan ${formatPoints(next.min - data.earned)} puntos ganados para ${next.name}`
-            : '¡Llegaste al nivel más alto!');
+        setText("pointsTotal", formatPoints(data.balance));
+        setText("pointsValue", money(data.value));
+        setText("pointsLevel", `Nivel ${level.name}`);
+        setText("pointsMultiplier", `x${String(level.multiplier).replace(".", ",")} puntos`);
+        setText(
+            "pointsNextText",
+            next
+                ? `Te faltan ${formatPoints(next.min - data.earned)} puntos ganados para ${next.name}`
+                : "¡Llegaste al nivel más alto!"
+        );
 
-        const bar = $('pointsBar');
-        bar.querySelector('span').style.width = `${progress}%`;
-        bar.setAttribute('aria-valuenow', Math.round(progress));
+        const bar = $("pointsBar");
+        bar.querySelector("span").style.width = `${progress}%`;
+        bar.setAttribute("aria-valuenow", Math.round(progress));
 
-        const hero = document.querySelector('.points-hero');
+        const hero = document.querySelector(".points-hero");
         hero.classList.remove(...levelNames);
         hero.classList.add(levelNames[level.index]);
-        document.querySelectorAll('.points-levels [data-level]').forEach(el => {
-            el.classList.toggle('reached', Number(el.dataset.level) <= level.index);
+        document.querySelectorAll(".points-levels [data-level]").forEach(el => {
+            el.classList.toggle("reached", Number(el.dataset.level) <= level.index);
         });
 
         // Catálogo
-        $('rewardGrid').innerHTML = data.rewards.map(reward => {
-            const missing = reward.points - data.balance;
-            return `
+        $("rewardGrid").innerHTML = data.rewards
+            .map(reward => {
+                const missing = reward.points - data.balance;
+                return `
             <article class="reward-card is-${reward.kind}">
-                <span class="reward-tag">${reward.kind === 'cash' ? 'Plata' : reward.kind === 'recharge' ? 'Recarga' : 'Bono'}</span>
+                <span class="reward-tag">${reward.kind === "cash" ? "Plata" : reward.kind === "recharge" ? "Recarga" : "Bono"}</span>
                 <b>${escapeHTML(reward.title)}</b>
                 <small>${escapeHTML(reward.text)}</small>
                 <div class="reward-foot">
                     <strong>${formatPoints(reward.points)} pts</strong>
-                    <button type="button" class="btn ${missing > 0 ? 'soft' : 'primary'}" data-reward="${escapeHTML(reward.id)}" ${missing > 0 || state.busy ? 'disabled' : ''}>
-                        ${missing > 0 ? `Faltan ${formatPoints(missing)}` : 'Canjear'}
+                    <button type="button" class="btn ${missing > 0 ? "soft" : "primary"}" data-reward="${escapeHTML(reward.id)}" ${missing > 0 || state.busy ? "disabled" : ""}>
+                        ${missing > 0 ? `Faltan ${formatPoints(missing)}` : "Canjear"}
                     </button>
                 </div>
             </article>`;
-        }).join('');
+            })
+            .join("");
 
         // Retos
-        $('badgeGrid').innerHTML = data.badges.map(badge => {
-            const inner = `
-                <span class="badge-icon" aria-hidden="true">${badge.done ? '✓' : escapeHTML(badge.icon)}</span>
+        $("badgeGrid").innerHTML = data.badges
+            .map(badge => {
+                const inner = `
+                <span class="badge-icon" aria-hidden="true">${badge.done ? "✓" : escapeHTML(badge.icon)}</span>
                 <div><b>${escapeHTML(badge.title)}</b><small>${escapeHTML(badge.soon ? `${badge.text} · Próximamente` : badge.text)}</small></div>
                 <em>+${formatPoints(badge.points)}</em>`;
-            return badge.done || badge.soon || !badge.link
-                ? `<div class="badge-item ${badge.done ? 'done' : ''}">${inner}</div>`
-                : `<a class="badge-item" href="${escapeHTML(badge.link)}">${inner}</a>`;
-        }).join('');
+                return badge.done || badge.soon || !badge.link
+                    ? `<div class="badge-item ${badge.done ? "done" : ""}">${inner}</div>`
+                    : `<a class="badge-item" href="${escapeHTML(badge.link)}">${inner}</a>`;
+            })
+            .join("");
         const achievable = data.badges.filter(b => !b.soon);
-        setText('badgeCount', `${achievable.filter(b => b.done).length} de ${achievable.length}`);
+        setText("badgeCount", `${achievable.filter(b => b.done).length} de ${achievable.length}`);
 
         // Bonos
-        $('couponList').innerHTML = data.coupons.length
-            ? data.coupons.map(coupon => `
+        $("couponList").innerHTML = data.coupons.length
+            ? data.coupons
+                  .map(
+                      coupon => `
                 <div class="coupon">
                     <div>
                         <b>${escapeHTML(coupon.title)}</b>
-                        <small>${escapeHTML(coupon.text)} · vence el ${formatDate(coupon.expiresAt, { dateStyle: 'medium' })}</small>
+                        <small>${escapeHTML(coupon.text)} · vence el ${formatDate(coupon.expiresAt, { dateStyle: "medium" })}</small>
                         <code>${escapeHTML(coupon.code)}</code>
                     </div>
                     <button type="button" class="text-btn" data-copy-coupon="${escapeHTML(coupon.code)}">Copiar</button>
-                </div>`).join('')
+                </div>`
+                  )
+                  .join("")
             : '<p class="pay-empty">Cuando canjees un bono, su código aparece aquí.</p>';
 
         // Historial
-        $('pointsHistory').innerHTML = data.history.length
-            ? data.history.slice(0, 12).map(item => `
+        $("pointsHistory").innerHTML = data.history.length
+            ? data.history
+                  .slice(0, 12)
+                  .map(
+                      item => `
                 <div class="pay-history">
                     <div>
                         <strong>${escapeHTML(item.title)}</strong>
-                        <small>${escapeHTML(item.detail || '')}${item.detail ? ' · ' : ''}${formatDate(item.createdAt, { dateStyle: 'medium' })}</small>
+                        <small>${escapeHTML(item.detail || "")}${item.detail ? " · " : ""}${formatDate(item.createdAt, { dateStyle: "medium" })}</small>
                     </div>
-                    <b class="${item.points > 0 ? 'is-in' : ''}">${item.points > 0 ? '+' : '−'}${formatPoints(Math.abs(item.points))}</b>
+                    <b class="${item.points > 0 ? "is-in" : ""}">${item.points > 0 ? "+" : "−"}${formatPoints(Math.abs(item.points))}</b>
                     <span></span>
-                </div>`).join('')
+                </div>`
+                  )
+                  .join("")
             : '<p class="pay-empty">Aún no tienes movimientos de puntos.</p>';
 
         // Operadores del canje de recarga
-        $('rechargeOperator').innerHTML = (data.operators || []).map(op => `<option value="${escapeHTML(op.code)}">${escapeHTML(op.name)}</option>`).join('');
+        $("rechargeOperator").innerHTML = (data.operators || [])
+            .map(op => `<option value="${escapeHTML(op.code)}">${escapeHTML(op.name)}</option>`)
+            .join("");
     }
 
     // ---------- canjear ----------
@@ -128,57 +152,71 @@ document.addEventListener('DOMContentLoaded', () => {
         const idempotencyKey = uuid();
         const body = { rewardId: reward.id, idempotencyKey, ...(operatorCode ? { operatorCode } : {}) };
         try {
-            const result = await BlApi.authed(api, 'POST', '/rewards/redeem', body);
-            if (reward.kind === 'cash') {
-                showMessage('¡Canje exitoso!', `Sumamos ${money(reward.value)} a tu cuenta. Ya lo ves en tus movimientos.`);
-            } else if (reward.kind === 'recharge') {
-                showMessage('¡Recarga enviada!', `Recargamos ${money(reward.value)} a tu celular ${String(result.phone || '').replace(/^(\d{3})(\d{3})(\d{4})$/, '$1 $2 $3')} (${result.operator}).`);
+            const result = await BlApi.authed(api, "POST", "/rewards/redeem", body);
+            if (reward.kind === "cash") {
+                showMessage(
+                    "¡Canje exitoso!",
+                    `Sumamos ${money(reward.value)} a tu cuenta. Ya lo ves en tus movimientos.`
+                );
+            } else if (reward.kind === "recharge") {
+                showMessage(
+                    "¡Recarga enviada!",
+                    `Recargamos ${money(reward.value)} a tu celular ${String(result.phone || "").replace(/^(\d{3})(\d{3})(\d{4})$/, "$1 $2 $3")} (${result.operator}).`
+                );
             } else {
-                showMessage('¡Bono listo!', `Tu código es ${result.couponCode}. También quedó guardado en "Mis bonos".`);
+                showMessage(
+                    "¡Bono listo!",
+                    `Tu código es ${result.couponCode}. También quedó guardado en "Mis bonos".`
+                );
             }
         } catch (err) {
-            fail(err, 'No se pudo completar el canje.');
+            fail(err, "No se pudo completar el canje.");
         } finally {
             state.busy = false;
             await load();
         }
     }
 
-    $('rewardGrid').addEventListener('click', async event => {
-        const button = event.target.closest('[data-reward]');
+    $("rewardGrid").addEventListener("click", async event => {
+        const button = event.target.closest("[data-reward]");
         if (!button || !state.data) return;
         const reward = state.data.rewards.find(item => item.id === button.dataset.reward);
         if (!reward || state.data.balance < reward.points) return;
 
-        if (reward.kind === 'recharge') {
+        if (reward.kind === "recharge") {
             state.pendingReward = reward;
-            openModal('rechargeModal');
+            openModal("rechargeModal");
             return;
         }
 
-        const detail = reward.kind === 'cash'
-            ? `Se suman ${money(reward.value)} a tu cuenta.`
-            : 'Te damos un código para usar en los próximos 30 días.';
-        const ok = await confirmAction('Canjear puntos', `Vas a usar ${formatPoints(reward.points)} puntos en "${reward.title}". ${detail}`, 'Canjear');
+        const detail =
+            reward.kind === "cash"
+                ? `Se suman ${money(reward.value)} a tu cuenta.`
+                : "Te damos un código para usar en los próximos 30 días.";
+        const ok = await confirmAction(
+            "Canjear puntos",
+            `Vas a usar ${formatPoints(reward.points)} puntos en "${reward.title}". ${detail}`,
+            "Canjear"
+        );
         if (ok) redeem(reward);
     });
 
-    $('rechargeForm').addEventListener('submit', event => {
+    $("rechargeForm").addEventListener("submit", event => {
         event.preventDefault();
         const reward = state.pendingReward;
         if (!reward) return;
-        closeModalById('rechargeModal');
-        redeem(reward, $('rechargeOperator').value);
+        closeModalById("rechargeModal");
+        redeem(reward, $("rechargeOperator").value);
     });
 
-    $('couponList').addEventListener('click', async event => {
-        const button = event.target.closest('[data-copy-coupon]');
+    $("couponList").addEventListener("click", async event => {
+        const button = event.target.closest("[data-copy-coupon]");
         if (!button) return;
         try {
             await navigator.clipboard.writeText(button.dataset.copyCoupon);
-            toast('Código copiado.', 'ok');
+            toast("Código copiado.", "ok");
         } catch {
-            toast(`Tu código es ${button.dataset.copyCoupon}`, 'info');
+            toast(`Tu código es ${button.dataset.copyCoupon}`, "info");
         }
     });
 

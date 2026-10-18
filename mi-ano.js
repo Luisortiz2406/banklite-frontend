@@ -9,7 +9,20 @@
 // Se abre con "Mi año" del menú lateral (#mi-ano). Solo lee datos: no mueve plata.
 // =========================================================
 
-const WRAPPED_MONTHS = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+const WRAPPED_MONTHS = [
+    "enero",
+    "febrero",
+    "marzo",
+    "abril",
+    "mayo",
+    "junio",
+    "julio",
+    "agosto",
+    "septiembre",
+    "octubre",
+    "noviembre",
+    "diciembre",
+];
 const WRAPPED_SLIDE_MS = 6500;
 
 // Fondo de cada historia (solo decorativo; estilos en styles.css, "wr-fx"):
@@ -94,7 +107,7 @@ const WRAPPED_SCENES = {
             <path class="rn-arm-l" d="M46 92L34 72"/>
             <path class="rn-arm-r" d="M74 92l12-20"/>
             <path d="M56 64c2 2.5 6 2.5 8 0"/>
-        </g>`
+        </g>`,
 };
 
 function wrappedScene(key) {
@@ -109,27 +122,54 @@ const WRAPPED_CATEGORIES = {
     recharge: { name: "Recargas", icon: "▤" },
     purchase: { name: "Compras con tarjeta", icon: "▭" },
     subs: { name: "Suscripciones", icon: "▶" },
-    qr: { name: "Pagos con QR", icon: "▦" }
+    qr: { name: "Pagos con QR", icon: "▦" },
 };
 
 const WRAPPED_PERSONAS = {
-    saver: { name: "El Ahorrador", text: "Siempre apartas algo para después. Tu yo del futuro te lo agradece.", icon: "$" },
-    social: { name: "El Social", text: "Tu plata viaja: compartes cuentas, pagas a amigos y nunca quedas debiendo.", icon: "♥" },
-    organized: { name: "El Organizado", text: "Facturas y recargas al día. Contigo no hay recargos ni cortes.", icon: "✓" },
-    explorer: { name: "El Explorador", text: "Compras, QR y suscripciones: sacas el máximo provecho de tu tarjeta.", icon: "★" },
-    starter: { name: "El Debutante", text: "Tu historia con Banklite apenas empieza. ¡Lo mejor está por venir!", icon: "✦" }
+    saver: {
+        name: "El Ahorrador",
+        text: "Siempre apartas algo para después. Tu yo del futuro te lo agradece.",
+        icon: "$",
+    },
+    social: {
+        name: "El Social",
+        text: "Tu plata viaja: compartes cuentas, pagas a amigos y nunca quedas debiendo.",
+        icon: "♥",
+    },
+    organized: {
+        name: "El Organizado",
+        text: "Facturas y recargas al día. Contigo no hay recargos ni cortes.",
+        icon: "✓",
+    },
+    explorer: {
+        name: "El Explorador",
+        text: "Compras, QR y suscripciones: sacas el máximo provecho de tu tarjeta.",
+        icon: "★",
+    },
+    starter: {
+        name: "El Debutante",
+        text: "Tu historia con Banklite apenas empieza. ¡Lo mejor está por venir!",
+        icon: "✦",
+    },
 };
 
-const wrMoney = value => new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(Number(value) || 0);
+const wrMoney = value =>
+    new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(
+        Number(value) || 0
+    );
 const wrPoints = value => Number(value || 0).toLocaleString("es-CO");
 
 // Año y mes en hora de Colombia (el navegador puede estar en otra zona).
 const WR_ZONE = "America/Bogota";
 function wrYearMonth(date) {
-    const parts = new Intl.DateTimeFormat("en-CA", { timeZone: WR_ZONE, year: "numeric", month: "numeric" }).formatToParts(new Date(date));
+    const parts = new Intl.DateTimeFormat("en-CA", {
+        timeZone: WR_ZONE,
+        year: "numeric",
+        month: "numeric",
+    }).formatToParts(new Date(date));
     return {
         year: Number(parts.find(p => p.type === "year").value),
-        month: Number(parts.find(p => p.type === "month").value) - 1
+        month: Number(parts.find(p => p.type === "month").value) - 1,
     };
 }
 
@@ -150,12 +190,15 @@ function wrappedCategory(movement) {
 
 /** Movimientos del año (hora de Colombia), paginando. */
 async function wrappedMovements(accountId, year) {
-    const start = new Date(Date.UTC(year, 0, 1, 5)).toISOString();   // 1 de enero 00:00 en Bogotá
+    const start = new Date(Date.UTC(year, 0, 1, 5)).toISOString(); // 1 de enero 00:00 en Bogotá
     const end = new Date(Date.UTC(year + 1, 0, 1, 5)).toISOString();
     const all = [];
     for (let page = 1; page <= 50; page++) {
-        const batch = await BlApi.authed(BlApi.config.ledgerApi, "GET",
-            `/ledger/accounts/${accountId}/transactions?from=${encodeURIComponent(start)}&to=${encodeURIComponent(end)}&limit=100&page=${page}`);
+        const batch = await BlApi.authed(
+            BlApi.config.ledgerApi,
+            "GET",
+            `/ledger/accounts/${accountId}/transactions?from=${encodeURIComponent(start)}&to=${encodeURIComponent(end)}&limit=100&page=${page}`
+        );
         all.push(...batch);
         if (batch.length < 100) break;
     }
@@ -177,7 +220,7 @@ async function wrappedSummary(year = wrYearMonth(new Date()).year) {
         get(config.transferApi, "/transfers").catch(() => []),
         get(config.savingsApi, "/savings").catch(() => null),
         get(config.rewardsApi, "/rewards").catch(() => null),
-        get(config.kycApi, `/kyc/${session.idUser}`).catch(() => null)
+        get(config.kycApi, `/kyc/${session.idUser}`).catch(() => null),
     ]);
 
     // Los reversos y lo que reversaron no cuentan; tampoco lo que va y viene entre tu saldo y tu ahorro.
@@ -190,7 +233,9 @@ async function wrappedSummary(year = wrYearMonth(new Date()).year) {
 
     // Mes más activo
     const months = new Array(12).fill(0);
-    real.forEach(m => { months[wrYearMonth(m.createdAt).month]++; });
+    real.forEach(m => {
+        months[wrYearMonth(m.createdAt).month]++;
+    });
     const topMonthIndex = months.indexOf(Math.max(...months));
 
     // Persona a la que más le transferiste (transfer-service guarda el nombre de quien recibe)
@@ -198,8 +243,9 @@ async function wrappedSummary(year = wrYearMonth(new Date()).year) {
     (transfers || [])
         .filter(t => t.status === "completed" && wrYearMonth(t.createdAt).year === year)
         .forEach(t => {
-            const key = (t.recipientName || "").trim()
-                || (t.destinationKey ? `Llave ${t.destinationKey}` : `Cuenta ····${t.destinationAccountLast4 || ""}`);
+            const key =
+                (t.recipientName || "").trim() ||
+                (t.destinationKey ? `Llave ${t.destinationKey}` : `Cuenta ····${t.destinationAccountLast4 || ""}`);
             people[key] = people[key] || { name: key, count: 0, total: 0 };
             people[key].count++;
             people[key].total += Number(t.amount) || 0;
@@ -235,7 +281,7 @@ async function wrappedSummary(year = wrYearMonth(new Date()).year) {
         saver: savingOut.length * 1.4,
         social: count("transfer") * 1.2,
         organized: count("bill") + count("recharge"),
-        explorer: count("purchase") + count("qr") + count("subs")
+        explorer: count("purchase") + count("qr") + count("subs"),
     };
     let persona = Object.keys(scores).sort((a, b) => scores[b] - scores[a])[0];
     if (real.length < 3 || scores[persona] === 0) persona = "starter";
@@ -260,7 +306,7 @@ async function wrappedSummary(year = wrYearMonth(new Date()).year) {
         level,
         badges,
         persona: { key: persona, ...WRAPPED_PERSONAS[persona] },
-        isNew: real.length < 3
+        isNew: real.length < 3,
     };
 }
 
@@ -275,7 +321,7 @@ function wrappedSlides(data) {
             <span class="wr-kicker">Tu año en Banklite ${data.year}</span>
             <h2>Hola, ${escapeHTML(data.name)} 👋</h2>
             <p>Hicimos un repaso de todo lo que lograste con tu plata este año.</p>
-            <span class="wr-hint">Toca para continuar</span>`
+            <span class="wr-hint">Toca para continuar</span>`,
     });
 
     if (data.isNew) {
@@ -285,7 +331,7 @@ function wrappedSlides(data) {
             html: `
                 <span class="wr-kicker">Recién llegado</span>
                 <h2>Tu historia apenas empieza</h2>
-                <p>Todavía tienes pocos movimientos este año. Transfiere, paga una factura o abre un bolsillo y aquí verás tu resumen completo.</p>`
+                <p>Todavía tienes pocos movimientos este año. Transfiere, paga una factura o abre un bolsillo y aquí verás tu resumen completo.</p>`,
         });
     } else {
         slides.push({
@@ -298,7 +344,7 @@ function wrappedSlides(data) {
                     <div><small>Entró</small><b>${money(data.income)}</b></div>
                     <div><small>Salió</small><b>${money(data.spent)}</b></div>
                 </div>
-                <p>En ${data.total} movimientos.</p>`
+                <p>En ${data.total} movimientos.</p>`,
         });
 
         if (data.topMonth) {
@@ -312,7 +358,7 @@ function wrappedSlides(data) {
                     <p>Hiciste ${data.topMonth.count} ${data.topMonth.count === 1 ? "movimiento" : "movimientos"} ese mes.</p>
                     <div class="wr-bars" aria-hidden="true">
                         ${data.months.map((value, i) => `<span class="${value === data.topMonth.count && value ? "is-top" : ""}" style="--h:${Math.max(4, (value / max) * 100)}%" title="${WRAPPED_MONTHS[i]}"><i>${WRAPPED_MONTHS[i][0].toUpperCase()}</i></span>`).join("")}
-                    </div>`
+                    </div>`,
             });
         }
 
@@ -322,10 +368,17 @@ function wrappedSlides(data) {
                 // Sin escena: solo los punticos brillantes.
                 html: `
                     <span class="wr-kicker">Tu persona favorita para transferir</span>
-                    <span class="wr-avatar">${escapeHTML(data.topPerson.name.split(/\s+/).map(w => w[0]).slice(0, 2).join("").toUpperCase())}</span>
+                    <span class="wr-avatar">${escapeHTML(
+                        data.topPerson.name
+                            .split(/\s+/)
+                            .map(w => w[0])
+                            .slice(0, 2)
+                            .join("")
+                            .toUpperCase()
+                    )}</span>
                     <h2>${escapeHTML(data.topPerson.name)}</h2>
                     <p>Le enviaste ${data.topPerson.count} ${data.topPerson.count === 1 ? "vez" : "veces"}, en total ${money(data.topPerson.total)}.</p>
-                    ${data.peopleCount > 1 ? `<small class="wr-note">Le transferiste a ${data.peopleCount} personas distintas.</small>` : ""}`
+                    ${data.peopleCount > 1 ? `<small class="wr-note">Le transferiste a ${data.peopleCount} personas distintas.</small>` : ""}`,
             });
         }
 
@@ -339,8 +392,11 @@ function wrappedSlides(data) {
                     <h2>${data.topCategory.name}</h2>
                     <p>${money(data.topCategory.total)} en ${data.topCategory.count} ${data.topCategory.count === 1 ? "operación" : "operaciones"}.</p>
                     <ol class="wr-rank">
-                        ${data.categories.slice(0, 4).map((c, i) => `<li><span>${i + 1}</span>${c.name}<b>${compactMoney(c.total)}</b></li>`).join("")}
-                    </ol>`
+                        ${data.categories
+                            .slice(0, 4)
+                            .map((c, i) => `<li><span>${i + 1}</span>${c.name}<b>${compactMoney(c.total)}</b></li>`)
+                            .join("")}
+                    </ol>`,
             });
         }
     }
@@ -353,7 +409,7 @@ function wrappedSlides(data) {
                 <span class="wr-kicker">Tu ahorro</span>
                 <p>Este año apartaste</p>
                 <b class="wr-big" data-wr-count="${Math.round(data.savedIn)}" data-wr-money>${money(0)}</b>
-                <p>en bolsillos, metas y CDT. Hoy tienes ${money(data.savingsNow)} ahorrados${data.interest >= 1 ? ` y ganaste ${money(data.interest)} en intereses` : ""}.</p>`
+                <p>en bolsillos, metas y CDT. Hoy tienes ${money(data.savingsNow)} ahorrados${data.interest >= 1 ? ` y ganaste ${money(data.interest)} en intereses` : ""}.</p>`,
         });
     }
 
@@ -365,7 +421,7 @@ function wrappedSlides(data) {
             <b class="wr-big" data-wr-count="${data.pointsEarned}">0</b>
             <p>puntos ganados con Banklite</p>
             <span class="wr-pill">Nivel ${data.level}</span>
-            ${data.badges ? `<small class="wr-note">Completaste ${data.badges} ${data.badges === 1 ? "reto" : "retos"}.</small>` : ""}`
+            ${data.badges ? `<small class="wr-note">Completaste ${data.badges} ${data.badges === 1 ? "reto" : "retos"}.</small>` : ""}`,
     });
 
     slides.push({
@@ -375,7 +431,7 @@ function wrappedSlides(data) {
             <span class="wr-kicker">Tu personalidad financiera</span>
             <span class="wr-icon wr-icon-lg">${data.persona.icon}</span>
             <h2>${data.persona.name}</h2>
-            <p>${data.persona.text}</p>`
+            <p>${data.persona.text}</p>`,
     });
 
     slides.push({
@@ -400,7 +456,7 @@ function wrappedSlides(data) {
                     Descargar imagen
                 </button>
                 <button type="button" class="btn wr-ghost" data-wr-replay>Ver otra vez</button>
-            </div>`
+            </div>`,
     });
 
     return slides;
@@ -465,7 +521,7 @@ function wrappedImage(data) {
         ["Moviste", compactMoney(data.moved)],
         ["Ahorraste", compactMoney(data.savedIn)],
         ["Mes más activo", data.topMonth ? data.topMonth.name[0].toUpperCase() + data.topMonth.name.slice(1) : "—"],
-        ["Puntos ganados", wrPoints(data.pointsEarned)]
+        ["Puntos ganados", wrPoints(data.pointsEarned)],
     ];
 
     stats.forEach(([label, value], i) => {
@@ -521,7 +577,9 @@ function openWrapped(data) {
     let remaining = WRAPPED_SLIDE_MS;
     let paused = false;
 
-    document.body.insertAdjacentHTML("beforeend", `
+    document.body.insertAdjacentHTML(
+        "beforeend",
+        `
         <div class="wrapped" id="wrappedStory" role="dialog" aria-modal="true" aria-label="Tu año en Banklite ${data.year}">
             <div class="wr-frame">
                 <div class="wr-progress">${slides.map(() => `<span><i></i></span>`).join("")}</div>
@@ -535,7 +593,8 @@ function openWrapped(data) {
                 <button type="button" class="wr-nav wr-prev" data-wr-prev aria-label="Anterior"></button>
                 <button type="button" class="wr-nav wr-next" data-wr-next aria-label="Siguiente"></button>
             </div>
-        </div>`);
+        </div>`
+    );
 
     const root = document.getElementById("wrappedStory");
     const bars = [...root.querySelectorAll(".wr-progress i")];
@@ -547,8 +606,11 @@ function openWrapped(data) {
         section.querySelectorAll("[data-wr-count]").forEach(el => {
             const target = Number(el.dataset.wrCount) || 0;
             const isMoney = el.hasAttribute("data-wr-money");
-            const format = value => isMoney ? wrMoney(value) : wrPoints(value);
-            if (matchMedia("(prefers-reduced-motion: reduce)").matches) { el.textContent = format(target); return; }
+            const format = value => (isMoney ? wrMoney(value) : wrPoints(value));
+            if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+                el.textContent = format(target);
+                return;
+            }
             const start = performance.now();
             (function step(now) {
                 const t = Math.min(1, (now - start) / 1100);
@@ -568,7 +630,9 @@ function openWrapped(data) {
 
     function show(i) {
         index = Math.max(0, Math.min(slides.length - 1, i));
-        sections.forEach((section, n) => { section.hidden = n !== index; });
+        sections.forEach((section, n) => {
+            section.hidden = n !== index;
+        });
         bars.forEach((bar, n) => {
             bar.style.transition = "none";
             bar.style.width = n < index ? "100%" : "0%";
@@ -626,13 +690,18 @@ function openWrapped(data) {
         if (event.key === "Escape") close();
         else if (event.key === "ArrowRight") go(index + 1);
         else if (event.key === "ArrowLeft") go(index - 1);
-        else if (event.key === " " && event.target === document.body) { event.preventDefault(); setPaused(!paused); }
+        else if (event.key === " " && event.target === document.body) {
+            event.preventDefault();
+            setPaused(!paused);
+        }
     }
 
     root.querySelector("[data-wr-close]").addEventListener("click", close);
     root.querySelector("[data-wr-prev]").addEventListener("click", () => go(index - 1));
     root.querySelector("[data-wr-next]").addEventListener("click", () => go(index + 1));
-    root.addEventListener("click", event => { if (event.target === root) close(); });
+    root.addEventListener("click", event => {
+        if (event.target === root) close();
+    });
 
     // Mantener presionado pausa la historia
     const frame = root.querySelector(".wr-frame");
@@ -641,15 +710,28 @@ function openWrapped(data) {
     frame.addEventListener("pointerdown", event => {
         if (event.target.closest("[data-wr-close], .wr-final-actions")) return;
         held = false;
-        holdTimer = setTimeout(() => { held = true; setPaused(true); }, 250);
+        holdTimer = setTimeout(() => {
+            held = true;
+            setPaused(true);
+        }, 250);
     });
-    ["pointerup", "pointerleave", "pointercancel"].forEach(type => frame.addEventListener(type, () => {
-        clearTimeout(holdTimer);
-        if (held) setPaused(false);
-    }));
-    frame.addEventListener("click", event => {
-        if (held) { event.stopPropagation(); event.preventDefault(); held = false; }
-    }, true);
+    ["pointerup", "pointerleave", "pointercancel"].forEach(type =>
+        frame.addEventListener(type, () => {
+            clearTimeout(holdTimer);
+            if (held) setPaused(false);
+        })
+    );
+    frame.addEventListener(
+        "click",
+        event => {
+            if (held) {
+                event.stopPropagation();
+                event.preventDefault();
+                held = false;
+            }
+        },
+        true
+    );
 
     root.querySelector("[data-wr-replay]").addEventListener("click", () => show(0));
     root.querySelector("[data-wr-download]").addEventListener("click", () => {
@@ -667,7 +749,6 @@ function openWrapped(data) {
     show(0);
     root.querySelector("[data-wr-next]").focus({ preventScroll: true });
 }
-
 
 // Opción "Mi año" del menú lateral: en el dashboard es #mi-ano; desde las demás
 // vistas llega como dashboard.html#mi-ano y se abre al cargar.

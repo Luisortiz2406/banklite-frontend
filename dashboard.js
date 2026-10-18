@@ -7,13 +7,13 @@
 // Usa BlApi (api.js) y las utilidades visuales de java.js.
 // =========================================================
 
-document.addEventListener('DOMContentLoaded', () => {
-    if (!document.querySelector('main.dashboard')) return;
+document.addEventListener("DOMContentLoaded", () => {
+    if (!document.querySelector("main.dashboard")) return;
     if (!BlApi.protectPage()) return;
     BankliteDynamicKey.mount();
 
     const { config, session } = BlApi;
-    const get = (base, path) => BlApi.authed(base, 'GET', path);
+    const get = (base, path) => BlApi.authed(base, "GET", path);
     const send = (base, method, path, body) => BlApi.authed(base, method, path, body);
     const $ = id => document.getElementById(id);
 
@@ -31,66 +31,83 @@ document.addEventListener('DOMContentLoaded', () => {
         monthMovements: [],
         cards: [],
         card: null,
-        issued: {},       // CVV y número completo de la tarjeta recién emitida (solo en memoria)
-        revealed: null,   // número completo revelado (se oculta solo)
+        issued: {}, // CVV y número completo de la tarjeta recién emitida (solo en memoria)
+        revealed: null, // número completo revelado (se oculta solo)
         showAccount: false,
     };
 
-    const TYPE_LABELS = { savings: 'Cuenta de ahorros', checking: 'Cuenta corriente' };
-    const STATUS_LABELS = { pending: 'Pendiente', active: 'Activa', blocked: 'Bloqueada', closed: 'Cerrada' };
-    const DOC_NAMES = { CC: 'Cédula de ciudadanía', CE: 'Cédula de extranjería', PA: 'Pasaporte' };
+    const TYPE_LABELS = { savings: "Cuenta de ahorros", checking: "Cuenta corriente" };
+    const STATUS_LABELS = { pending: "Pendiente", active: "Activa", blocked: "Bloqueada", closed: "Cerrada" };
+    const DOC_NAMES = { CC: "Cédula de ciudadanía", CE: "Cédula de extranjería", PA: "Pasaporte" };
 
-    const money = (value, currency = state.account?.currency || 'COP') =>
-        new Intl.NumberFormat('es-CO', { style: 'currency', currency, maximumFractionDigits: currency === 'COP' ? 0 : 2 }).format(Number(value) || 0);
-    const formatAccount = n => (n || '').replace(/^(\d{3})(\d{4})(\d{4})$/, '$1 $2 $3');
-    const maskAccount = n => (n ? `••• •••• ${n.slice(-4)}` : '—');
-    const fullName = () => (state.kyc ? `${state.kyc.nombres || ''} ${state.kyc.apellidos || ''}`.trim() : '');
+    const money = (value, currency = state.account?.currency || "COP") =>
+        new Intl.NumberFormat("es-CO", {
+            style: "currency",
+            currency,
+            maximumFractionDigits: currency === "COP" ? 0 : 2,
+        }).format(Number(value) || 0);
+    const formatAccount = n => (n || "").replace(/^(\d{3})(\d{4})(\d{4})$/, "$1 $2 $3");
+    const maskAccount = n => (n ? `••• •••• ${n.slice(-4)}` : "—");
+    const fullName = () => (state.kyc ? `${state.kyc.nombres || ""} ${state.kyc.apellidos || ""}`.trim() : "");
     const longDate = value => {
-        if (!value) return '—';
-        const [y, m, d] = String(value).slice(0, 10).split('-').map(Number);
+        if (!value) return "—";
+        const [y, m, d] = String(value).slice(0, 10).split("-").map(Number);
         if (!y || !m || !d) return String(value);
-        return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString('es-CO', { day: '2-digit', month: 'long', year: 'numeric', timeZone: 'UTC' });
+        return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString("es-CO", {
+            day: "2-digit",
+            month: "long",
+            year: "numeric",
+            timeZone: "UTC",
+        });
     };
 
     function fail(err, fallback) {
         if (BlApi.handleAuthError(err)) return;
-        toast(err?.message || fallback, 'err');
+        toast(err?.message || fallback, "err");
     }
 
     function setLoading(button, loading, label) {
         button.disabled = loading;
-        if (loading) { button.dataset.label = button.innerHTML; button.innerHTML = '<span class="btn-spinner" aria-hidden="true"></span> Procesando…'; }
-        else button.innerHTML = label || button.dataset.label || button.innerHTML;
+        if (loading) {
+            button.dataset.label = button.innerHTML;
+            button.innerHTML = '<span class="btn-spinner" aria-hidden="true"></span> Procesando…';
+        } else button.innerHTML = label || button.dataset.label || button.innerHTML;
     }
 
     // ---------- fecha ----------
-    $('today').textContent = new Intl.DateTimeFormat('es-CO', { weekday: 'long', day: 'numeric', month: 'long' }).format(new Date());
-    const monthLabel = new Intl.DateTimeFormat('es-CO', { month: 'long' }).format(new Date());
-    $('spendingMonth').textContent = monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1);
-
+    $("today").textContent = new Intl.DateTimeFormat("es-CO", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+    }).format(new Date());
+    const monthLabel = new Intl.DateTimeFormat("es-CO", { month: "long" }).format(new Date());
+    $("spendingMonth").textContent = monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1);
 
     // =====================================================
     // IDENTIDAD (GET /kyc/:idUser)
     // =====================================================
 
     async function loadKyc() {
-        try { state.kyc = await get(config.kycApi, `/kyc/${session.idUser}`); }
-        catch (err) { if (BlApi.handleAuthError(err)) return; state.kyc = null; }
+        try {
+            state.kyc = await get(config.kycApi, `/kyc/${session.idUser}`);
+        } catch (err) {
+            if (BlApi.handleAuthError(err)) return;
+            state.kyc = null;
+        }
         const name = fullName();
-        const first = state.kyc?.nombres?.split(/\s+/)[0] || 'cliente';
-        $('helloName').textContent = first;
+        const first = state.kyc?.nombres?.split(/\s+/)[0] || "cliente";
+        $("helloName").textContent = first;
         BlLayout.setUser(name);
-        $('cardHolder').textContent = (name || 'TITULAR BANKLITE').toUpperCase();
+        $("cardHolder").textContent = (name || "TITULAR BANKLITE").toUpperCase();
     }
-
 
     // =====================================================
     // CUENTA, SALDO, LÍMITES Y MOVIMIENTOS
     // =====================================================
 
     async function findAccount() {
-        const accounts = await get(config.accountApi, '/accounts');
-        const usable = (accounts || []).filter(a => a.status !== 'closed');
+        const accounts = await get(config.accountApi, "/accounts");
+        const usable = (accounts || []).filter(a => a.status !== "closed");
         const remembered = usable.find(a => a.id === session.accountId);
         return remembered || usable[0] || null;
     }
@@ -101,7 +118,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const start = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1, 5)); // 00:00 en Bogotá = 05:00 UTC
         const all = [];
         for (let page = 1; page <= 10; page++) {
-            const batch = await get(config.ledgerApi, `/ledger/accounts/${accountId}/transactions?from=${encodeURIComponent(start.toISOString())}&limit=100&page=${page}`);
+            const batch = await get(
+                config.ledgerApi,
+                `/ledger/accounts/${accountId}/transactions?from=${encodeURIComponent(start.toISOString())}&limit=100&page=${page}`
+            );
             all.push(...batch);
             if (batch.length < 100) break;
         }
@@ -126,42 +146,45 @@ document.addEventListener('DOMContentLoaded', () => {
             renderAccount();
             renderSpending();
         } catch (err) {
-            fail(err, 'No se pudo cargar tu cuenta.');
+            fail(err, "No se pudo cargar tu cuenta.");
         }
     }
 
     function renderNoAccount() {
-        $('noAccountBox').hidden = false;
-        $('accountInfo').hidden = true;
-        $('accountLimits').hidden = true;
-        $('accountStatusNote').hidden = true;
-        $('toggleBalance').hidden = true;
-        $('balanceValue').textContent = '—';
-        $('certGroup').hidden = true;
+        $("noAccountBox").hidden = false;
+        $("accountInfo").hidden = true;
+        $("accountLimits").hidden = true;
+        $("accountStatusNote").hidden = true;
+        $("toggleBalance").hidden = true;
+        $("balanceValue").textContent = "—";
+        $("certGroup").hidden = true;
         renderSpending();
         renderCards();
     }
 
     function renderAccount() {
         const { account, limits } = state;
-        $('noAccountBox').hidden = true;
-        $('accountInfo').hidden = false;
-        $('toggleBalance').hidden = false;
-        $('certGroup').hidden = false;
-        $('accountType').textContent = `${TYPE_LABELS[account.accountType] || 'Cuenta'} · ${account.currency}`;
+        $("noAccountBox").hidden = true;
+        $("accountInfo").hidden = false;
+        $("toggleBalance").hidden = false;
+        $("certGroup").hidden = false;
+        $("accountType").textContent = `${TYPE_LABELS[account.accountType] || "Cuenta"} · ${account.currency}`;
 
-        $('accountLimits').hidden = !limits;
+        $("accountLimits").hidden = !limits;
         if (limits) {
-            $('dailyLimit').textContent = money(limits.dailyLimit);
-            $('monthlyLimit').textContent = money(limits.monthlyLimit);
+            $("dailyLimit").textContent = money(limits.dailyLimit);
+            $("monthlyLimit").textContent = money(limits.monthlyLimit);
         }
 
         const notes = {
-            pending: 'Tu cuenta se activa en cuanto se confirme tu identidad.',
-            blocked: account.blockedBy === 'bank' ? 'El banco bloqueó tu cuenta. Comunícate con soporte.' : 'Tu cuenta está bloqueada.',
+            pending: "Tu cuenta se activa en cuanto se confirme tu identidad.",
+            blocked:
+                account.blockedBy === "bank"
+                    ? "El banco bloqueó tu cuenta. Comunícate con soporte."
+                    : "Tu cuenta está bloqueada.",
         };
-        $('accountStatusNote').hidden = !notes[account.status];
-        $('accountStatusNote').textContent = notes[account.status] || '';
+        $("accountStatusNote").hidden = !notes[account.status];
+        $("accountStatusNote").textContent = notes[account.status] || "";
         paintBalance();
     }
 
@@ -170,70 +193,89 @@ document.addEventListener('DOMContentLoaded', () => {
         const { account, balance } = state;
         if (!account || !balance) return;
         const visible = state.showAccount;
-        $('balanceValue').textContent = visible ? money(balance.balance, balance.currency) : `•••••• ${balance.currency}`;
-        $('balanceValue').dataset.visible = String(visible);
-        $('accountNumberShown').textContent = visible ? formatAccount(account.accountNumber) : maskAccount(account.accountNumber);
-        const toggle = $('toggleBalance');
-        toggle.setAttribute('aria-pressed', String(visible));
-        toggle.setAttribute('aria-label', visible ? 'Ocultar saldo y número de cuenta' : 'Mostrar saldo y número de cuenta');
+        $("balanceValue").textContent = visible
+            ? money(balance.balance, balance.currency)
+            : `•••••• ${balance.currency}`;
+        $("balanceValue").dataset.visible = String(visible);
+        $("accountNumberShown").textContent = visible
+            ? formatAccount(account.accountNumber)
+            : maskAccount(account.accountNumber);
+        const toggle = $("toggleBalance");
+        toggle.setAttribute("aria-pressed", String(visible));
+        toggle.setAttribute(
+            "aria-label",
+            visible ? "Ocultar saldo y número de cuenta" : "Mostrar saldo y número de cuenta"
+        );
         toggle.innerHTML = visible
             ? '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12"/><circle cx="12" cy="12" r="3"/></svg>'
             : '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.9 4.2A10 10 0 0 1 12 4c6.5 0 10 8 10 8a17 17 0 0 1-2.2 3.2M6.6 6.6C3.9 8.4 2 12 2 12s3.5 8 10 8a9.7 9.7 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/><path d="m2 2 20 20"/></svg>';
     }
-    $('toggleBalance').addEventListener('click', () => { state.showAccount = !state.showAccount; paintBalance(); });
+    $("toggleBalance").addEventListener("click", () => {
+        state.showAccount = !state.showAccount;
+        paintBalance();
+    });
 
     // Resumen mensual: solo datos del ledger (salidas por tipo y entradas del mes).
     function renderSpending() {
-        const donut = $('spendingDonut');
+        const donut = $("spendingDonut");
         const totals = { transfer: 0, debit: 0, income: 0 };
         for (const m of state.monthMovements) {
             // Apartar o sacar de bolsillos, metas y CDT no es gasto ni ingreso: es tu misma plata.
-            if (m.type === 'saving' && !String(m.description || '').startsWith('Intereses')) continue;
-            if (m.direction === 'in') totals.income += Number(m.amount) || 0;
+            if (m.type === "saving" && !String(m.description || "").startsWith("Intereses")) continue;
+            if (m.direction === "in") totals.income += Number(m.amount) || 0;
             // Las transferencias a otros bancos son cargos hacia la cuenta de compensación.
-            else if (m.type === 'transfer' || (m.type === 'debit' && /^Transferencia a /.test(m.description || ''))) totals.transfer += Number(m.amount) || 0;
+            else if (m.type === "transfer" || (m.type === "debit" && /^Transferencia a /.test(m.description || "")))
+                totals.transfer += Number(m.amount) || 0;
             else totals.debit += Number(m.amount) || 0;
         }
         const out = totals.transfer + totals.debit;
         const compact = v => compactMoney(v);
-        $('spentValue').textContent = state.account ? compact(out) : '—';
-        $('spentTransfer').textContent = state.account ? compact(totals.transfer) : '—';
-        $('spentDebit').textContent = state.account ? compact(totals.debit) : '—';
-        $('spentIncome').textContent = state.account ? compact(totals.income) : '—';
+        $("spentValue").textContent = state.account ? compact(out) : "—";
+        $("spentTransfer").textContent = state.account ? compact(totals.transfer) : "—";
+        $("spentDebit").textContent = state.account ? compact(totals.debit) : "—";
+        $("spentIncome").textContent = state.account ? compact(totals.income) : "—";
 
         if (!out) {
-            donut.style.background = 'var(--border-light)';
-            donut.setAttribute('aria-label', 'Aún no tienes salidas este mes');
+            donut.style.background = "var(--border-light)";
+            donut.setAttribute("aria-label", "Aún no tienes salidas este mes");
             return;
         }
         const a = (totals.transfer / out) * 100;
         donut.style.background = `conic-gradient(var(--primary) 0 ${a}%, var(--dark) ${a}% 100%)`;
-        donut.setAttribute('aria-label', `Salidas del mes: transferencias ${Math.round(a)}%, cargos ${Math.round(100 - a)}%`);
+        donut.setAttribute(
+            "aria-label",
+            `Salidas del mes: transferencias ${Math.round(a)}%, cargos ${Math.round(100 - a)}%`
+        );
     }
 
     // =====================================================
     // ABRIR CUENTA
     // =====================================================
 
-    $('openAccountBtn').addEventListener('click', () => openModal('accountTypeModal'));
+    $("openAccountBtn").addEventListener("click", () => openModal("accountTypeModal"));
 
-    $('createAccountBtn').addEventListener('click', async () => {
-        const button = $('createAccountBtn');
-        const accountType = document.querySelector('input[name="dashAccountType"]:checked')?.value || 'savings';
-        const currency = $('accountCurrency').value;
+    $("createAccountBtn").addEventListener("click", async () => {
+        const button = $("createAccountBtn");
+        const accountType = document.querySelector('input[name="dashAccountType"]:checked')?.value || "savings";
+        const currency = $("accountCurrency").value;
         setLoading(button, true);
         try {
-            const account = await send(config.accountApi, 'POST', '/accounts/create', { idUser: session.idUser, currency, accountType });
+            const account = await send(config.accountApi, "POST", "/accounts/create", {
+                idUser: session.idUser,
+                currency,
+                accountType,
+            });
             session.accountId = account.id;
-            closeModalById('accountTypeModal');
-            toast('Cuenta creada correctamente.', 'ok');
+            closeModalById("accountTypeModal");
+            toast("Cuenta creada correctamente.", "ok");
             await loadAccount();
             await loadCards();
         } catch (err) {
-            fail(err, 'No se pudo abrir la cuenta.');
-        } finally { setLoading(button, false, 'Abrir cuenta'); }
+            fail(err, "No se pudo abrir la cuenta.");
+        } finally {
+            setLoading(button, false, "Abrir cuenta");
+        }
     });
-
 
     // =====================================================
     // TARJETA (GET/POST /cards, reveal, PATCH status)
@@ -241,11 +283,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function loadCards() {
         try {
-            state.cards = await get(config.cardApi, '/cards');
+            state.cards = await get(config.cardApi, "/cards");
         } catch (err) {
             if (BlApi.handleAuthError(err)) return;
             state.cards = [];
-            toast(err.message || 'No se pudieron cargar tus tarjetas.', 'err');
+            toast(err.message || "No se pudieron cargar tus tarjetas.", "err");
         }
         state.card = state.cards.find(c => c.accountId === state.account?.id) || state.cards[0] || null;
         renderCards();
@@ -253,59 +295,61 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderCards() {
         const card = state.card;
-        $('noCardBox').hidden = !!card;
-        $('cardLayout').hidden = !card;
-        $('toggleCardNumber').hidden = !card;
+        $("noCardBox").hidden = !!card;
+        $("cardLayout").hidden = !card;
+        $("toggleCardNumber").hidden = !card;
         if (!card) {
-            document.dispatchEvent(new CustomEvent('banklite:card', { detail: null }));
-            const canIssue = !!state.account && state.account.status === 'active';
-            $('issueCardBtn').disabled = !canIssue;
-            $('noCardText').textContent = canIssue
-                ? 'Todavía no tienes tarjeta. Emítela gratis y úsala de inmediato.'
-                : 'Para emitir tu tarjeta necesitas una cuenta Banklite activa.';
+            document.dispatchEvent(new CustomEvent("banklite:card", { detail: null }));
+            const canIssue = !!state.account && state.account.status === "active";
+            $("issueCardBtn").disabled = !canIssue;
+            $("noCardText").textContent = canIssue
+                ? "Todavía no tienes tarjeta. Emítela gratis y úsala de inmediato."
+                : "Para emitir tu tarjeta necesitas una cuenta Banklite activa.";
             return;
         }
         const issued = state.issued[card.id];
         const full = issued?.cardNumber || state.revealed;
-        $('cardNumber').textContent = full
-            ? full.replace(/\s/g, '').replace(/(\d{4})(?=\d)/g, '$1 ')
+        $("cardNumber").textContent = full
+            ? full.replace(/\s/g, "").replace(/(\d{4})(?=\d)/g, "$1 ")
             : `•••• •••• •••• ${card.lastFour}`;
-        $('cardExp').textContent = `${String(card.expiryMonth).padStart(2, '0')}/${String(card.expiryYear).slice(-2)}`;
-        $('cardCvv').textContent = issued?.cvv || '•••';
-        $('cardStatusNote').textContent = issued
-            ? 'Guarda el CVV ahora: solo se muestra en esta sesión y no se guarda.'
-            : 'El CVV solo se muestra al emitir la tarjeta y no se guarda.';
-        const frozen = card.status !== 'active';
-        $('realCard').classList.toggle('is-locked', frozen);
-        $('cardStateChip').textContent = frozen ? 'Congelada' : 'Activa';
-        $('cardLockSwitch').checked = frozen;
-        $('cardAccount').textContent = `Cuenta ····${String(card.accountNumber).slice(-4)} · ${card.currency}`;
-        $('toggleCardNumber').textContent = full && !issued ? 'Ocultar número' : 'Mostrar número';
-        $('toggleCardNumber').hidden = !!issued;
+        $("cardExp").textContent = `${String(card.expiryMonth).padStart(2, "0")}/${String(card.expiryYear).slice(-2)}`;
+        $("cardCvv").textContent = issued?.cvv || "•••";
+        $("cardStatusNote").textContent = issued
+            ? "Guarda el CVV ahora: solo se muestra en esta sesión y no se guarda."
+            : "El CVV solo se muestra al emitir la tarjeta y no se guarda.";
+        const frozen = card.status !== "active";
+        $("realCard").classList.toggle("is-locked", frozen);
+        $("cardStateChip").textContent = frozen ? "Congelada" : "Activa";
+        $("cardLockSwitch").checked = frozen;
+        $("cardAccount").textContent = `Cuenta ····${String(card.accountNumber).slice(-4)} · ${card.currency}`;
+        $("toggleCardNumber").textContent = full && !issued ? "Ocultar número" : "Mostrar número";
+        $("toggleCardNumber").hidden = !!issued;
         // Los controles (internet, límite, compras) los maneja tarjeta-controles.js.
-        document.dispatchEvent(new CustomEvent('banklite:card', { detail: { ...card, justIssued: !!issued } }));
+        document.dispatchEvent(new CustomEvent("banklite:card", { detail: { ...card, justIssued: !!issued } }));
     }
 
-    $('issueCardBtn').addEventListener('click', async () => {
-        if (!state.account) return toast('Primero debes abrir una cuenta Banklite activa.', 'err');
-        const button = $('issueCardBtn');
+    $("issueCardBtn").addEventListener("click", async () => {
+        if (!state.account) return toast("Primero debes abrir una cuenta Banklite activa.", "err");
+        const button = $("issueCardBtn");
         setLoading(button, true);
         try {
-            const result = await send(config.cardApi, 'POST', '/cards', { accountId: state.account.id });
+            const result = await send(config.cardApi, "POST", "/cards", { accountId: state.account.id });
             if (result.cardNumber && result.cvv) {
                 state.issued[result.id] = { cardNumber: result.cardNumber, cvv: result.cvv };
-                toast('Tarjeta emitida. Guarda el CVV: solo se muestra ahora.', 'ok', 6000);
+                toast("Tarjeta emitida. Guarda el CVV: solo se muestra ahora.", "ok", 6000);
             } else {
-                toast('Ya habías emitido tu tarjeta virtual.', 'info');
+                toast("Ya habías emitido tu tarjeta virtual.", "info");
             }
             await loadCards();
         } catch (err) {
-            fail(err, 'No se pudo emitir la tarjeta.');
-        } finally { setLoading(button, false, 'Emitir tarjeta virtual'); }
+            fail(err, "No se pudo emitir la tarjeta.");
+        } finally {
+            setLoading(button, false, "Emitir tarjeta virtual");
+        }
     });
 
     let hideTimer = null;
-    $('toggleCardNumber').addEventListener('click', async () => {
+    $("toggleCardNumber").addEventListener("click", async () => {
         const card = state.card;
         if (!card) return;
         if (state.revealed) {
@@ -319,29 +363,30 @@ document.addEventListener('DOMContentLoaded', () => {
             renderCards();
             // Por seguridad, el número se oculta solo a los 20 segundos.
             clearTimeout(hideTimer);
-            hideTimer = setTimeout(() => { state.revealed = null; renderCards(); }, 20000);
+            hideTimer = setTimeout(() => {
+                state.revealed = null;
+                renderCards();
+            }, 20000);
         } catch (err) {
-            fail(err, 'No se pudo mostrar el número de la tarjeta.');
+            fail(err, "No se pudo mostrar el número de la tarjeta.");
         }
     });
 
-    $('cardLockSwitch').addEventListener('change', async event => {
+    $("cardLockSwitch").addEventListener("change", async event => {
         const card = state.card;
         if (!card) return;
         const freeze = event.target.checked;
         try {
-            await send(config.cardApi, 'PATCH', `/cards/${card.id}/status`, { status: freeze ? 'frozen' : 'active' });
-            toast(freeze ? 'Tarjeta congelada.' : 'Tarjeta activa de nuevo.', 'ok');
+            await send(config.cardApi, "PATCH", `/cards/${card.id}/status`, { status: freeze ? "frozen" : "active" });
+            toast(freeze ? "Tarjeta congelada." : "Tarjeta activa de nuevo.", "ok");
             await loadCards();
         } catch (err) {
             event.target.checked = !freeze;
-            fail(err, 'No se pudo actualizar la tarjeta.');
+            fail(err, "No se pudo actualizar la tarjeta.");
         }
     });
 
-
     // Notificaciones y Salir: los maneja layout.js (encabezado compartido).
-
 
     // =====================================================
     // PERFIL, MIS DATOS Y CERTIFICADO
@@ -349,176 +394,246 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function openMyProfile() {
         const name = fullName();
-        $('meAvatar').textContent = initials(name || 'B');
-        $('meName').textContent = name || 'Cliente Banklite';
-        $('meLine').textContent = [state.kyc?.email, state.account ? `Cuenta ${maskAccount(state.account.accountNumber)}` : null].filter(Boolean).join(' · ') || '—';
-        openModal('myProfileModal');
+        $("meAvatar").textContent = initials(name || "B");
+        $("meName").textContent = name || "Cliente Banklite";
+        $("meLine").textContent =
+            [state.kyc?.email, state.account ? `Cuenta ${maskAccount(state.account.accountNumber)}` : null]
+                .filter(Boolean)
+                .join(" · ") || "—";
+        openModal("myProfileModal");
     }
 
     function openProfileData() {
         const k = state.kyc || {};
         const name = fullName();
-        $('profileAvatar').textContent = initials(name || 'B');
-        $('profileTitle').textContent = name || 'Mis datos';
+        $("profileAvatar").textContent = initials(name || "B");
+        $("profileTitle").textContent = name || "Mis datos";
         const rows = [
-            ['Nombres', k.nombres],
-            ['Apellidos', k.apellidos],
-            ['Tipo de documento', DOC_NAMES[k.tipoDocumento] || k.tipoDocumento],
-            ['Número de documento', k.numeroDocumento],
-            ['Fecha de nacimiento', k.fechaNacimiento ? longDate(k.fechaNacimiento) : null],
-            ['Fecha de expedición', k.fechaExpedicion ? longDate(k.fechaExpedicion) : null],
-            ['Correo', k.email],
-            ['Celular', k.telefono],
-            ['Producto', state.account ? `${TYPE_LABELS[state.account.accountType]} ${maskAccount(state.account.accountNumber)}` : null],
+            ["Nombres", k.nombres],
+            ["Apellidos", k.apellidos],
+            ["Tipo de documento", DOC_NAMES[k.tipoDocumento] || k.tipoDocumento],
+            ["Número de documento", k.numeroDocumento],
+            ["Fecha de nacimiento", k.fechaNacimiento ? longDate(k.fechaNacimiento) : null],
+            ["Fecha de expedición", k.fechaExpedicion ? longDate(k.fechaExpedicion) : null],
+            ["Correo", k.email],
+            ["Celular", k.telefono],
+            [
+                "Producto",
+                state.account
+                    ? `${TYPE_LABELS[state.account.accountType]} ${maskAccount(state.account.accountNumber)}`
+                    : null,
+            ],
         ];
-        const box = $('profileData');
+        const box = $("profileData");
         box.replaceChildren();
         rows.forEach(([label, value]) => {
-            const row = document.createElement('div');
-            row.innerHTML = '<span></span><strong></strong>';
-            row.querySelector('span').textContent = label;
-            row.querySelector('strong').textContent = value || 'No disponible';
+            const row = document.createElement("div");
+            row.innerHTML = "<span></span><strong></strong>";
+            row.querySelector("span").textContent = label;
+            row.querySelector("strong").textContent = value || "No disponible";
             box.appendChild(row);
         });
-        openModal('profileModal');
+        openModal("profileModal");
     }
 
     // Desde las demás vistas, Mi perfil, Configuración y el avatar llegan con #perfil, #configuracion o #datos
     function openFromHash() {
-        const open = { perfil: openMyProfile, configuracion: () => openModal('settingsModal'), datos: openProfileData }[location.hash.slice(1)];
+        const open = { perfil: openMyProfile, configuracion: () => openModal("settingsModal"), datos: openProfileData }[
+            location.hash.slice(1)
+        ];
         if (!open) return;
-        history.replaceState(null, '', location.pathname + location.search);
+        history.replaceState(null, "", location.pathname + location.search);
         open();
     }
 
-    $('openMyProfile').addEventListener('click', event => { event.preventDefault(); openMyProfile(); });
-    $('openSettings').addEventListener('click', event => { event.preventDefault(); openModal('settingsModal'); });
-    $('openProfile').addEventListener('click', () => { closeModalById('myProfileModal'); openProfileData(); });
-    const avatar = $('avatar');
-    avatar.setAttribute('role', 'button');
-    avatar.setAttribute('tabindex', '0');
-    avatar.setAttribute('aria-label', 'Ver mis datos');
-    avatar.style.cursor = 'pointer';
-    avatar.addEventListener('click', openProfileData);
-    avatar.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openProfileData(); } });
+    $("openMyProfile").addEventListener("click", event => {
+        event.preventDefault();
+        openMyProfile();
+    });
+    $("openSettings").addEventListener("click", event => {
+        event.preventDefault();
+        openModal("settingsModal");
+    });
+    $("openProfile").addEventListener("click", () => {
+        closeModalById("myProfileModal");
+        openProfileData();
+    });
+    const avatar = $("avatar");
+    avatar.setAttribute("role", "button");
+    avatar.setAttribute("tabindex", "0");
+    avatar.setAttribute("aria-label", "Ver mis datos");
+    avatar.style.cursor = "pointer";
+    avatar.addEventListener("click", openProfileData);
+    avatar.addEventListener("keydown", e => {
+        if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            openProfileData();
+        }
+    });
 
-    const certCode = () => `CC-${(state.account?.accountNumber || '').slice(-4)}-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}`;
+    const certCode = () =>
+        `CC-${(state.account?.accountNumber || "").slice(-4)}-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}`;
     function certInfo() {
         const k = state.kyc || {};
         const account = state.account;
         return {
-            name: fullName() || 'Cliente Banklite',
-            document: k.numeroDocumento ? `${k.tipoDocumento || 'CC'} ${k.numeroDocumento}` : 'No disponible',
-            accountType: TYPE_LABELS[account.accountType] || 'Cuenta',
+            name: fullName() || "Cliente Banklite",
+            document: k.numeroDocumento ? `${k.tipoDocumento || "CC"} ${k.numeroDocumento}` : "No disponible",
+            accountType: TYPE_LABELS[account.accountType] || "Cuenta",
             account: account.accountNumber,
             accountFormatted: formatAccount(account.accountNumber),
             status: STATUS_LABELS[account.status] || account.status,
             opened: account.createdAt,
-            currency: account.currency === 'COP' ? 'Pesos colombianos (COP)' : account.currency === 'USD' ? 'Dólares (USD)' : account.currency,
-            balance: state.balance ? money(state.balance.balance, state.balance.currency) : 'No disponible',
+            currency:
+                account.currency === "COP"
+                    ? "Pesos colombianos (COP)"
+                    : account.currency === "USD"
+                      ? "Dólares (USD)"
+                      : account.currency,
+            balance: state.balance ? money(state.balance.balance, state.balance.currency) : "No disponible",
         };
     }
     function paintCert() {
         const info = certInfo();
-        $('certName').textContent = info.name;
-        $('certDoc').textContent = info.document;
-        $('certType').textContent = info.accountType;
-        $('certAccount').textContent = info.accountFormatted;
-        $('certStatus').textContent = info.status;
-        $('certStatusChip').textContent = info.status;
-        $('certOpened').textContent = formatDate(info.opened, { dateStyle: 'long' });
-        $('certCurrency').textContent = info.currency;
-        $('certBalance').textContent = info.balance;
-        $('certToday').textContent = formatDate(new Date(), { dateStyle: 'long' });
-        $('certCode').textContent = certCode();
-        document.querySelector('#accountCertModal .cert-balance').hidden = !$('certIncludeBalance').checked;
+        $("certName").textContent = info.name;
+        $("certDoc").textContent = info.document;
+        $("certType").textContent = info.accountType;
+        $("certAccount").textContent = info.accountFormatted;
+        $("certStatus").textContent = info.status;
+        $("certStatusChip").textContent = info.status;
+        $("certOpened").textContent = formatDate(info.opened, { dateStyle: "long" });
+        $("certCurrency").textContent = info.currency;
+        $("certBalance").textContent = info.balance;
+        $("certToday").textContent = formatDate(new Date(), { dateStyle: "long" });
+        $("certCode").textContent = certCode();
+        document.querySelector("#accountCertModal .cert-balance").hidden = !$("certIncludeBalance").checked;
     }
-    $('openAccountCert').addEventListener('click', () => {
+    $("openAccountCert").addEventListener("click", () => {
         if (!state.account) return;
-        closeModalById('myProfileModal');
+        closeModalById("myProfileModal");
         paintCert();
-        openModal('accountCertModal');
+        openModal("accountCertModal");
     });
-    $('certIncludeBalance').addEventListener('change', paintCert);
-    $('downloadAccountCert').addEventListener('click', () => {
-        downloadAccountCertificate(certInfo(), $('certIncludeBalance').checked, certCode());
-        toast('Certificado de cuenta descargado.', 'ok');
+    $("certIncludeBalance").addEventListener("change", paintCert);
+    $("downloadAccountCert").addEventListener("click", () => {
+        downloadAccountCertificate(certInfo(), $("certIncludeBalance").checked, certCode());
+        toast("Certificado de cuenta descargado.", "ok");
     });
-
 
     // =====================================================
     // CAMBIAR CLAVE (código por correo o WhatsApp)
     // =====================================================
 
-    const pinModal = $('pinModal');
-    const pinSteps = { send: pinModal.querySelector('[data-step="send"]'), reset: pinModal.querySelector('[data-step="reset"]') };
-    const pinCode = initPinBoxes($('pinCode'));
+    const pinModal = $("pinModal");
+    const pinSteps = {
+        send: pinModal.querySelector('[data-step="send"]'),
+        reset: pinModal.querySelector('[data-step="reset"]'),
+    };
+    const pinCode = initPinBoxes($("pinCode"));
     const pinNew = initPinBoxes(pinModal.querySelector('[data-pin-for="pinNew"]'));
     const pinConfirm = initPinBoxes(pinModal.querySelector('[data-pin-for="pinNewConfirm"]'));
-    const pinFlow = { channel: 'email', timer: null };
+    const pinFlow = { channel: "email", timer: null };
 
-    $('changePin').addEventListener('click', () => {
-        closeModalById('myProfileModal');
+    $("changePin").addEventListener("click", () => {
+        closeModalById("myProfileModal");
         pinSteps.send.reset();
         [pinCode, pinNew, pinConfirm].forEach(b => b.clear());
-        $('pinEmailHint').textContent = state.kyc?.email ? maskEmail(state.kyc.email) : 'Al correo registrado';
-        showFlowStep(pinModal, 'send', 1);
-        openModal('pinModal');
+        $("pinEmailHint").textContent = state.kyc?.email ? maskEmail(state.kyc.email) : "Al correo registrado";
+        showFlowStep(pinModal, "send", 1);
+        openModal("pinModal");
     });
 
     async function requestPinCode() {
-        if (!state.kyc?.email) throw new Error('No encontramos el correo de tu cuenta.');
-        await BlApi.api(config.authApi, 'POST', '/auth/password-recovery/send', { email: state.kyc.email, channel: pinFlow.channel });
+        if (!state.kyc?.email) throw new Error("No encontramos el correo de tu cuenta.");
+        await BlApi.api(config.authApi, "POST", "/auth/password-recovery/send", {
+            email: state.kyc.email,
+            channel: pinFlow.channel,
+        });
         pinFlow.timer?.stop();
-        pinFlow.timer = startCodeTimer($('pinTimer'), $('pinResend'));
+        pinFlow.timer = startCodeTimer($("pinTimer"), $("pinResend"));
     }
 
-    pinSteps.send.addEventListener('submit', async event => {
+    pinSteps.send.addEventListener("submit", async event => {
         event.preventDefault();
-        pinFlow.channel = pinSteps.send.querySelector('input[name="pinChannel"]:checked')?.value || 'email';
+        pinFlow.channel = pinSteps.send.querySelector('input[name="pinChannel"]:checked')?.value || "email";
         const button = pinSteps.send.querySelector('button[type="submit"]');
         setLoading(button, true);
         try {
             await requestPinCode();
-            showFlowStep(pinModal, 'reset', 2);
-            toast(pinFlow.channel === 'email' ? 'Te enviamos un código a tu correo.' : 'Te enviamos un código por WhatsApp.', 'ok');
+            showFlowStep(pinModal, "reset", 2);
+            toast(
+                pinFlow.channel === "email"
+                    ? "Te enviamos un código a tu correo."
+                    : "Te enviamos un código por WhatsApp.",
+                "ok"
+            );
             setTimeout(() => pinCode.focus(), 80);
-        } catch (err) { fail(err, 'No se pudo enviar el código.'); }
-        finally { setLoading(button, false); }
+        } catch (err) {
+            fail(err, "No se pudo enviar el código.");
+        } finally {
+            setLoading(button, false);
+        }
     });
 
-    $('pinResend').addEventListener('click', async () => {
-        try { await requestPinCode(); toast('Te enviamos un código nuevo.', 'ok'); }
-        catch (err) { fail(err, 'No se pudo reenviar el código.'); }
+    $("pinResend").addEventListener("click", async () => {
+        try {
+            await requestPinCode();
+            toast("Te enviamos un código nuevo.", "ok");
+        } catch (err) {
+            fail(err, "No se pudo reenviar el código.");
+        }
     });
 
-    pinSteps.reset.addEventListener('submit', async event => {
+    pinSteps.reset.addEventListener("submit", async event => {
         event.preventDefault();
         const pin = pinNew.value();
-        if (!pinCode.isComplete()) { pinCode.error(); return toast('Escribe los 6 dígitos del código.', 'err'); }
-        if (!pinNew.isComplete() || !pinConfirm.isComplete()) { pinNew.error(); return toast('Completa los 4 dígitos en ambos campos.', 'err'); }
-        if (!BlApi.isSecurePin(pin)) { pinNew.error(); return toast('Esta clave es insegura. Elige un PIN diferente.', 'err'); }
-        if (pin !== pinConfirm.value()) { pinConfirm.error(); pinConfirm.clear(); return toast('Las dos claves no coinciden.', 'err'); }
-        if (BlApi.pinMatchesBirthdate(pin, state.kyc?.fechaNacimiento)) { pinNew.error(); return toast('Por seguridad, evita usar tu fecha de nacimiento como clave.', 'err'); }
+        if (!pinCode.isComplete()) {
+            pinCode.error();
+            return toast("Escribe los 6 dígitos del código.", "err");
+        }
+        if (!pinNew.isComplete() || !pinConfirm.isComplete()) {
+            pinNew.error();
+            return toast("Completa los 4 dígitos en ambos campos.", "err");
+        }
+        if (!BlApi.isSecurePin(pin)) {
+            pinNew.error();
+            return toast("Esta clave es insegura. Elige un PIN diferente.", "err");
+        }
+        if (pin !== pinConfirm.value()) {
+            pinConfirm.error();
+            pinConfirm.clear();
+            return toast("Las dos claves no coinciden.", "err");
+        }
+        if (BlApi.pinMatchesBirthdate(pin, state.kyc?.fechaNacimiento)) {
+            pinNew.error();
+            return toast("Por seguridad, evita usar tu fecha de nacimiento como clave.", "err");
+        }
         const button = pinSteps.reset.querySelector('button[type="submit"]');
         setLoading(button, true);
         try {
-            await BlApi.api(config.authApi, 'POST', '/auth/password-recovery/reset', {
-                email: state.kyc.email, channel: pinFlow.channel, code: pinCode.value(), password: BlApi.passwordFromPin(pin),
+            await BlApi.api(config.authApi, "POST", "/auth/password-recovery/reset", {
+                email: state.kyc.email,
+                channel: pinFlow.channel,
+                code: pinCode.value(),
+                password: BlApi.passwordFromPin(pin),
             });
             pinFlow.timer?.stop();
-            closeModalById('pinModal');
-            toast('Clave cambiada correctamente.', 'ok');
+            closeModalById("pinModal");
+            toast("Clave cambiada correctamente.", "ok");
         } catch (err) {
-            if (err.status === 400) { pinCode.error(); pinCode.clear(); }
-            fail(err, 'No se pudo cambiar la clave.');
-        } finally { setLoading(button, false); }
+            if (err.status === 400) {
+                pinCode.error();
+                pinCode.clear();
+            }
+            fail(err, "No se pudo cambiar la clave.");
+        } finally {
+            setLoading(button, false);
+        }
     });
-    pinModal.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', () => pinFlow.timer?.stop()));
-
+    pinModal.querySelectorAll("[data-close]").forEach(b => b.addEventListener("click", () => pinFlow.timer?.stop()));
 
     // Suscripciones (subscriptions.js): un cobro cambia el saldo y genera avisos.
-    document.addEventListener('banklite:account-changed', async () => {
+    document.addEventListener("banklite:account-changed", async () => {
         await loadAccount();
         await BlLayout.refreshNotifications();
     });

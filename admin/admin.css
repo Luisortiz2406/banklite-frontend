@@ -8,36 +8,36 @@
    ========================================================= */
 
 :root {
-    --brand: #26474E;
-    --brand-deep: #1A3439;
-    --brand-ink: #0F2226;
-    --primary: #2CCED2;
-    --primary-dark: #1FB3B7;
-    --primary-text: #137C81;
-    --primary-pale: #B9EDED;
-    --primary-soft: #E8F8F8;
+    --brand: #26474e;
+    --brand-deep: #1a3439;
+    --brand-ink: #0f2226;
+    --primary: #2cced2;
+    --primary-dark: #1fb3b7;
+    --primary-text: #137c81;
+    --primary-pale: #b9eded;
+    --primary-soft: #e8f8f8;
 
-    --bg: #F3F6F7;
-    --surface: #FFFFFF;
-    --surface-2: #F7FAFA;
-    --border: #DFE7E9;
-    --border-light: #EAF0F1;
+    --bg: #f3f6f7;
+    --surface: #ffffff;
+    --surface-2: #f7fafa;
+    --border: #dfe7e9;
+    --border-light: #eaf0f1;
 
-    --text: #1F3337;
-    --text-light: #5B6F73;
-    --text-muted: #8A9A9D;
-    --heading: #16292D;
+    --text: #1f3337;
+    --text-light: #5b6f73;
+    --text-muted: #8a9a9d;
+    --heading: #16292d;
 
-    --good: #16803C;
-    --good-bg: #E6F6EC;
-    --warn: #A15C07;
-    --warn-bg: #FFF4E0;
-    --bad: #C2312B;
-    --bad-bg: #FDECEC;
-    --info: #1E5FB4;
-    --info-bg: #E8F0FC;
+    --good: #16803c;
+    --good-bg: #e6f6ec;
+    --warn: #a15c07;
+    --warn-bg: #fff4e0;
+    --bad: #c2312b;
+    --bad-bg: #fdecec;
+    --info: #1e5fb4;
+    --info-bg: #e8f0fc;
 
-    --side-bg: linear-gradient(180deg, #26474E 0%, #1A3439 100%);
+    --side-bg: linear-gradient(180deg, #26474e 0%, #1a3439 100%);
     --side-text: rgba(255, 255, 255, 0.72);
 
     --radius: 16px;
@@ -49,35 +49,34 @@
 }
 
 html[data-theme="dark"] {
-    --bg: #0B1719;
+    --bg: #0b1719;
     --surface: #112226;
-    --surface-2: #0E1D20;
-    --border: #22393E;
-    --border-light: #1A2F33;
+    --surface-2: #0e1d20;
+    --border: #22393e;
+    --border-light: #1a2f33;
 
-    --text: #D5E3E5;
-    --text-light: #9DB2B5;
-    --text-muted: #6E8689;
-    --heading: #EEF6F7;
+    --text: #d5e3e5;
+    --text-light: #9db2b5;
+    --text-muted: #6e8689;
+    --heading: #eef6f7;
 
-    --primary-text: #5FE0E3;
+    --primary-text: #5fe0e3;
     --primary-soft: rgba(44, 206, 210, 0.12);
 
-    --good: #5FD68A;
+    --good: #5fd68a;
     --good-bg: rgba(34, 197, 94, 0.13);
-    --warn: #F5B454;
+    --warn: #f5b454;
     --warn-bg: rgba(245, 180, 84, 0.13);
-    --bad: #FF8A84;
+    --bad: #ff8a84;
     --bad-bg: rgba(255, 120, 110, 0.13);
-    --info: #8DB8FF;
+    --info: #8db8ff;
     --info-bg: rgba(110, 160, 255, 0.13);
 
-    --side-bg: linear-gradient(180deg, #0F2428 0%, #0A1A1D 100%);
+    --side-bg: linear-gradient(180deg, #0f2428 0%, #0a1a1d 100%);
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
     --shadow: 0 18px 44px rgba(0, 0, 0, 0.45);
     color-scheme: dark;
 }
-
 
 /* =========================================================
    2. BASE
@@ -101,7 +100,10 @@ body {
     -webkit-font-smoothing: antialiased;
 }
 
-h1, h2, h3, h4 {
+h1,
+h2,
+h3,
+h4 {
     margin: 0;
     color: var(--heading);
     font-family: "Manrope", sans-serif;
@@ -156,7 +158,6 @@ button {
     }
 }
 
-
 /* =========================================================
    3. CONTROLES: BOTONES, CAMPOS Y ETIQUETAS
    ========================================================= */
@@ -175,7 +176,11 @@ button {
     font-size: 0.85rem;
     font-weight: 700;
     white-space: nowrap;
-    transition: background var(--transition), border-color var(--transition), transform 0.05s, box-shadow var(--transition);
+    transition:
+        background var(--transition),
+        border-color var(--transition),
+        transform 0.05s,
+        box-shadow var(--transition);
 }
 
 .btn:hover {
@@ -210,7 +215,7 @@ button {
 .btn-danger {
     border-color: var(--bad);
     background: var(--bad);
-    color: #FFFFFF;
+    color: #ffffff;
 }
 
 .btn-danger:hover {
@@ -263,7 +268,9 @@ button {
     outline: none;
     background: var(--surface);
     font-size: 0.86rem;
-    transition: border-color var(--transition), box-shadow var(--transition);
+    transition:
+        border-color var(--transition),
+        box-shadow var(--transition);
 }
 
 .modal textarea {
@@ -300,12 +307,31 @@ button {
     background: currentColor;
 }
 
-.b-good { background: var(--good-bg); color: var(--good); }
-.b-warn { background: var(--warn-bg); color: var(--warn); }
-.b-bad { background: var(--bad-bg); color: var(--bad); }
-.b-info { background: var(--info-bg); color: var(--info); }
-.b-gray { background: var(--surface-2); color: var(--text-light); box-shadow: inset 0 0 0 1px var(--border); }
-.b-teal { background: var(--primary-soft); color: var(--primary-text); }
+.b-good {
+    background: var(--good-bg);
+    color: var(--good);
+}
+.b-warn {
+    background: var(--warn-bg);
+    color: var(--warn);
+}
+.b-bad {
+    background: var(--bad-bg);
+    color: var(--bad);
+}
+.b-info {
+    background: var(--info-bg);
+    color: var(--info);
+}
+.b-gray {
+    background: var(--surface-2);
+    color: var(--text-light);
+    box-shadow: inset 0 0 0 1px var(--border);
+}
+.b-teal {
+    background: var(--primary-soft);
+    color: var(--primary-text);
+}
 
 .spin {
     width: 18px;
@@ -317,7 +343,9 @@ button {
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .alert {
@@ -328,11 +356,26 @@ button {
     line-height: 1.45;
 }
 
-.alert-error { border-color: transparent; background: var(--bad-bg); color: var(--bad); }
-.alert-warn { border-color: transparent; background: var(--warn-bg); color: var(--warn); }
-.alert-info { border-color: transparent; background: var(--info-bg); color: var(--info); }
-.alert-ok { border-color: transparent; background: var(--good-bg); color: var(--good); }
-
+.alert-error {
+    border-color: transparent;
+    background: var(--bad-bg);
+    color: var(--bad);
+}
+.alert-warn {
+    border-color: transparent;
+    background: var(--warn-bg);
+    color: var(--warn);
+}
+.alert-info {
+    border-color: transparent;
+    background: var(--info-bg);
+    color: var(--info);
+}
+.alert-ok {
+    border-color: transparent;
+    background: var(--good-bg);
+    color: var(--good);
+}
 
 /* =========================================================
    4. LOGIN DEL PANEL
@@ -345,8 +388,7 @@ button {
     padding: 32px 16px;
     background:
         radial-gradient(900px 600px at 0% 0%, rgba(44, 206, 210, 0.16), transparent 60%),
-        radial-gradient(700px 500px at 100% 100%, rgba(38, 71, 78, 0.16), transparent 60%),
-        var(--bg);
+        radial-gradient(700px 500px at 100% 100%, rgba(38, 71, 78, 0.16), transparent 60%), var(--bg);
 }
 
 .login-card {
@@ -362,8 +404,14 @@ button {
 }
 
 @keyframes rise {
-    from { opacity: 0; transform: translateY(14px); }
-    to { opacity: 1; transform: none; }
+    from {
+        opacity: 0;
+        transform: translateY(14px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
 }
 
 .login-side {
@@ -375,7 +423,7 @@ button {
     overflow: hidden;
     padding: 36px 34px;
     background: var(--side-bg);
-    color: #FFFFFF;
+    color: #ffffff;
 }
 
 .login-side::before,
@@ -408,7 +456,7 @@ button {
 }
 
 .login-side h1 {
-    color: #FFFFFF;
+    color: #ffffff;
     font-size: 1.75rem;
     line-height: 1.2;
 }
@@ -496,7 +544,6 @@ button {
     font-weight: 700;
 }
 
-
 /* =========================================================
    5. ESTRUCTURA: MENÚ LATERAL Y CONTENIDO
    ========================================================= */
@@ -525,7 +572,7 @@ button {
     align-items: center;
     gap: 11px;
     padding: 0 8px 20px;
-    color: #FFFFFF;
+    color: #ffffff;
     font-family: "Manrope", sans-serif;
     font-size: 1.1rem;
     font-weight: 800;
@@ -576,7 +623,9 @@ button {
     color: var(--side-text);
     font-size: 0.87rem;
     font-weight: 600;
-    transition: background var(--transition), color var(--transition);
+    transition:
+        background var(--transition),
+        color var(--transition);
 }
 
 .nav a svg {
@@ -587,12 +636,12 @@ button {
 
 .nav a:hover {
     background: rgba(255, 255, 255, 0.06);
-    color: #FFFFFF;
+    color: #ffffff;
 }
 
 .nav a.active {
     background: rgba(44, 206, 210, 0.14);
-    color: #FFFFFF;
+    color: #ffffff;
 }
 
 .nav a.active::before {
@@ -616,7 +665,7 @@ button {
     padding: 2px 7px;
     border-radius: 999px;
     background: var(--bad);
-    color: #FFFFFF;
+    color: #ffffff;
     font-size: 0.68rem;
     font-weight: 800;
     text-align: center;
@@ -659,7 +708,7 @@ button {
 .me-body strong {
     display: block;
     overflow: hidden;
-    color: #FFFFFF;
+    color: #ffffff;
     font-size: 0.84rem;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -697,7 +746,9 @@ button {
     border-radius: 10px;
     background: var(--surface);
     color: var(--text-light);
-    transition: border-color var(--transition), color var(--transition);
+    transition:
+        border-color var(--transition),
+        color var(--transition);
 }
 
 .icon-btn:hover {
@@ -718,7 +769,7 @@ button {
 
 .me .icon-btn:hover {
     border-color: var(--primary);
-    color: #FFFFFF;
+    color: #ffffff;
 }
 
 .adm-main {
@@ -801,7 +852,6 @@ button {
     gap: 8px;
 }
 
-
 /* =========================================================
    6. TARJETAS, INDICADORES Y GRÁFICAS
    ========================================================= */
@@ -811,10 +861,18 @@ button {
     gap: 16px;
 }
 
-.g4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-.g3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.g2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.g-main { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); }
+.g4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.g3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.g2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.g-main {
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+}
 
 .card {
     min-width: 0;
@@ -913,7 +971,7 @@ button {
 .stat-hero {
     border: 0;
     background: var(--side-bg);
-    color: #FFFFFF;
+    color: #ffffff;
 }
 
 .stat-hero .label,
@@ -922,7 +980,7 @@ button {
 }
 
 .stat-hero .value {
-    color: #FFFFFF;
+    color: #ffffff;
 }
 
 .stat-hero .stat-icon {
@@ -980,8 +1038,12 @@ button {
 }
 
 @keyframes grow {
-    from { transform: scaleX(0); }
-    to { transform: scaleX(1); }
+    from {
+        transform: scaleX(0);
+    }
+    to {
+        transform: scaleX(1);
+    }
 }
 
 /* Listas de actividad */
@@ -1048,9 +1110,18 @@ button {
     height: 17px;
 }
 
-.dot-icon.is-bad { background: var(--bad-bg); color: var(--bad); }
-.dot-icon.is-warn { background: var(--warn-bg); color: var(--warn); }
-.dot-icon.is-good { background: var(--good-bg); color: var(--good); }
+.dot-icon.is-bad {
+    background: var(--bad-bg);
+    color: var(--bad);
+}
+.dot-icon.is-warn {
+    background: var(--warn-bg);
+    color: var(--warn);
+}
+.dot-icon.is-good {
+    background: var(--good-bg);
+    color: var(--good);
+}
 
 .empty {
     display: grid;
@@ -1075,7 +1146,6 @@ button {
     color: var(--heading);
     font-size: 0.95rem;
 }
-
 
 /* =========================================================
    7. FILTROS, TABLAS Y PAGINACIÓN
@@ -1247,7 +1317,6 @@ td.amount {
     margin-right: auto;
 }
 
-
 /* =========================================================
    8. PANEL LATERAL (FICHA), MODAL Y AVISOS
    ========================================================= */
@@ -1264,8 +1333,12 @@ td.amount {
 }
 
 @keyframes fade {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 
 .drawer {
@@ -1279,8 +1352,14 @@ td.amount {
 }
 
 @keyframes slideIn {
-    from { transform: translateX(40px); opacity: 0; }
-    to { transform: none; opacity: 1; }
+    from {
+        transform: translateX(40px);
+        opacity: 0;
+    }
+    to {
+        transform: none;
+        opacity: 1;
+    }
 }
 
 .drawer-head {
@@ -1349,7 +1428,7 @@ td.amount {
     padding: 22px;
     border-radius: var(--radius);
     background: var(--side-bg);
-    color: #FFFFFF;
+    color: #ffffff;
 }
 
 .money-head small {
@@ -1361,13 +1440,13 @@ td.amount {
 
 .money-head h2 {
     margin-top: 6px;
-    color: #FFFFFF;
+    color: #ffffff;
     font-size: 1.35rem;
 }
 
 .money-head .big {
     margin-top: 6px;
-    color: #FFFFFF;
+    color: #ffffff;
     font-family: "Manrope", sans-serif;
     font-size: 1.6rem;
     font-weight: 800;
@@ -1504,14 +1583,22 @@ td.amount {
 }
 
 @keyframes toastIn {
-    from { opacity: 0; transform: translateY(12px); }
-    to { opacity: 1; transform: none; }
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
 }
 
 @keyframes toastOut {
-    to { opacity: 0; transform: translateX(20px); }
+    to {
+        opacity: 0;
+        transform: translateX(20px);
+    }
 }
-
 
 /* =========================================================
    9. MONITOREO
@@ -1574,7 +1661,7 @@ pre.json {
     overflow-x: auto;
     border-radius: 10px;
     background: var(--brand-ink);
-    color: #BFEFEF;
+    color: #bfefef;
     font-family: "IBM Plex Mono", monospace;
     font-size: 0.74rem;
     line-height: 1.5;
@@ -1632,14 +1719,17 @@ pre.json {
     line-height: 1.7;
 }
 
-
 /* =========================================================
    10. RESPONSIVE
    ========================================================= */
 
 @media (max-width: 1180px) {
-    .g4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .g-main { grid-template-columns: minmax(0, 1fr); }
+    .g4 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .g-main {
+        grid-template-columns: minmax(0, 1fr);
+    }
 }
 
 @media (max-width: 920px) {
@@ -1704,22 +1794,45 @@ pre.json {
 }
 
 @media (max-width: 560px) {
-    .g4 { grid-template-columns: minmax(0, 1fr); }
+    .g4 {
+        grid-template-columns: minmax(0, 1fr);
+    }
 
-    .page-head h1 { font-size: 1.35rem; }
+    .page-head h1 {
+        font-size: 1.35rem;
+    }
 
-    .login-form { padding: 28px 22px; }
+    .login-form {
+        padding: 28px 22px;
+    }
 
     .filters > div,
-    .filters .grow { min-width: 0; flex: 1 1 100%; }
+    .filters .grow {
+        min-width: 0;
+        flex: 1 1 100%;
+    }
 
-    .filters .btn { flex: 1; }
+    .filters .btn {
+        flex: 1;
+    }
 
-    .kv { grid-template-columns: minmax(0, 1fr); gap: 2px; }
-    .kv dd { margin-bottom: 8px; }
+    .kv {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 2px;
+    }
+    .kv dd {
+        margin-bottom: 8px;
+    }
 
-    .drawer-body { padding: 16px; }
+    .drawer-body {
+        padding: 16px;
+    }
 
-    .toast-stack { right: 12px; left: 12px; }
-    .toast { max-width: none; }
+    .toast-stack {
+        right: 12px;
+        left: 12px;
+    }
+    .toast {
+        max-width: none;
+    }
 }

@@ -9,10 +9,10 @@
 
 const BlLayout = (() => {
     const page = document.body.dataset.page;
-    const main = document.querySelector('main');
+    const main = document.querySelector("main");
     if (!page || !main) return null;
 
-    const onDashboard = page === 'dashboard';
+    const onDashboard = page === "dashboard";
     // En el dashboard las secciones son anclas; desde las demás vistas se va al dashboard.
     const dash = hash => (onDashboard ? `#${hash}` : `dashboard.html#${hash}`);
 
@@ -34,39 +34,52 @@ const BlLayout = (() => {
         tarjetas: '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>',
         suscripciones: '<rect x="3" y="5" width="18" height="15" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M8 14h3"/>',
         puntos: '<path d="m12 2 3 7h7l-5.5 4.5 2 7.5-6.5-4.5L5.5 21l2-7.5L2 9h7z"/>',
-        'mi-ano': '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+        "mi-ano": '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
         perfil: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
-        configuracion: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
+        configuracion:
+            '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
         campana: '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
         menu: '<path d="M4 6h16M4 12h16M4 18h16"/>',
         chevron: '<path d="m6 9 6 6 6-6"/>',
     };
 
     // Año en curso en hora de Colombia, para "Mi año".
-    const year = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Bogota', year: 'numeric' }).format(new Date());
+    const year = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Bogota", year: "numeric" }).format(new Date());
 
     // Menú: un solo lugar para todas las vistas. "spy" es la clave que se marca como activa.
     const MENU = [
-        { spy: 'inicio', label: 'Inicio', href: dash('inicio') },
-        { group: 'dinero', label: 'Mover dinero', items: [
-            { spy: 'transferir', label: 'Transferir', href: 'transferir.html' },
-            { spy: 'pagos', label: 'Pagos', href: 'pagos.html' },
-            { spy: 'qr', label: 'Pagar con QR', href: 'qr.html' },
-            { spy: 'llaves', label: 'Llaves Bre-B', href: 'llaves.html' },
-        ] },
-        { group: 'ahorro', label: 'Ahorrar', items: [
-            { spy: 'ahorro', icon: 'metas', label: 'Metas de ahorro', href: dash('ahorro') },
-            { spy: 'inversiones', label: 'Bolsillos y CDT', href: 'inversiones.html' },
-        ] },
-        { group: 'cuenta', label: 'Mis finanzas', items: [
-            { spy: 'movimientos', label: 'Movimientos', href: 'movimientos.html' },
-            { spy: 'tarjetas', label: 'Tarjetas', href: dash('tarjetas') },
-            { spy: 'suscripciones', label: 'Suscripciones', href: dash('suscripciones') },
-            { spy: 'puntos', label: 'Mis puntos', href: 'puntos.html' },
-            // Resumen del año (mi-ano.js, solo en el dashboard): se abre encima de la vista.
-            // No es una sección (data-action en vez de data-spy): no queda marcada como activa.
-            { action: 'mi-ano', label: `Mi año ${year}`, href: dash('mi-ano') },
-        ] },
+        { spy: "inicio", label: "Inicio", href: dash("inicio") },
+        {
+            group: "dinero",
+            label: "Mover dinero",
+            items: [
+                { spy: "transferir", label: "Transferir", href: "transferir.html" },
+                { spy: "pagos", label: "Pagos", href: "pagos.html" },
+                { spy: "qr", label: "Pagar con QR", href: "qr.html" },
+                { spy: "llaves", label: "Llaves Bre-B", href: "llaves.html" },
+            ],
+        },
+        {
+            group: "ahorro",
+            label: "Ahorrar",
+            items: [
+                { spy: "ahorro", icon: "metas", label: "Metas de ahorro", href: dash("ahorro") },
+                { spy: "inversiones", label: "Bolsillos y CDT", href: "inversiones.html" },
+            ],
+        },
+        {
+            group: "cuenta",
+            label: "Mis finanzas",
+            items: [
+                { spy: "movimientos", label: "Movimientos", href: "movimientos.html" },
+                { spy: "tarjetas", label: "Tarjetas", href: dash("tarjetas") },
+                { spy: "suscripciones", label: "Suscripciones", href: dash("suscripciones") },
+                { spy: "puntos", label: "Mis puntos", href: "puntos.html" },
+                // Resumen del año (mi-ano.js, solo en el dashboard): se abre encima de la vista.
+                // No es una sección (data-action en vez de data-spy): no queda marcada como activa.
+                { action: "mi-ano", label: `Mi año ${year}`, href: dash("mi-ano") },
+            ],
+        },
     ];
 
     const link = item => {
@@ -80,26 +93,25 @@ const BlLayout = (() => {
         return `
             <div class="side-group" data-group="${entry.group}">
                 <button type="button" class="side side-toggle" aria-expanded="false" aria-controls="side-${entry.group}">
-                    ${svg(ICONS[entry.group])}<span>${entry.label}</span>${svg(ICONS.chevron, 14).replace('<svg', '<svg class="side-chevron"')}
+                    ${svg(ICONS[entry.group])}<span>${entry.label}</span>${svg(ICONS.chevron, 14).replace("<svg", '<svg class="side-chevron"')}
                 </button>
                 <div class="side-sub" id="side-${entry.group}">
-                    <div class="side-sub-inner">${entry.items.map(link).join('')}</div>
+                    <div class="side-sub-inner">${entry.items.map(link).join("")}</div>
                 </div>
             </div>`;
-    }).join('');
-
+    }).join("");
 
     // ---------- encabezado ----------
-    document.querySelectorAll('body > header.app-header').forEach(old => old.remove());
+    document.querySelectorAll("body > header.app-header").forEach(old => old.remove());
 
-    const header = document.createElement('header');
-    header.className = 'app-header';
+    const header = document.createElement("header");
+    header.className = "app-header";
     header.innerHTML = `
         <div class="header-start">
             <button class="menu-toggle" id="menuToggle" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="appSidebar">
                 ${svg(ICONS.menu, 20)}
             </button>
-            <a class="brand" href="${onDashboard ? '#inicio' : 'dashboard.html'}" aria-label="Banklite, inicio">
+            <a class="brand" href="${onDashboard ? "#inicio" : "dashboard.html"}" aria-label="Banklite, inicio">
                 <span class="logo">B</span>
                 <span>banklite</span>
             </a>
@@ -114,10 +126,9 @@ const BlLayout = (() => {
             <button id="logout" class="logout" type="button">Salir</button>
         </div>`;
 
-
     // ---------- menú lateral + contenido ----------
-    const layout = document.createElement('div');
-    layout.className = 'layout';
+    const layout = document.createElement("div");
+    layout.className = "layout";
     layout.innerHTML = `
         <aside class="sidebar" id="appSidebar" aria-label="Menú" data-page="${page}" tabindex="-1">
             <div class="sidebar-head">
@@ -126,25 +137,26 @@ const BlLayout = (() => {
             </div>
             ${menuHtml}
             <div class="side-space"></div>
-            <a class="side" href="${dash('perfil')}" id="openMyProfile">${svg(ICONS.perfil)}<span>Mi perfil</span></a>
-            <a class="side" href="${dash('configuracion')}" id="openSettings">${svg(ICONS.configuracion)}<span>Configuración</span></a>
+            <a class="side" href="${dash("perfil")}" id="openMyProfile">${svg(ICONS.perfil)}<span>Mi perfil</span></a>
+            <a class="side" href="${dash("configuracion")}" id="openSettings">${svg(ICONS.configuracion)}<span>Configuración</span></a>
         </aside>
         <div class="sidebar-backdrop" hidden></div>`;
 
     main.before(header);
     header.after(layout);
-    layout.querySelector('.sidebar').after(main);
-
+    layout.querySelector(".sidebar").after(main);
 
     // ---------- modales que usa el encabezado (si la página no los trae) ----------
     function ensureModal(id, html) {
         if (document.getElementById(id)) return;
-        const wrap = document.createElement('div');
+        const wrap = document.createElement("div");
         wrap.innerHTML = html.trim();
         document.body.appendChild(wrap.firstElementChild);
     }
 
-    ensureModal('notifModal', `
+    ensureModal(
+        "notifModal",
+        `
         <div class="modal" id="notifModal" role="dialog" aria-modal="true" aria-labelledby="notifTitle">
             <div class="modal-card">
                 <button class="modal-close" data-close type="button" aria-label="Cerrar">×</button>
@@ -153,9 +165,12 @@ const BlLayout = (() => {
                 <ul class="notif-list" id="notifList"></ul>
                 <button class="btn primary full" data-close type="button">Listo</button>
             </div>
-        </div>`);
+        </div>`
+    );
 
-    ensureModal('confirmModal', `
+    ensureModal(
+        "confirmModal",
+        `
         <div class="modal" id="confirmModal" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle" aria-describedby="confirmText">
             <div class="modal-card">
                 <span class="modal-icon is-alert" aria-hidden="true">!</span>
@@ -166,52 +181,53 @@ const BlLayout = (() => {
                     <button class="btn primary" id="confirmAccept" type="button">Confirmar</button>
                 </div>
             </div>
-        </div>`);
-
+        </div>`
+    );
 
     // ---------- menú ☰ en celular ----------
-    const sidebar = layout.querySelector('.sidebar');
-    const backdrop = layout.querySelector('.sidebar-backdrop');
-    const toggle = header.querySelector('#menuToggle');
-    const mobile = window.matchMedia('(max-width: 760px)');
+    const sidebar = layout.querySelector(".sidebar");
+    const backdrop = layout.querySelector(".sidebar-backdrop");
+    const toggle = header.querySelector("#menuToggle");
+    const mobile = window.matchMedia("(max-width: 760px)");
 
     function setMenu(open, { focus = true } = {}) {
-        document.body.classList.toggle('menu-open', open);
+        document.body.classList.toggle("menu-open", open);
         backdrop.hidden = !open;
-        toggle.setAttribute('aria-expanded', String(open));
-        toggle.setAttribute('aria-label', open ? 'Cerrar menú' : 'Abrir menú');
-        if (open) sidebar.focus({ preventScroll: true }); // Tab sigue por las opciones del menú
+        toggle.setAttribute("aria-expanded", String(open));
+        toggle.setAttribute("aria-label", open ? "Cerrar menú" : "Abrir menú");
+        if (open)
+            sidebar.focus({ preventScroll: true }); // Tab sigue por las opciones del menú
         else if (focus && mobile.matches) toggle.focus({ preventScroll: true });
     }
 
-    toggle.addEventListener('click', () => setMenu(!document.body.classList.contains('menu-open')));
-    backdrop.addEventListener('click', () => setMenu(false));
-    sidebar.querySelector('.sidebar-close').addEventListener('click', () => setMenu(false));
-    sidebar.addEventListener('click', event => {
-        if (event.target.closest('a.side')) setMenu(false, { focus: false });
+    toggle.addEventListener("click", () => setMenu(!document.body.classList.contains("menu-open")));
+    backdrop.addEventListener("click", () => setMenu(false));
+    sidebar.querySelector(".sidebar-close").addEventListener("click", () => setMenu(false));
+    sidebar.addEventListener("click", event => {
+        if (event.target.closest("a.side")) setMenu(false, { focus: false });
     });
-    document.addEventListener('keydown', event => {
-        if (event.key === 'Escape' && document.body.classList.contains('menu-open')) setMenu(false);
+    document.addEventListener("keydown", event => {
+        if (event.key === "Escape" && document.body.classList.contains("menu-open")) setMenu(false);
     });
-    mobile.addEventListener('change', () => setMenu(false, { focus: false }));
-
+    mobile.addEventListener("change", () => setMenu(false, { focus: false }));
 
     // ---------- datos del encabezado (después de cargar api.js y la página) ----------
     const state = { notifications: [] };
     const $ = id => document.getElementById(id);
-    const htmlToText = value => new DOMParser().parseFromString(String(value ?? ''), 'text/html').body.textContent || '';
+    const htmlToText = value =>
+        new DOMParser().parseFromString(String(value ?? ""), "text/html").body.textContent || "";
 
     function setUser(name) {
-        $('headerName').textContent = name || 'Mi cuenta';
-        $('avatar').textContent = initials(name || 'B');
+        $("headerName").textContent = name || "Mi cuenta";
+        $("avatar").textContent = initials(name || "B");
     }
 
     async function loadUser() {
         try {
-            const kyc = await BlApi.authed(BlApi.config.kycApi, 'GET', `/kyc/${BlApi.session.idUser}`);
-            setUser(`${kyc?.nombres || ''} ${kyc?.apellidos || ''}`.trim());
+            const kyc = await BlApi.authed(BlApi.config.kycApi, "GET", `/kyc/${BlApi.session.idUser}`);
+            setUser(`${kyc?.nombres || ""} ${kyc?.apellidos || ""}`.trim());
         } catch (err) {
-            if (!BlApi.handleAuthError(err)) setUser('');
+            if (!BlApi.handleAuthError(err)) setUser("");
         }
     }
 
@@ -223,19 +239,23 @@ const BlLayout = (() => {
 
     function notifKind(n) {
         const text = `${n.event} ${n.title}`.toLowerCase();
-        if (/recib|entrada|abono|consign|deposit/.test(text)) return 'income';
-        if (/envia|enviaste|salida|transferencia|cargo/.test(text)) return 'expense';
-        return 'notice';
+        if (/recib|entrada|abono|consign|deposit/.test(text)) return "income";
+        if (/envia|enviaste|salida|transferencia|cargo/.test(text)) return "expense";
+        return "notice";
     }
 
     function updateDot() {
-        const dot = header.querySelector('#notifications i');
+        const dot = header.querySelector("#notifications i");
         dot.hidden = !state.notifications.some(n => !n.read);
     }
 
     async function refreshNotifications() {
         try {
-            state.notifications = await BlApi.authed(BlApi.config.notificationApi, 'GET', `/notifications/${BlApi.session.idUser}?channel=in_app`);
+            state.notifications = await BlApi.authed(
+                BlApi.config.notificationApi,
+                "GET",
+                `/notifications/${BlApi.session.idUser}?channel=in_app`
+            );
         } catch (err) {
             if (BlApi.handleAuthError(err)) return;
             state.notifications = []; // notification-service apagado: no se rompe el resto
@@ -244,7 +264,7 @@ const BlLayout = (() => {
     }
 
     function renderNotifications() {
-        const list = $('notifList');
+        const list = $("notifList");
         list.replaceChildren();
         if (!state.notifications.length) {
             list.innerHTML = '<li class="notif-empty">No tienes notificaciones todavía.</li>';
@@ -252,55 +272,68 @@ const BlLayout = (() => {
         }
         state.notifications.slice(0, 30).forEach(n => {
             const kind = notifKind(n);
-            const li = document.createElement('li');
-            li.className = n.read ? '' : 'is-new';
+            const li = document.createElement("li");
+            li.className = n.read ? "" : "is-new";
             li.innerHTML = `<span class="notif-icon ${kind}">${NOTIF_ICON[kind]}</span><div><strong></strong><p></p></div><time></time>`;
             // Título y cuerpo vienen del servidor: se insertan como texto, nunca como HTML.
-            li.querySelector('strong').textContent = htmlToText(n.title);
-            li.querySelector('p').textContent = htmlToText(n.body);
-            li.querySelector('time').textContent = formatDate(n.createdAt);
+            li.querySelector("strong").textContent = htmlToText(n.title);
+            li.querySelector("p").textContent = htmlToText(n.body);
+            li.querySelector("time").textContent = formatDate(n.createdAt);
             if (!n.read) {
-                li.style.cursor = 'pointer';
-                li.title = 'Marcar como leída';
-                li.addEventListener('click', async () => {
-                    try {
-                        await BlApi.authed(BlApi.config.notificationApi, 'PUT', `/notifications/${n.id}/read`);
-                        n.read = true;
-                        li.classList.remove('is-new');
-                        updateDot();
-                    } catch (err) { if (!BlApi.handleAuthError(err)) toast('No se pudo marcar como leída.', 'err'); }
-                }, { once: true });
+                li.style.cursor = "pointer";
+                li.title = "Marcar como leída";
+                li.addEventListener(
+                    "click",
+                    async () => {
+                        try {
+                            await BlApi.authed(BlApi.config.notificationApi, "PUT", `/notifications/${n.id}/read`);
+                            n.read = true;
+                            li.classList.remove("is-new");
+                            updateDot();
+                        } catch (err) {
+                            if (!BlApi.handleAuthError(err)) toast("No se pudo marcar como leída.", "err");
+                        }
+                    },
+                    { once: true }
+                );
             }
             list.appendChild(li);
         });
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener("DOMContentLoaded", () => {
         initSidebar();
         if (!BlApi.hasSession()) return; // la página misma redirige al login
 
-        header.querySelector('#notifications').addEventListener('click', async () => {
+        header.querySelector("#notifications").addEventListener("click", async () => {
             await refreshNotifications();
             renderNotifications();
-            openModal('notifModal');
+            openModal("notifModal");
         });
 
-        header.querySelector('#logout').addEventListener('click', async event => {
+        header.querySelector("#logout").addEventListener("click", async event => {
             event.preventDefault();
-            const confirmed = await confirmAction('Cerrar sesión', '¿Quieres salir de tu cuenta Banklite?', 'Salir');
-            if (confirmed) BlApi.logout('cerrada');
+            const confirmed = await confirmAction("Cerrar sesión", "¿Quieres salir de tu cuenta Banklite?", "Salir");
+            if (confirmed) BlApi.logout("cerrada");
         });
 
         // Fuera del dashboard el avatar lleva a "Mis datos"; en el dashboard lo conecta dashboard.js.
         if (!onDashboard) {
-            const avatar = $('avatar');
-            avatar.setAttribute('role', 'link');
-            avatar.setAttribute('tabindex', '0');
-            avatar.setAttribute('aria-label', 'Ver mis datos');
-            avatar.style.cursor = 'pointer';
-            const go = () => { window.location.href = 'dashboard.html#datos'; };
-            avatar.addEventListener('click', go);
-            avatar.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+            const avatar = $("avatar");
+            avatar.setAttribute("role", "link");
+            avatar.setAttribute("tabindex", "0");
+            avatar.setAttribute("aria-label", "Ver mis datos");
+            avatar.style.cursor = "pointer";
+            const go = () => {
+                window.location.href = "dashboard.html#datos";
+            };
+            avatar.addEventListener("click", go);
+            avatar.addEventListener("keydown", e => {
+                if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    go();
+                }
+            });
             loadUser(); // en el dashboard el nombre lo pone dashboard.js con setUser (ya carga el KYC)
         }
 

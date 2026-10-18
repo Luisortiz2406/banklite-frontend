@@ -9,9 +9,11 @@
 "use strict";
 
 // Dominio del API Gateway: Railway fuera de localhost; docker-compose en local.
-const GW = (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)
-    ? "http://localhost:8080"
-    : "https://api-gateway-production-dd7f.up.railway.app").replace(/\/+$/, "");
+const GW = (
+    /^(localhost|127\.0\.0\.1)$/.test(location.hostname)
+        ? "http://localhost:8080"
+        : "https://api-gateway-production-dd7f.up.railway.app"
+).replace(/\/+$/, "");
 
 // Las páginas se enlazan con .html: así funcionan con nginx (Railway) y con
 // cualquier servidor estático en local (python -m http.server), que no resuelve /admin/clientes.
@@ -19,7 +21,6 @@ const BASE = "/admin/";
 const TOKEN_KEY = "banklite.staff.token";
 const LAST_KEY = "banklite.staff.last";
 const SESSION_LIMIT = 20 * 60 * 1000; // 20 minutos sin actividad (el token dura más; esto es del navegador)
-
 
 // =========================================================
 // 1. UTILIDADES
@@ -32,9 +33,16 @@ const $ = id => document.getElementById(id);
 // estados y textos "que siempre son seguros"). Solo se interpolan sin esc()
 // los helpers que ya devuelven HTML escapado (svg, badge, pageHead, money, fdate...).
 // La CSP (script-src 'self', sin inline) es la segunda barrera si algo se escapa.
-const esc = value => String(value ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const esc = value =>
+    String(value ?? "").replace(
+        /[&<>"']/g,
+        c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]
+    );
 
-const money = (value, currency = "COP") => new Intl.NumberFormat("es-CO", { style: "currency", currency: currency || "COP", maximumFractionDigits: 2 }).format(Number(value) || 0);
+const money = (value, currency = "COP") =>
+    new Intl.NumberFormat("es-CO", { style: "currency", currency: currency || "COP", maximumFractionDigits: 2 }).format(
+        Number(value) || 0
+    );
 
 const compact = value => {
     const n = Math.abs(Number(value) || 0);
@@ -48,7 +56,13 @@ const fdate = (value, style = "full") => {
     if (!value) return "—";
     const d = new Date(value);
     if (isNaN(d)) return "—";
-    if (style === "day") return d.toLocaleDateString("es-CO", { timeZone: "America/Bogota", day: "numeric", month: "short", year: "numeric" });
+    if (style === "day")
+        return d.toLocaleDateString("es-CO", {
+            timeZone: "America/Bogota",
+            day: "numeric",
+            month: "short",
+            year: "numeric",
+        });
     return d.toLocaleString("es-CO", { timeZone: "America/Bogota", dateStyle: "medium", timeStyle: "short" });
 };
 
@@ -62,9 +76,16 @@ const ago = value => {
     return days === 1 ? "ayer" : `hace ${days} días`;
 };
 
-const initials = name => String(name || "?").trim().split(/\s+/).slice(0, 2).map(w => w[0]).join("").toUpperCase();
+const initials = name =>
+    String(name || "?")
+        .trim()
+        .split(/\s+/)
+        .slice(0, 2)
+        .map(w => w[0])
+        .join("")
+        .toUpperCase();
 
-const short = id => id ? esc(String(id).slice(0, 8)) + "…" : "—";
+const short = id => (id ? esc(String(id).slice(0, 8)) + "…" : "—");
 
 const params = () => new URLSearchParams(location.search);
 
@@ -76,8 +97,20 @@ const qs = obj => {
 };
 
 const store = {
-    get(key) { try { return sessionStorage.getItem(key); } catch { return null; } },
-    set(key, value) { try { value ? sessionStorage.setItem(key, value) : sessionStorage.removeItem(key); } catch { /* sin almacenamiento */ } }
+    get(key) {
+        try {
+            return sessionStorage.getItem(key);
+        } catch {
+            return null;
+        }
+    },
+    set(key, value) {
+        try {
+            value ? sessionStorage.setItem(key, value) : sessionStorage.removeItem(key);
+        } catch {
+            /* sin almacenamiento */
+        }
+    },
 };
 
 function toast(message, isError = false) {
@@ -85,10 +118,13 @@ function toast(message, isError = false) {
     el.className = "toast" + (isError ? " err" : "");
     el.textContent = message;
     $("toasts")?.appendChild(el);
-    setTimeout(() => {
-        el.classList.add("out");
-        setTimeout(() => el.remove(), 300);
-    }, isError ? 5200 : 3200);
+    setTimeout(
+        () => {
+            el.classList.add("out");
+            setTimeout(() => el.remove(), 300);
+        },
+        isError ? 5200 : 3200
+    );
 }
 
 // Celdas que Excel/LibreOffice interpretarían como fórmula (=, +, -, @, tab, CR):
@@ -111,7 +147,8 @@ function downloadCSV(name, rows) {
 const ICON = {
     key: '<circle cx="7.5" cy="15.5" r="4.5"/><path d="m10.7 12.3 9.3-9.3M16 7l3 3M14 9l2 2"/>',
     dashboard: '<path d="M3 13h8V3H3zM13 21h8V11h-8zM3 21h8v-6H3zM13 3v6h8V3z"/>',
-    customers: '<circle cx="9" cy="8" r="4"/><path d="M1 21c0-4 4-6 8-6s8 2 8 6"/><path d="M17 3a4 4 0 0 1 0 8M23 21c0-3-2-5-5-5.6"/>',
+    customers:
+        '<circle cx="9" cy="8" r="4"/><path d="M1 21c0-4 4-6 8-6s8 2 8 6"/><path d="M17 3a4 4 0 0 1 0 8M23 21c0-3-2-5-5-5.6"/>',
     accounts: '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/>',
     movements: '<path d="M7 7h13M17 3l4 4-4 4M17 17H4M7 21l-4-4 4-4"/>',
     monitoring: '<path d="M3 12h4l3 8 4-16 3 8h4"/>',
@@ -136,11 +173,11 @@ const ICON = {
     mail: '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 6l-10 7L2 6"/>',
     card: '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>',
     fraud: '<path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/>',
-    compliance: '<path d="M12 2l8 4v6c0 5-3.5 9-8 10-4.5-1-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/>'
+    compliance: '<path d="M12 2l8 4v6c0 5-3.5 9-8 10-4.5-1-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/>',
 };
 
-const svg = (name, extra = "") => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" ${extra}>${ICON[name] || ""}</svg>`;
-
+const svg = (name, extra = "") =>
+    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" ${extra}>${ICON[name] || ""}</svg>`;
 
 // =========================================================
 // 2. API Y SESIÓN DEL EMPLEADO
@@ -152,10 +189,24 @@ let ME = null;
 const isAdmin = () => ME?.role === "admin";
 
 const SESSION = {
-    touch() { store.set(LAST_KEY, String(Date.now())); },
-    expired() { const last = Number(store.get(LAST_KEY)); return !last || Date.now() - last > SESSION_LIMIT; },
-    start(token) { TOKEN = token; store.set(TOKEN_KEY, token); this.touch(); },
-    end() { TOKEN = null; ME = null; store.set(TOKEN_KEY, null); store.set(LAST_KEY, null); }
+    touch() {
+        store.set(LAST_KEY, String(Date.now()));
+    },
+    expired() {
+        const last = Number(store.get(LAST_KEY));
+        return !last || Date.now() - last > SESSION_LIMIT;
+    },
+    start(token) {
+        TOKEN = token;
+        store.set(TOKEN_KEY, token);
+        this.touch();
+    },
+    end() {
+        TOKEN = null;
+        ME = null;
+        store.set(TOKEN_KEY, null);
+        store.set(LAST_KEY, null);
+    },
 };
 
 function goLogin(reason) {
@@ -168,20 +219,27 @@ async function api(method, path, body) {
     try {
         res = await fetch(GW + path, {
             method,
-            headers: { ...(body ? { "Content-Type": "application/json" } : {}), ...(TOKEN ? { Authorization: "Bearer " + TOKEN } : {}) },
-            body: body ? JSON.stringify(body) : undefined
+            headers: {
+                ...(body ? { "Content-Type": "application/json" } : {}),
+                ...(TOKEN ? { Authorization: "Bearer " + TOKEN } : {}),
+            },
+            body: body ? JSON.stringify(body) : undefined,
         });
     } catch {
         throw new Error("No se pudo conectar con el servidor. Revisa tu conexión.");
     }
     let data = null;
-    try { data = await res.json(); } catch { /* respuesta sin cuerpo JSON */ }
+    try {
+        data = await res.json();
+    } catch {
+        /* respuesta sin cuerpo JSON */
+    }
     if (res.status === 401 && TOKEN && path !== "/auth/admin/login") {
         goLogin("expirada");
         throw new Error("Tu sesión expiró.");
     }
     if (!res.ok) {
-        const msg = Array.isArray(data?.message) ? data.message.join(" ") : (data?.message || `Error ${res.status}`);
+        const msg = Array.isArray(data?.message) ? data.message.join(" ") : data?.message || `Error ${res.status}`;
         const err = new Error(msg);
         err.status = res.status;
         throw err;
@@ -192,18 +250,36 @@ async function api(method, path, body) {
 // Igual que api() pero devuelve null si falla (para tarjetas que toleran un servicio caído).
 const tryApi = (method, path, body) => api(method, path, body).catch(() => null);
 
-const health = () => fetch(GW + "/health").then(r => r.json()).catch(() => null);
-
+const health = () =>
+    fetch(GW + "/health")
+        .then(r => r.json())
+        .catch(() => null);
 
 // =========================================================
 // 3. ETIQUETAS
 // =========================================================
 
-const ACCESS = { active: ["Activo", "b-good"], locked: ["Bloqueo temporal", "b-warn"], disabled: ["Suspendido", "b-bad"] };
-const ACC_STATUS = { pending: ["Pendiente", "b-gray"], active: ["Activa", "b-good"], blocked: ["Bloqueada", "b-bad"], closed: ["Cerrada", "b-gray"] };
+const ACCESS = {
+    active: ["Activo", "b-good"],
+    locked: ["Bloqueo temporal", "b-warn"],
+    disabled: ["Suspendido", "b-bad"],
+};
+const ACC_STATUS = {
+    pending: ["Pendiente", "b-gray"],
+    active: ["Activa", "b-good"],
+    blocked: ["Bloqueada", "b-bad"],
+    closed: ["Cerrada", "b-gray"],
+};
 const ACC_TYPE = { savings: "Ahorros", checking: "Corriente", merchant: "Comercio" };
 const KYC = { verified: ["Verificado", "b-teal"], rejected: ["Rechazado", "b-bad"] };
-const TX = { transfer: "Transferencia", credit: "Abono", deposit: "Consignación", debit: "Cargo", reversal: "Reverso", payment: "Pago a comercio" };
+const TX = {
+    transfer: "Transferencia",
+    credit: "Abono",
+    deposit: "Consignación",
+    debit: "Cargo",
+    reversal: "Reverso",
+    payment: "Pago a comercio",
+};
 const NOTIF = { pending: ["Pendiente", "b-warn"], sent: ["Enviada", "b-good"], failed: ["Fallida", "b-bad"] };
 const CHANNEL = { in_app: "App", email: "Correo", whatsapp: "WhatsApp" };
 const ROLE = { admin: "Administrador", support: "Soporte" };
@@ -227,7 +303,7 @@ const ACTIONS = {
     "fraud.dismissed": "Descartó una alerta de fraude",
     "sar.filed": "Radicó un SAR",
     "sar.dismissed": "Descartó un SAR",
-    "report.generate": "Generó un reporte AML"
+    "report.generate": "Generó un reporte AML",
 };
 
 const badge = (map, key, extra) => {
@@ -235,10 +311,18 @@ const badge = (map, key, extra) => {
     return `<span class="badge ${cls}">${esc(text)}${extra ? " · " + esc(extra) : ""}</span>`;
 };
 
-const blockedBy = (a, long) => a.status === "blocked" ? (a.blockedBy === "bank" ? (long ? "por el banco" : "banco") : (long ? "por el titular" : "titular")) : "";
+const blockedBy = (a, long) =>
+    a.status === "blocked"
+        ? a.blockedBy === "bank"
+            ? long
+                ? "por el banco"
+                : "banco"
+            : long
+              ? "por el titular"
+              : "titular"
+        : "";
 
-const kycName = k => k ? `${k.nombres} ${k.apellidos}` : "";
-
+const kycName = k => (k ? `${k.nombres} ${k.apellidos}` : "");
 
 // =========================================================
 // 4. PIEZAS DE LA INTERFAZ: MODAL, FICHA LATERAL, PAGINACIÓN
@@ -249,20 +333,29 @@ function closeModal() {
 }
 
 // Modal de formulario. Si onSubmit lanza un error, se muestra adentro.
-function formModal({ title, desc = "", fields = [], confirm = "Confirmar", danger = false, icon = "shield", onSubmit }) {
-
-    const inputs = fields.map(f => {
-        const id = "mf_" + f.name;
-        let control;
-        if (f.type === "select") {
-            control = `<select id="${id}">${f.options.map(([v, t]) => `<option value="${esc(v)}" ${String(v) === String(f.value) ? "selected" : ""}>${esc(t)}</option>`).join("")}</select>`;
-        } else if (f.type === "textarea") {
-            control = `<textarea id="${id}" rows="3" maxlength="${f.max || 300}" placeholder="${esc(f.placeholder || "")}">${esc(f.value || "")}</textarea>`;
-        } else {
-            control = `<input id="${id}" type="${f.type || "text"}" value="${esc(f.value ?? "")}" placeholder="${esc(f.placeholder || "")}" ${f.min !== undefined ? `min="${f.min}"` : ""} ${f.step ? `step="${f.step}"` : ""} autocomplete="off">`;
-        }
-        return `<label for="${id}">${esc(f.label)}</label>${control}`;
-    }).join("");
+function formModal({
+    title,
+    desc = "",
+    fields = [],
+    confirm = "Confirmar",
+    danger = false,
+    icon = "shield",
+    onSubmit,
+}) {
+    const inputs = fields
+        .map(f => {
+            const id = "mf_" + f.name;
+            let control;
+            if (f.type === "select") {
+                control = `<select id="${id}">${f.options.map(([v, t]) => `<option value="${esc(v)}" ${String(v) === String(f.value) ? "selected" : ""}>${esc(t)}</option>`).join("")}</select>`;
+            } else if (f.type === "textarea") {
+                control = `<textarea id="${id}" rows="3" maxlength="${f.max || 300}" placeholder="${esc(f.placeholder || "")}">${esc(f.value || "")}</textarea>`;
+            } else {
+                control = `<input id="${id}" type="${f.type || "text"}" value="${esc(f.value ?? "")}" placeholder="${esc(f.placeholder || "")}" ${f.min !== undefined ? `min="${f.min}"` : ""} ${f.step ? `step="${f.step}"` : ""} autocomplete="off">`;
+            }
+            return `<label for="${id}">${esc(f.label)}</label>${control}`;
+        })
+        .join("");
 
     $("modalRoot").innerHTML = `
         <div class="modal-overlay">
@@ -280,9 +373,11 @@ function formModal({ title, desc = "", fields = [], confirm = "Confirmar", dange
         </div>`;
 
     $("mCancel").onclick = closeModal;
-    $("modalRoot").querySelector(".modal-overlay").addEventListener("mousedown", e => {
-        if (e.target.classList.contains("modal-overlay")) closeModal();
-    });
+    $("modalRoot")
+        .querySelector(".modal-overlay")
+        .addEventListener("mousedown", e => {
+            if (e.target.classList.contains("modal-overlay")) closeModal();
+        });
 
     const first = fields[0] && $("mf_" + fields[0].name);
     (first || $("mOk")).focus();
@@ -312,7 +407,13 @@ function formModal({ title, desc = "", fields = [], confirm = "Confirmar", dange
     }
 }
 
-const reasonField = { name: "reason", label: "Motivo (queda en la auditoría)", type: "textarea", required: true, placeholder: "Ej.: Solicitud del cliente por llamada, caso #123" };
+const reasonField = {
+    name: "reason",
+    label: "Motivo (queda en la auditoría)",
+    type: "textarea",
+    required: true,
+    placeholder: "Ej.: Solicitud del cliente por llamada, caso #123",
+};
 
 let drawerOpener = null;
 
@@ -328,7 +429,9 @@ function openDrawer(title, render) {
             </aside>
         </div>`;
     $("dClose").onclick = closeDrawer;
-    $("ov").addEventListener("mousedown", e => { if (e.target.id === "ov") closeDrawer(); });
+    $("ov").addEventListener("mousedown", e => {
+        if (e.target.id === "ov") closeDrawer();
+    });
     drawerOpener = () => render($("dBody"));
     render($("dBody"));
     $("dClose").focus();
@@ -372,20 +475,27 @@ const pageHead = (title, sub, actions = "") => `
 
 const loadingBox = '<div class="empty"><span class="spin"></span></div>';
 
-const emptyBox = (title, text, icon = "search") => `<div class="card empty">${svg(icon)}<strong>${esc(title)}</strong><span>${esc(text)}</span></div>`;
+const emptyBox = (title, text, icon = "search") =>
+    `<div class="card empty">${svg(icon)}<strong>${esc(title)}</strong><span>${esc(text)}</span></div>`;
 
-const errorBox = err => `<div class="card empty">${svg("alert")}<strong>No se pudo cargar</strong><span>${esc(err.message)}</span></div>`;
+const errorBox = err =>
+    `<div class="card empty">${svg("alert")}<strong>No se pudo cargar</strong><span>${esc(err.message)}</span></div>`;
 
-const who = (name, sub) => `<div class="who"><span class="avatar">${esc(initials(name))}</span><div><strong>${esc(name)}</strong><small>${sub}</small></div></div>`;
+const who = (name, sub) =>
+    `<div class="who"><span class="avatar">${esc(initials(name))}</span><div><strong>${esc(name)}</strong><small>${sub}</small></div></div>`;
 
-const serviceRows = h => h?.services?.length
-    ? `<div class="svc-grid">${h.services.map(s => `
+const serviceRows = h =>
+    h?.services?.length
+        ? `<div class="svc-grid">${h.services
+              .map(
+                  s => `
         <div class="svc ${s.status === "ok" ? "" : "is-down"}">
             <div class="svc-top"><div><strong>${esc(s.name)}</strong></div>${s.status === "ok" ? '<span class="badge b-good">En línea</span>' : '<span class="badge b-bad">Caído</span>'}</div>
             <div class="svc-meta"><span>Latencia <b>${s.status === "ok" ? esc(s.latencyMs) + " ms" : "—"}</b></span></div>
-        </div>`).join("")}</div>`
-    : emptyBox("El API Gateway no responde", "No se pudo consultar el estado de los servicios.", "server");
-
+        </div>`
+              )
+              .join("")}</div>`
+        : emptyBox("El API Gateway no responde", "No se pudo consultar el estado de los servicios.", "server");
 
 // =========================================================
 // 5. ESTRUCTURA: MENÚ LATERAL Y BARRA SUPERIOR
@@ -400,19 +510,21 @@ const PAGES = [
     { id: "compliance", title: "Cumplimiento", href: BASE + "cumplimiento.html", group: "Operación" },
     { id: "monitoring", title: "Monitoreo", href: BASE + "monitoreo.html", group: "Sistema" },
     { id: "staff", title: "Empleados", href: BASE + "empleados.html", group: "Sistema", adminOnly: true },
-    { id: "audit", title: "Auditoría", href: BASE + "auditoria.html", group: "Sistema" }
+    { id: "audit", title: "Auditoría", href: BASE + "auditoria.html", group: "Sistema" },
 ];
 
 function buildSide(alerts = 0) {
     const current = document.body.dataset.page;
     let lastGroup = "";
 
-    const links = PAGES.filter(p => !p.adminOnly || isAdmin()).map(p => {
-        const label = p.group !== lastGroup ? `<p class="nav-label">${esc(p.group)}</p>` : "";
-        lastGroup = p.group;
-        const count = p.id === "monitoring" && alerts ? `<span class="nav-count">${alerts}</span>` : "";
-        return `${label}<a href="${p.href}" class="${p.id === current ? "active" : ""}" ${p.id === current ? 'aria-current="page"' : ""}>${svg(p.id)}${esc(p.title)}${count}</a>`;
-    }).join("");
+    const links = PAGES.filter(p => !p.adminOnly || isAdmin())
+        .map(p => {
+            const label = p.group !== lastGroup ? `<p class="nav-label">${esc(p.group)}</p>` : "";
+            lastGroup = p.group;
+            const count = p.id === "monitoring" && alerts ? `<span class="nav-count">${alerts}</span>` : "";
+            return `${label}<a href="${p.href}" class="${p.id === current ? "active" : ""}" ${p.id === current ? 'aria-current="page"' : ""}>${svg(p.id)}${esc(p.title)}${count}</a>`;
+        })
+        .join("");
 
     $("admSide").innerHTML = `
         <a class="brand" href="${BASE}"><span class="logo-chip">B</span><div>Banklite<small>Panel administrativo</small></div></a>
@@ -440,7 +552,7 @@ function openChangePassword() {
         fields: [
             { name: "current", label: "Contraseña actual", type: "password", required: true },
             { name: "next", label: "Contraseña nueva", type: "password", required: true },
-            { name: "confirm", label: "Confirma la contraseña nueva", type: "password", required: true }
+            { name: "confirm", label: "Confirma la contraseña nueva", type: "password", required: true },
         ],
         onSubmit: async v => {
             if (!PASSWORD_RULE.test(v.next)) throw new Error(PASSWORD_MESSAGE);
@@ -448,7 +560,7 @@ function openChangePassword() {
             if (v.next === v.current) throw new Error("La contraseña nueva debe ser distinta de la actual.");
             await api("POST", "/auth/admin/me/password", { currentPassword: v.current, newPassword: v.next });
             toast("Tu contraseña se cambió. Úsala la próxima vez que ingreses.");
-        }
+        },
     });
 }
 
@@ -458,7 +570,7 @@ async function countAlerts() {
         health(),
         tryApi("GET", "/accounts/admin/dlq"),
         tryApi("GET", "/notifications/admin/dlq"),
-        tryApi("GET", "/notifications/admin/notifications" + qs({ status: "failed", limit: 1 }))
+        tryApi("GET", "/notifications/admin/notifications" + qs({ status: "failed", limit: 1 })),
     ]);
     const down = h?.services?.filter(s => s.status !== "ok").length || 0;
     return down + (accDlq?.deadLetters || 0) + (notDlq?.deadLetters || 0) + (failed?.total || 0);
@@ -480,7 +592,10 @@ function buildTop() {
         $("admSide").classList.add("open");
         const backdrop = document.createElement("div");
         backdrop.className = "side-backdrop";
-        backdrop.onclick = () => { $("admSide").classList.remove("open"); backdrop.remove(); };
+        backdrop.onclick = () => {
+            $("admSide").classList.remove("open");
+            backdrop.remove();
+        };
         document.body.appendChild(backdrop);
     };
 
@@ -489,26 +604,35 @@ function buildTop() {
         if (next === "dark") document.documentElement.dataset.theme = "dark";
         else delete document.documentElement.dataset.theme;
         document.documentElement.style.background = "";
-        try { localStorage.setItem("bankliteTheme", next); } catch { /* sin almacenamiento */ }
+        try {
+            localStorage.setItem("bankliteTheme", next);
+        } catch {
+            /* sin almacenamiento */
+        }
         buildTop();
     };
 
     const clock = () => {
         const el = $("topClock");
-        if (el) el.textContent = new Date().toLocaleString("es-CO", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+        if (el)
+            el.textContent = new Date().toLocaleString("es-CO", {
+                weekday: "short",
+                day: "numeric",
+                month: "short",
+                hour: "2-digit",
+                minute: "2-digit",
+            });
     };
     clock();
     clearInterval(buildTop.timer);
     buildTop.timer = setInterval(clock, 30000);
 }
 
-
 // =========================================================
 // 6. LOGIN DEL PANEL
 // =========================================================
 
 async function initLoginPage() {
-
     const form = $("loginForm");
     const error = $("loginError");
     const p = params();
@@ -566,13 +690,11 @@ async function initLoginPage() {
     });
 }
 
-
 // =========================================================
 // 7. TABLERO
 // =========================================================
 
 async function renderDashboard(el) {
-
     el.innerHTML = loadingBox;
 
     const [h, ledger, notif, recon, authOb, kycOb, accDlq, notDlq, customers, accounts, audits] = await Promise.all([
@@ -586,7 +708,7 @@ async function renderDashboard(el) {
         tryApi("GET", "/notifications/admin/dlq"),
         tryApi("GET", "/auth/admin/customers" + qs({ limit: 5 })),
         tryApi("GET", "/accounts/admin/accounts" + qs({ limit: 1 })),
-        loadAudit({ limit: 10 })
+        loadAudit({ limit: 10 }),
     ]);
 
     const services = h?.services || [];
@@ -597,26 +719,92 @@ async function renderDashboard(el) {
     const maxType = Math.max(1, ...byType.map(t => t.amount));
     const pendingEvents = (authOb?.pending || 0) + (kycOb?.pending || 0) + (recon?.pendingEvents?.count || 0);
     const dead = (accDlq?.deadLetters || 0) + (notDlq?.deadLetters || 0);
-    const failedNotif = (notif?.byChannelAndStatus || []).filter(r => r.status === "failed").reduce((a, r) => a + r.count, 0);
+    const failedNotif = (notif?.byChannelAndStatus || [])
+        .filter(r => r.status === "failed")
+        .reduce((a, r) => a + r.count, 0);
 
     // Nombres de los clientes nuevos (viven en kyc-service)
     const recent = customers?.items || [];
     const names = await Promise.all(recent.map(c => tryApi("GET", `/kyc/admin/records/${c.idUser}`)));
 
     const alerts = [
-        ...services.filter(s => s.status !== "ok").map(s => ({ icon: "server", cls: "is-bad", title: `${s.name} caído`, sub: "Revisa el monitoreo", href: BASE + "monitoreo.html" })),
-        ...(h ? [] : [{ icon: "server", cls: "is-bad", title: "El API Gateway no responde", sub: "No se pudo consultar /health", href: BASE + "monitoreo.html" }]),
-        ...(dead ? [{ icon: "alert", cls: "is-warn", title: `${dead} mensaje(s) en colas de error (DLQ)`, sub: "Eventos que no se pudieron procesar", href: BASE + "monitoreo.html" }] : []),
-        ...(failedNotif ? [{ icon: "mail", cls: "is-warn", title: `${failedNotif} correo(s) fallido(s) en 7 días`, sub: "Se pueden reintentar", href: BASE + "monitoreo.html" }] : []),
-        ...(recon && !recon.ok ? [{ icon: "alert", cls: "is-bad", title: "El ledger tiene descuadres", sub: "Revisa el cuadre contable", href: BASE + "monitoreo.html" }] : []),
-        ...(pendingEvents ? [{ icon: "movements", cls: "is-warn", title: `${pendingEvents} evento(s) sin publicar`, sub: "Outbox de auth, kyc y ledger", href: BASE + "monitoreo.html" }] : [])
+        ...services
+            .filter(s => s.status !== "ok")
+            .map(s => ({
+                icon: "server",
+                cls: "is-bad",
+                title: `${s.name} caído`,
+                sub: "Revisa el monitoreo",
+                href: BASE + "monitoreo.html",
+            })),
+        ...(h
+            ? []
+            : [
+                  {
+                      icon: "server",
+                      cls: "is-bad",
+                      title: "El API Gateway no responde",
+                      sub: "No se pudo consultar /health",
+                      href: BASE + "monitoreo.html",
+                  },
+              ]),
+        ...(dead
+            ? [
+                  {
+                      icon: "alert",
+                      cls: "is-warn",
+                      title: `${dead} mensaje(s) en colas de error (DLQ)`,
+                      sub: "Eventos que no se pudieron procesar",
+                      href: BASE + "monitoreo.html",
+                  },
+              ]
+            : []),
+        ...(failedNotif
+            ? [
+                  {
+                      icon: "mail",
+                      cls: "is-warn",
+                      title: `${failedNotif} correo(s) fallido(s) en 7 días`,
+                      sub: "Se pueden reintentar",
+                      href: BASE + "monitoreo.html",
+                  },
+              ]
+            : []),
+        ...(recon && !recon.ok
+            ? [
+                  {
+                      icon: "alert",
+                      cls: "is-bad",
+                      title: "El ledger tiene descuadres",
+                      sub: "Revisa el cuadre contable",
+                      href: BASE + "monitoreo.html",
+                  },
+              ]
+            : []),
+        ...(pendingEvents
+            ? [
+                  {
+                      icon: "movements",
+                      cls: "is-warn",
+                      title: `${pendingEvents} evento(s) sin publicar`,
+                      sub: "Outbox de auth, kyc y ledger",
+                      href: BASE + "monitoreo.html",
+                  },
+              ]
+            : []),
     ];
 
     const hour = new Date().getHours();
     const hello = hour < 12 ? "Buenos días" : hour < 19 ? "Buenas tardes" : "Buenas noches";
     const activity = audits.items.filter(a => a.action !== "staff.login").slice(0, 6);
 
-    el.innerHTML = pageHead(`${hello}, ${ME.nombre.split(" ")[0]}`, "Este es el resumen del banco en este momento.", `<button class="btn btn-sm" id="refresh">${svg("refresh")} Actualizar</button>`) + `
+    el.innerHTML =
+        pageHead(
+            `${hello}, ${ME.nombre.split(" ")[0]}`,
+            "Este es el resumen del banco en este momento.",
+            `<button class="btn btn-sm" id="refresh">${svg("refresh")} Actualizar</button>`
+        ) +
+        `
 
         <div class="grid g4">
             <div class="card stat stat-hero">
@@ -644,50 +832,85 @@ async function renderDashboard(el) {
         <div class="grid g-main" style="margin-top:16px">
             <div class="card">
                 <div class="card-head"><div><h3>Volumen 24 h por tipo</h3><p>Movimientos del ledger en las últimas 24 horas</p></div><a href="${BASE}movimientos.html">Ver movimientos</a></div>
-                ${byType.length ? `<div class="hbars">${byType.map(t => `
+                ${
+                    byType.length
+                        ? `<div class="hbars">${byType
+                              .map(
+                                  t => `
                     <div class="hbar-row">
                         <div class="hbar-top"><span>${esc(TX[t.type] || t.type)} <small>· ${t.count} · ${esc(t.currency)}</small></span><b>${esc(money(t.amount, t.currency))}</b></div>
                         <div class="hbar"><i style="width:${Math.max(3, (t.amount / maxType) * 100)}%"></i></div>
-                    </div>`).join("")}</div>` : `<p class="muted">${ledger ? "Sin movimientos en las últimas 24 horas." : "Ledger no disponible."}</p>`}
+                    </div>`
+                              )
+                              .join("")}</div>`
+                        : `<p class="muted">${ledger ? "Sin movimientos en las últimas 24 horas." : "Ledger no disponible."}</p>`
+                }
             </div>
             <div class="card">
                 <div class="card-head"><div><h3>Cuadre contable</h3><p>Saldos contra asientos del ledger</p></div></div>
-                ${recon ? `
+                ${
+                    recon
+                        ? `
                     <div class="recon ${recon.ok ? "" : "is-bad"}">${svg(recon.ok ? "check" : "alert")}<div>${recon.ok ? "Saldos y asientos cuadran" : "Hay descuadres"}<div style="font-weight:500;font-size:.78rem;opacity:.85">Revisado ${esc(fdate(recon.checkedAt))}</div></div></div>
                     <dl class="kv" style="margin-top:14px">
                         <dt>Saldos descuadrados</dt><dd>${recon.balanceMismatches.length}</dd>
                         <dt>Asientos huérfanos</dt><dd>${recon.orphanEntries.length}</dd>
                         <dt>Transacciones desbalanceadas</dt><dd>${recon.unbalancedTransactions.length}</dd>
-                    </dl>` : '<p class="muted">Ledger no disponible.</p>'}
+                    </dl>`
+                        : '<p class="muted">Ledger no disponible.</p>'
+                }
             </div>
         </div>
 
         <div class="grid g3" style="margin-top:16px">
             <div class="card">
                 <div class="card-head"><h3>Alertas</h3>${alerts.length ? `<span class="badge b-bad">${alerts.length}</span>` : '<span class="badge b-good">Sin alertas</span>'}</div>
-                ${alerts.length ? `<ul class="feed">${alerts.slice(0, 6).map(a => `
-                    <li><span class="dot-icon ${a.cls}">${svg(a.icon)}</span><div class="feed-body"><strong>${esc(a.title)}</strong><small>${esc(a.sub)}</small></div><a class="feed-side" href="${a.href}">Ver</a></li>`).join("")}</ul>`
-                    : `<div class="empty">${svg("check")}<span>Todo en orden. No hay nada que atender.</span></div>`}
+                ${
+                    alerts.length
+                        ? `<ul class="feed">${alerts
+                              .slice(0, 6)
+                              .map(
+                                  a => `
+                    <li><span class="dot-icon ${a.cls}">${svg(a.icon)}</span><div class="feed-body"><strong>${esc(a.title)}</strong><small>${esc(a.sub)}</small></div><a class="feed-side" href="${a.href}">Ver</a></li>`
+                              )
+                              .join("")}</ul>`
+                        : `<div class="empty">${svg("check")}<span>Todo en orden. No hay nada que atender.</span></div>`
+                }
             </div>
             <div class="card">
                 <div class="card-head"><h3>Clientes nuevos</h3><a href="${BASE}clientes.html">Ver todos</a></div>
-                ${recent.length ? `<ul class="feed">${recent.map((c, i) => {
-                    const name = kycName(names[i]) || c.email;
-                    return `<li class="clickable-li" data-user="${esc(c.idUser)}" style="cursor:pointer"><span class="avatar">${esc(initials(name))}</span><div class="feed-body"><strong>${esc(name)}</strong><small>${esc(c.email)}</small></div><span class="feed-side">${esc(ago(c.createdAt))}</span></li>`;
-                }).join("")}</ul>` : `<p class="muted">${customers ? "Aún no hay registros." : "Auth no disponible."}</p>`}
+                ${
+                    recent.length
+                        ? `<ul class="feed">${recent
+                              .map((c, i) => {
+                                  const name = kycName(names[i]) || c.email;
+                                  return `<li class="clickable-li" data-user="${esc(c.idUser)}" style="cursor:pointer"><span class="avatar">${esc(initials(name))}</span><div class="feed-body"><strong>${esc(name)}</strong><small>${esc(c.email)}</small></div><span class="feed-side">${esc(ago(c.createdAt))}</span></li>`;
+                              })
+                              .join("")}</ul>`
+                        : `<p class="muted">${customers ? "Aún no hay registros." : "Auth no disponible."}</p>`
+                }
             </div>
             <div class="card">
                 <div class="card-head"><h3>Actividad del equipo</h3><a href="${BASE}auditoria.html">Auditoría</a></div>
-                ${activity.length ? `<ul class="feed">${activity.map(a => `
-                    <li><span class="avatar">${esc(initials(a.staffUsername))}</span><div class="feed-body"><strong>${esc(ACTIONS[a.action] || a.action)}</strong><small>@${esc(a.staffUsername)} · ${esc(a.targetType)} ${short(a.targetId)}</small></div><span class="feed-side">${esc(ago(a.createdAt))}</span></li>`).join("")}</ul>`
-                    : '<p class="muted">Todavía no hay acciones registradas.</p>'}
+                ${
+                    activity.length
+                        ? `<ul class="feed">${activity
+                              .map(
+                                  a => `
+                    <li><span class="avatar">${esc(initials(a.staffUsername))}</span><div class="feed-body"><strong>${esc(ACTIONS[a.action] || a.action)}</strong><small>@${esc(a.staffUsername)} · ${esc(a.targetType)} ${short(a.targetId)}</small></div><span class="feed-side">${esc(ago(a.createdAt))}</span></li>`
+                              )
+                              .join("")}</ul>`
+                        : '<p class="muted">Todavía no hay acciones registradas.</p>'
+                }
             </div>
         </div>`;
 
-    $("refresh").onclick = () => { renderDashboard(el); toast("Datos actualizados."); };
-    el.querySelectorAll("[data-user]").forEach(li => li.onclick = () => openCustomer(li.dataset.user));
+    $("refresh").onclick = () => {
+        renderDashboard(el);
+        toast("Datos actualizados.");
+    };
+    el.querySelectorAll("[data-user]").forEach(li => (li.onclick = () => openCustomer(li.dataset.user)));
 }
-
 
 // =========================================================
 // 8. CLIENTES
@@ -696,18 +919,29 @@ async function renderDashboard(el) {
 const customerFilters = { q: "", access: "", page: 1 };
 
 async function renderCustomers(el) {
-
     const f = customerFilters;
 
-    el.innerHTML = pageHead("Clientes", "Busca por nombre, documento, correo, teléfono o ID de usuario.", `<button class="btn btn-sm" id="exportC" disabled>${svg("download")} Exportar</button>`) + `
+    el.innerHTML =
+        pageHead(
+            "Clientes",
+            "Busca por nombre, documento, correo, teléfono o ID de usuario.",
+            `<button class="btn btn-sm" id="exportC" disabled>${svg("download")} Exportar</button>`
+        ) +
+        `
         <form class="filters" id="cf">
             <div class="grow"><label for="cq">Buscar</label><div class="search-input">${svg("search")}<input id="cq" value="${esc(f.q)}" placeholder="Ej.: Laura Gómez, 1020304050, laura@correo.com"></div></div>
-            <div><label for="ca">Acceso</label><select id="ca"><option value="">Todos</option>${Object.entries(ACCESS).map(([k, [t]]) => `<option value="${k}" ${f.access === k ? "selected" : ""}>${t}</option>`).join("")}</select></div>
+            <div><label for="ca">Acceso</label><select id="ca"><option value="">Todos</option>${Object.entries(ACCESS)
+                .map(([k, [t]]) => `<option value="${k}" ${f.access === k ? "selected" : ""}>${t}</option>`)
+                .join("")}</select></div>
             <button class="btn btn-primary" type="submit">Buscar</button>
         </form>
         <div class="chips">
             <span class="chip ${!f.access ? "active" : ""}" data-access="">Todos</span>
-            ${Object.entries(ACCESS).map(([k, [t]]) => `<span class="chip ${f.access === k ? "active" : ""}" data-access="${k}">${t}</span>`).join("")}
+            ${Object.entries(ACCESS)
+                .map(
+                    ([k, [t]]) => `<span class="chip ${f.access === k ? "active" : ""}" data-access="${k}">${t}</span>`
+                )
+                .join("")}
         </div>
         <div id="cres">${loadingBox}</div>`;
 
@@ -716,23 +950,38 @@ async function renderCustomers(el) {
         Object.assign(f, { q: $("cq").value.trim(), access: $("ca").value, page: 1 });
         renderCustomers(el);
     };
-    el.querySelectorAll("[data-access]").forEach(chip => chip.onclick = () => { Object.assign(f, { access: chip.dataset.access, page: 1 }); renderCustomers(el); });
+    el.querySelectorAll("[data-access]").forEach(
+        chip =>
+            (chip.onclick = () => {
+                Object.assign(f, { access: chip.dataset.access, page: 1 });
+                renderCustomers(el);
+            })
+    );
 
     try {
         // Credenciales (auth) y expedientes (kyc) viven en servicios distintos: se combinan por idUser.
         const [auth, kyc] = await Promise.all([
             api("GET", "/auth/admin/customers" + qs({ q: f.q, status: f.access, page: f.page, limit: 25 })),
-            f.q ? tryApi("GET", "/kyc/admin/records" + qs({ q: f.q, limit: 25 })) : Promise.resolve(null)
+            f.q ? tryApi("GET", "/kyc/admin/records" + qs({ q: f.q, limit: 25 })) : Promise.resolve(null),
         ]);
         const rows = new Map(auth.items.map(c => [c.idUser, { auth: c }]));
         if (kyc && !f.access) for (const k of kyc.items) rows.set(k.idUser, { ...(rows.get(k.idUser) || {}), kyc: k });
         // Completa el nombre de los que solo llegaron por auth.
-        await Promise.all([...rows.entries()].filter(([, r]) => !r.kyc).map(async ([id, r]) => { r.kyc = await tryApi("GET", `/kyc/admin/records/${id}`); }));
+        await Promise.all(
+            [...rows.entries()]
+                .filter(([, r]) => !r.kyc)
+                .map(async ([id, r]) => {
+                    r.kyc = await tryApi("GET", `/kyc/admin/records/${id}`);
+                })
+        );
         const list = [...rows.entries()];
 
-        $("cres").innerHTML = list.length ? `<div class="table-wrap"><table>
+        $("cres").innerHTML = list.length
+            ? `<div class="table-wrap"><table>
             <thead><tr><th>Cliente</th><th>Documento</th><th>Correo</th><th>Celular</th><th>Acceso</th><th>Identidad</th><th>Cliente desde</th></tr></thead>
-            <tbody>${list.map(([id, r]) => `
+            <tbody>${list
+                .map(
+                    ([id, r]) => `
                 <tr class="clickable" data-user="${esc(id)}">
                     <td>${who(kycName(r.kyc) || "Sin datos de identidad", `<span class="mono">${short(id)}</span>`)}</td>
                     <td class="mono">${esc(r.kyc ? `${r.kyc.tipoDocumento} ${r.kyc.numeroDocumento}` : "—")}</td>
@@ -741,16 +990,33 @@ async function renderCustomers(el) {
                     <td>${r.auth ? badge(ACCESS, r.auth.access) : '<span class="badge b-gray">Sin credenciales</span>'}</td>
                     <td>${r.kyc ? badge(KYC, r.kyc.status) : '<span class="badge b-gray">Sin KYC</span>'}</td>
                     <td>${fdate(r.auth?.createdAt || r.kyc?.createdAt, "day")}</td>
-                </tr>`).join("")}
-            </tbody></table></div>${pager(auth, p => { f.page = p; renderCustomers(el); })}`
+                </tr>`
+                )
+                .join("")}
+            </tbody></table></div>${pager(auth, p => {
+                f.page = p;
+                renderCustomers(el);
+            })}`
             : emptyBox("No se encontraron clientes", "Prueba con otra búsqueda o quita los filtros.", "customers");
 
-        $("cres").querySelectorAll("tr[data-user]").forEach(tr => tr.onclick = () => openCustomer(tr.dataset.user));
+        $("cres")
+            .querySelectorAll("tr[data-user]")
+            .forEach(tr => (tr.onclick = () => openCustomer(tr.dataset.user)));
         $("exportC").disabled = !list.length;
-        $("exportC").onclick = () => downloadCSV("clientes-banklite.csv", [
-            ["ID", "Nombre", "Documento", "Correo", "Celular", "Acceso", "Identidad", "Cliente desde"],
-            ...list.map(([id, r]) => [id, kycName(r.kyc), r.kyc ? `${r.kyc.tipoDocumento} ${r.kyc.numeroDocumento}` : "", r.auth?.email || r.kyc?.email, r.kyc?.telefono, ACCESS[r.auth?.access]?.[0] || "", KYC[r.kyc?.status]?.[0] || "", fdate(r.auth?.createdAt || r.kyc?.createdAt, "day")])
-        ]);
+        $("exportC").onclick = () =>
+            downloadCSV("clientes-banklite.csv", [
+                ["ID", "Nombre", "Documento", "Correo", "Celular", "Acceso", "Identidad", "Cliente desde"],
+                ...list.map(([id, r]) => [
+                    id,
+                    kycName(r.kyc),
+                    r.kyc ? `${r.kyc.tipoDocumento} ${r.kyc.numeroDocumento}` : "",
+                    r.auth?.email || r.kyc?.email,
+                    r.kyc?.telefono,
+                    ACCESS[r.auth?.access]?.[0] || "",
+                    KYC[r.kyc?.status]?.[0] || "",
+                    fdate(r.auth?.createdAt || r.kyc?.createdAt, "day"),
+                ]),
+            ]);
     } catch (err) {
         $("cres").innerHTML = errorBox(err);
     }
@@ -758,13 +1024,12 @@ async function renderCustomers(el) {
 
 function openCustomer(idUser) {
     openDrawer("Ficha del cliente", async body => {
-
         const [auth, kyc, accounts, cards, notifs] = await Promise.all([
             tryApi("GET", `/auth/admin/customers/${idUser}`),
             tryApi("GET", `/kyc/admin/records/${idUser}`),
             tryApi("GET", "/accounts/admin/accounts" + qs({ q: idUser, limit: 50 })),
             tryApi("GET", "/cards/admin/cards" + qs({ userId: idUser, limit: 50 })),
-            tryApi("GET", "/notifications/admin/notifications" + qs({ idUser, limit: 5 }))
+            tryApi("GET", "/notifications/admin/notifications" + qs({ idUser, limit: 5 })),
         ]);
         const name = kycName(kyc) || auth?.email || idUser;
 
@@ -780,14 +1045,20 @@ function openCustomer(idUser) {
                 ${auth?.access === "disabled" ? `<div class="alert alert-error" style="margin-top:14px">Acceso suspendido el ${fdate(auth.disabledAt)}. Motivo: ${esc(auth.disabledReason || "—")}</div>` : ""}
                 ${auth?.access === "locked" ? `<div class="alert alert-warn" style="margin-top:14px">Bloqueo temporal por intentos fallidos hasta ${fdate(auth.lockedUntil)}.</div>` : ""}
                 <div class="actions" style="margin-top:14px">
-                    ${isAdmin() && auth ? (auth.access === "disabled"
-                        ? `<button class="btn btn-sm btn-primary" id="cEnable">${svg("check")} Reactivar acceso</button>`
-                        : `<button class="btn btn-sm btn-danger" id="cDisable">${svg("lock")} Suspender acceso</button>${auth.access === "locked" ? ` <button class="btn btn-sm" id="cEnable">${svg("check")} Quitar bloqueo temporal</button>` : ""}`) : ""}
+                    ${
+                        isAdmin() && auth
+                            ? auth.access === "disabled"
+                                ? `<button class="btn btn-sm btn-primary" id="cEnable">${svg("check")} Reactivar acceso</button>`
+                                : `<button class="btn btn-sm btn-danger" id="cDisable">${svg("lock")} Suspender acceso</button>${auth.access === "locked" ? ` <button class="btn btn-sm" id="cEnable">${svg("check")} Quitar bloqueo temporal</button>` : ""}`
+                            : ""
+                    }
                 </div>
             </div>
 
             <div class="section-title"><h3>Identidad (KYC)</h3></div>
-            <div class="card">${kyc ? `<dl class="kv">
+            <div class="card">${
+                kyc
+                    ? `<dl class="kv">
                 <dt>Documento</dt><dd class="mono">${esc(kyc.tipoDocumento)} ${esc(kyc.numeroDocumento)}</dd>
                 <dt>Nacimiento</dt><dd>${esc(kyc.fechaNacimiento || "—")}</dd>
                 <dt>Expedición</dt><dd>${esc(kyc.fechaExpedicion || "—")}</dd>
@@ -795,65 +1066,100 @@ function openCustomer(idUser) {
                 <dt>Celular</dt><dd class="mono">${esc(kyc.telefono || "—")}</dd>
                 <dt>Estado</dt><dd>${badge(KYC, kyc.status)}</dd>
                 <dt>Verificado el</dt><dd>${fdate(kyc.updatedAt)}</dd>
-            </dl>` : '<p class="muted">El cliente no tiene verificación de identidad.</p>'}</div>
+            </dl>`
+                    : '<p class="muted">El cliente no tiene verificación de identidad.</p>'
+            }</div>
 
             <div class="section-title"><h3>Acceso a la app</h3></div>
-            <div class="card">${auth ? `<dl class="kv">
+            <div class="card">${
+                auth
+                    ? `<dl class="kv">
                 <dt>Correo de acceso</dt><dd>${esc(auth.email)}</dd>
                 <dt>Sesiones activas</dt><dd>${esc(auth.activeSessions ?? 0)}</dd>
                 <dt>Último ingreso</dt><dd>${fdate(auth.lastLoginAt)}</dd>
                 <dt>Intentos fallidos</dt><dd>${esc(auth.failedLoginAttempts ?? 0)}</dd>
                 <dt>Cliente desde</dt><dd>${fdate(auth.createdAt)}</dd>
-            </dl>` : '<p class="muted">Todavía no creó usuario y contraseña.</p>'}</div>
+            </dl>`
+                    : '<p class="muted">Todavía no creó usuario y contraseña.</p>'
+            }</div>
 
             <div class="section-title"><h3>Cuentas</h3></div>
-            ${accounts?.items?.length ? `<div class="table-wrap"><table class="mini-table">
+            ${
+                accounts?.items?.length
+                    ? `<div class="table-wrap"><table class="mini-table">
                 <thead><tr><th>Número</th><th>Tipo</th><th>Estado</th><th>Apertura</th></tr></thead>
-                <tbody>${accounts.items.map(a => `
-                    <tr class="clickable" data-acc="${esc(a.id)}"><td class="mono">${esc(a.accountNumber || "—")}</td><td>${esc(ACC_TYPE[a.accountType] || a.accountType)} · ${esc(a.currency)}</td><td>${badge(ACC_STATUS, a.status, blockedBy(a))}</td><td>${fdate(a.createdAt, "day")}</td></tr>`).join("")}
-                </tbody></table></div>` : `<div class="card"><p class="muted">${accounts ? "Sin cuentas." : "Cuentas no disponibles."}</p></div>`}
+                <tbody>${accounts.items
+                    .map(
+                        a => `
+                    <tr class="clickable" data-acc="${esc(a.id)}"><td class="mono">${esc(a.accountNumber || "—")}</td><td>${esc(ACC_TYPE[a.accountType] || a.accountType)} · ${esc(a.currency)}</td><td>${badge(ACC_STATUS, a.status, blockedBy(a))}</td><td>${fdate(a.createdAt, "day")}</td></tr>`
+                    )
+                    .join("")}
+                </tbody></table></div>`
+                    : `<div class="card"><p class="muted">${accounts ? "Sin cuentas." : "Cuentas no disponibles."}</p></div>`
+            }
 
             <div class="section-title"><h3>Tarjetas</h3></div>
             ${cardTable(cards)}
 
             <div class="section-title"><h3>Notificaciones recientes</h3></div>
-            ${notifs?.items?.length ? `<div class="card"><ul class="feed">${notifs.items.map(n => `
-                <li><span class="dot-icon ${n.status === "sent" ? "is-good" : n.status === "failed" ? "is-bad" : "is-warn"}">${svg("mail")}</span><div class="feed-body"><strong>${esc(n.title)}</strong><small>${esc(CHANNEL[n.channel] || n.channel)} · ${esc(NOTIF[n.status]?.[0] || n.status)}</small></div><span class="feed-side">${esc(ago(n.createdAt))}</span></li>`).join("")}</ul></div>`
-                : '<div class="card"><p class="muted">Sin notificaciones.</p></div>'}`;
+            ${
+                notifs?.items?.length
+                    ? `<div class="card"><ul class="feed">${notifs.items
+                          .map(
+                              n => `
+                <li><span class="dot-icon ${n.status === "sent" ? "is-good" : n.status === "failed" ? "is-bad" : "is-warn"}">${svg("mail")}</span><div class="feed-body"><strong>${esc(n.title)}</strong><small>${esc(CHANNEL[n.channel] || n.channel)} · ${esc(NOTIF[n.status]?.[0] || n.status)}</small></div><span class="feed-side">${esc(ago(n.createdAt))}</span></li>`
+                          )
+                          .join("")}</ul></div>`
+                    : '<div class="card"><p class="muted">Sin notificaciones.</p></div>'
+            }`;
 
-        body.querySelectorAll("tr[data-acc]").forEach(tr => tr.onclick = () => openAccount(tr.dataset.acc));
+        body.querySelectorAll("tr[data-acc]").forEach(tr => (tr.onclick = () => openAccount(tr.dataset.acc)));
 
-        $("cDisable")?.addEventListener("click", () => formModal({
-            title: "Suspender acceso del cliente", danger: true, confirm: "Suspender",
-            desc: `${esc(name)} no podrá iniciar sesión y se cerrarán todas sus sesiones abiertas. Sus cuentas y su dinero no cambian.`,
-            fields: [reasonField],
-            onSubmit: async v => {
-                await api("POST", `/auth/admin/customers/${idUser}/disable`, { reason: v.reason });
-                toast("Acceso suspendido.");
-                refreshAll();
-            }
-        }));
+        $("cDisable")?.addEventListener("click", () =>
+            formModal({
+                title: "Suspender acceso del cliente",
+                danger: true,
+                confirm: "Suspender",
+                desc: `${esc(name)} no podrá iniciar sesión y se cerrarán todas sus sesiones abiertas. Sus cuentas y su dinero no cambian.`,
+                fields: [reasonField],
+                onSubmit: async v => {
+                    await api("POST", `/auth/admin/customers/${idUser}/disable`, { reason: v.reason });
+                    toast("Acceso suspendido.");
+                    refreshAll();
+                },
+            })
+        );
 
-        $("cEnable")?.addEventListener("click", () => formModal({
-            title: "Reactivar acceso del cliente", confirm: "Reactivar", icon: "check",
-            desc: `${esc(name)} podrá volver a iniciar sesión. También se levanta el bloqueo temporal por intentos fallidos.`,
-            fields: [reasonField],
-            onSubmit: async v => {
-                await api("POST", `/auth/admin/customers/${idUser}/enable`, { reason: v.reason });
-                toast("Acceso reactivado.");
-                refreshAll();
-            }
-        }));
+        $("cEnable")?.addEventListener("click", () =>
+            formModal({
+                title: "Reactivar acceso del cliente",
+                confirm: "Reactivar",
+                icon: "check",
+                desc: `${esc(name)} podrá volver a iniciar sesión. También se levanta el bloqueo temporal por intentos fallidos.`,
+                fields: [reasonField],
+                onSubmit: async v => {
+                    await api("POST", `/auth/admin/customers/${idUser}/enable`, { reason: v.reason });
+                    toast("Acceso reactivado.");
+                    refreshAll();
+                },
+            })
+        );
     });
 }
 
 // Tarjetas (solo lectura: card-service no expone acciones de administración)
-const cardTable = cards => cards?.items?.length ? `<div class="table-wrap"><table class="mini-table">
+const cardTable = cards =>
+    cards?.items?.length
+        ? `<div class="table-wrap"><table class="mini-table">
     <thead><tr><th>Tarjeta</th><th>Cuenta</th><th>Vence</th><th>Estado</th></tr></thead>
-    <tbody>${cards.items.map(c => `
-        <tr><td class="mono">•••• ${esc(c.lastFour)}</td><td class="mono">${esc(c.accountNumber)}</td><td class="mono">${esc(c.expiry)}</td><td>${c.status === "active" ? '<span class="badge b-good">Activa</span>' : '<span class="badge b-info">Congelada</span>'}</td></tr>`).join("")}
-    </tbody></table></div>` : `<div class="card"><p class="muted">${cards ? "Sin tarjetas." : "Tarjetas no disponibles."}</p></div>`;
-
+    <tbody>${cards.items
+        .map(
+            c => `
+        <tr><td class="mono">•••• ${esc(c.lastFour)}</td><td class="mono">${esc(c.accountNumber)}</td><td class="mono">${esc(c.expiry)}</td><td>${c.status === "active" ? '<span class="badge b-good">Activa</span>' : '<span class="badge b-info">Congelada</span>'}</td></tr>`
+        )
+        .join("")}
+    </tbody></table></div>`
+        : `<div class="card"><p class="muted">${cards ? "Sin tarjetas." : "Tarjetas no disponibles."}</p></div>`;
 
 // =========================================================
 // 9. CUENTAS
@@ -862,18 +1168,31 @@ const cardTable = cards => cards?.items?.length ? `<div class="table-wrap"><tabl
 const accountFilters = { q: "", status: "", page: 1 };
 
 async function renderAccounts(el) {
-
     const f = accountFilters;
 
-    el.innerHTML = pageHead("Cuentas", "Busca por número de cuenta o ID del cliente.", `<button class="btn btn-sm" id="exportA" disabled>${svg("download")} Exportar</button>`) + `
+    el.innerHTML =
+        pageHead(
+            "Cuentas",
+            "Busca por número de cuenta o ID del cliente.",
+            `<button class="btn btn-sm" id="exportA" disabled>${svg("download")} Exportar</button>`
+        ) +
+        `
         <form class="filters" id="af">
             <div class="grow"><label for="aq">Buscar</label><div class="search-input">${svg("search")}<input id="aq" value="${esc(f.q)}" placeholder="Número de cuenta o ID de usuario"></div></div>
-            <div><label for="as">Estado</label><select id="as"><option value="">Todos</option>${Object.entries(ACC_STATUS).map(([k, [t]]) => `<option value="${k}" ${f.status === k ? "selected" : ""}>${t}</option>`).join("")}</select></div>
+            <div><label for="as">Estado</label><select id="as"><option value="">Todos</option>${Object.entries(
+                ACC_STATUS
+            )
+                .map(([k, [t]]) => `<option value="${k}" ${f.status === k ? "selected" : ""}>${t}</option>`)
+                .join("")}</select></div>
             <button class="btn btn-primary" type="submit">Buscar</button>
         </form>
         <div class="chips">
             <span class="chip ${!f.status ? "active" : ""}" data-status="">Todas</span>
-            ${Object.entries(ACC_STATUS).map(([k, [t]]) => `<span class="chip ${f.status === k ? "active" : ""}" data-status="${k}">${t}s</span>`).join("")}
+            ${Object.entries(ACC_STATUS)
+                .map(
+                    ([k, [t]]) => `<span class="chip ${f.status === k ? "active" : ""}" data-status="${k}">${t}s</span>`
+                )
+                .join("")}
         </div>
         <div id="ares">${loadingBox}</div>`;
 
@@ -882,13 +1201,25 @@ async function renderAccounts(el) {
         Object.assign(f, { q: $("aq").value.trim(), status: $("as").value, page: 1 });
         renderAccounts(el);
     };
-    el.querySelectorAll("[data-status]").forEach(chip => chip.onclick = () => { Object.assign(f, { status: chip.dataset.status, page: 1 }); renderAccounts(el); });
+    el.querySelectorAll("[data-status]").forEach(
+        chip =>
+            (chip.onclick = () => {
+                Object.assign(f, { status: chip.dataset.status, page: 1 });
+                renderAccounts(el);
+            })
+    );
 
     try {
-        const data = await api("GET", "/accounts/admin/accounts" + qs({ q: f.q, status: f.status, page: f.page, limit: 25 }));
-        $("ares").innerHTML = data.items.length ? `<div class="table-wrap"><table>
+        const data = await api(
+            "GET",
+            "/accounts/admin/accounts" + qs({ q: f.q, status: f.status, page: f.page, limit: 25 })
+        );
+        $("ares").innerHTML = data.items.length
+            ? `<div class="table-wrap"><table>
             <thead><tr><th>Número</th><th>Cliente</th><th>Tipo</th><th>Estado</th><th class="amount">Límite diario</th><th class="amount">Límite mensual</th><th>Apertura</th></tr></thead>
-            <tbody>${data.items.map(a => `
+            <tbody>${data.items
+                .map(
+                    a => `
                 <tr class="clickable" data-acc="${esc(a.id)}">
                     <td class="mono"><strong>${esc(a.accountNumber || "—")}</strong></td>
                     <td class="mono">${short(a.idUser)}</td>
@@ -897,16 +1228,33 @@ async function renderAccounts(el) {
                     <td class="amount">${money(a.dailyLimit, a.currency)}</td>
                     <td class="amount">${money(a.monthlyLimit, a.currency)}</td>
                     <td>${fdate(a.createdAt, "day")}</td>
-                </tr>`).join("")}
-            </tbody></table></div>${pager(data, p => { f.page = p; renderAccounts(el); })}`
+                </tr>`
+                )
+                .join("")}
+            </tbody></table></div>${pager(data, p => {
+                f.page = p;
+                renderAccounts(el);
+            })}`
             : emptyBox("No se encontraron cuentas", "Prueba con otra búsqueda o quita los filtros.", "accounts");
 
-        $("ares").querySelectorAll("tr[data-acc]").forEach(tr => tr.onclick = () => openAccount(tr.dataset.acc));
+        $("ares")
+            .querySelectorAll("tr[data-acc]")
+            .forEach(tr => (tr.onclick = () => openAccount(tr.dataset.acc)));
         $("exportA").disabled = !data.items.length;
-        $("exportA").onclick = () => downloadCSV("cuentas-banklite.csv", [
-            ["Cuenta", "ID cliente", "Tipo", "Moneda", "Estado", "Límite diario", "Límite mensual", "Apertura"],
-            ...data.items.map(a => [a.accountNumber, a.idUser, ACC_TYPE[a.accountType] || a.accountType, a.currency, ACC_STATUS[a.status]?.[0], a.dailyLimit, a.monthlyLimit, fdate(a.createdAt, "day")])
-        ]);
+        $("exportA").onclick = () =>
+            downloadCSV("cuentas-banklite.csv", [
+                ["Cuenta", "ID cliente", "Tipo", "Moneda", "Estado", "Límite diario", "Límite mensual", "Apertura"],
+                ...data.items.map(a => [
+                    a.accountNumber,
+                    a.idUser,
+                    ACC_TYPE[a.accountType] || a.accountType,
+                    a.currency,
+                    ACC_STATUS[a.status]?.[0],
+                    a.dailyLimit,
+                    a.monthlyLimit,
+                    fdate(a.createdAt, "day"),
+                ]),
+            ]);
     } catch (err) {
         $("ares").innerHTML = errorBox(err);
     }
@@ -914,15 +1262,19 @@ async function renderAccounts(el) {
 
 function openAccount(id) {
     openDrawer("Detalle de la cuenta", async body => {
-
         let acc;
-        try { acc = await api("GET", `/accounts/admin/accounts/${id}`); } catch (err) { body.innerHTML = errorBox(err); return; }
+        try {
+            acc = await api("GET", `/accounts/admin/accounts/${id}`);
+        } catch (err) {
+            body.innerHTML = errorBox(err);
+            return;
+        }
 
         const [bal, txs, kyc, cards] = await Promise.all([
             tryApi("GET", `/ledger/admin/accounts/${id}/balance`),
             tryApi("GET", "/ledger/admin/transactions" + qs({ accountId: id, limit: 8 })),
             tryApi("GET", `/kyc/admin/records/${acc.idUser}`),
-            tryApi("GET", "/cards/admin/cards" + qs({ accountId: id, limit: 20 }))
+            tryApi("GET", "/cards/admin/cards" + qs({ accountId: id, limit: 20 })),
         ]);
         const canEdit = isAdmin() && acc.status !== "closed";
 
@@ -934,13 +1286,17 @@ function openAccount(id) {
             <div class="card">
                 <div class="actions">${badge(ACC_STATUS, acc.status, blockedBy(acc, true))}</div>
                 ${acc.status === "closed" ? '<div class="alert alert-info" style="margin-top:12px">Cuenta cerrada. No se puede reabrir ni modificar.</div>' : ""}
-                ${canEdit ? `<div class="actions" style="margin-top:14px">
+                ${
+                    canEdit
+                        ? `<div class="actions" style="margin-top:14px">
                     ${acc.status === "active" ? `<button class="btn btn-sm btn-danger" id="aBlock">${svg("lock")} Bloquear</button>` : ""}
                     ${acc.status === "blocked" ? `<button class="btn btn-sm btn-primary" id="aUnblock">${svg("check")} Desbloquear</button>` : ""}
                     ${acc.status === "active" && acc.accountType !== "merchant" ? `<button class="btn btn-sm btn-primary" id="aCredit">${svg("money")} Abonar</button>` : ""}
                     ${acc.status !== "pending" ? '<button class="btn btn-sm" id="aLimits">Cambiar límites</button>' : ""}
                     <button class="btn btn-sm btn-ghost-danger" id="aClose">Cerrar cuenta</button>
-                </div>` : ""}
+                </div>`
+                        : ""
+                }
             </div>
 
             <div class="section-title"><h3>Datos</h3></div>
@@ -960,67 +1316,134 @@ function openAccount(id) {
             ${txs ? moveTable(txs.items, id) : '<div class="card"><p class="muted">Ledger no disponible.</p></div>'}`;
 
         bindMoveRows(body);
-        $("aOwner").onclick = e => { e.preventDefault(); openCustomer(acc.idUser); };
+        $("aOwner").onclick = e => {
+            e.preventDefault();
+            openCustomer(acc.idUser);
+        };
 
-        const setStatus = (status, title, desc, danger) => formModal({
-            title, desc, danger, confirm: "Confirmar", icon: "accounts", fields: [reasonField],
-            onSubmit: async v => {
-                await api("PATCH", `/accounts/admin/accounts/${id}/status`, { status, reason: v.reason });
-                toast("Estado de la cuenta actualizado.");
-                refreshAll();
-            }
-        });
+        const setStatus = (status, title, desc, danger) =>
+            formModal({
+                title,
+                desc,
+                danger,
+                confirm: "Confirmar",
+                icon: "accounts",
+                fields: [reasonField],
+                onSubmit: async v => {
+                    await api("PATCH", `/accounts/admin/accounts/${id}/status`, { status, reason: v.reason });
+                    toast("Estado de la cuenta actualizado.");
+                    refreshAll();
+                },
+            });
 
-        $("aBlock")?.addEventListener("click", () => setStatus("blocked", "Bloquear cuenta",
-            "La cuenta no podrá enviar ni recibir dinero. El titular no podrá desbloquearla desde la app.", true));
+        $("aBlock")?.addEventListener("click", () =>
+            setStatus(
+                "blocked",
+                "Bloquear cuenta",
+                "La cuenta no podrá enviar ni recibir dinero. El titular no podrá desbloquearla desde la app.",
+                true
+            )
+        );
 
-        $("aUnblock")?.addEventListener("click", () => setStatus("active", "Desbloquear cuenta",
-            "La cuenta vuelve a operar con normalidad.", false));
+        $("aUnblock")?.addEventListener("click", () =>
+            setStatus("active", "Desbloquear cuenta", "La cuenta vuelve a operar con normalidad.", false)
+        );
 
-        $("aClose")?.addEventListener("click", () => setStatus("closed", "Cerrar cuenta",
-            `<strong>Es definitivo:</strong> una cuenta cerrada no se puede reabrir ni modificar.${bal ? ` Saldo actual: <strong>${esc(money(bal.balance, acc.currency))}</strong>.` : ""}`, true));
+        $("aClose")?.addEventListener("click", () =>
+            setStatus(
+                "closed",
+                "Cerrar cuenta",
+                `<strong>Es definitivo:</strong> una cuenta cerrada no se puede reabrir ni modificar.${bal ? ` Saldo actual: <strong>${esc(money(bal.balance, acc.currency))}</strong>.` : ""}`,
+                true
+            )
+        );
 
         $("aCredit")?.addEventListener("click", () => {
             // Una clave por formulario: si se reenvía (doble clic, error de red), no se abona dos veces.
             const idempotencyKey = crypto.randomUUID();
             formModal({
-                title: "Abonar a la cuenta", confirm: "Abonar", icon: "money",
+                title: "Abonar a la cuenta",
+                confirm: "Abonar",
+                icon: "money",
                 desc: `Abono a la cuenta <strong class="mono">${esc(acc.accountNumber)}</strong> desde la cuenta de sistema <em>Abonos administrativos</em>. Queda en la auditoría con tu usuario y el motivo; el cliente verá "Abono BankLite: motivo".`,
                 fields: [
-                    { name: "amount", label: `Monto (${acc.currency})`, type: "number", min: 1, step: "0.01", required: true },
-                    { name: "reason", label: "Motivo (obligatorio, lo ve el cliente)", type: "textarea", required: true, max: 120, placeholder: "Ej.: Saldo inicial para la presentación" }
+                    {
+                        name: "amount",
+                        label: `Monto (${acc.currency})`,
+                        type: "number",
+                        min: 1,
+                        step: "0.01",
+                        required: true,
+                    },
+                    {
+                        name: "reason",
+                        label: "Motivo (obligatorio, lo ve el cliente)",
+                        type: "textarea",
+                        required: true,
+                        max: 120,
+                        placeholder: "Ej.: Saldo inicial para la presentación",
+                    },
                 ],
                 onSubmit: async v => {
                     const amount = Number(v.amount);
                     if (!(amount > 0)) throw new Error("Escribe un monto mayor que cero.");
                     if (v.reason.length < 5) throw new Error("El motivo debe tener al menos 5 caracteres.");
-                    await api("POST", "/ledger/admin/credits", { accountNumber: acc.accountNumber, amount, reason: v.reason.slice(0, 120), idempotencyKey });
+                    await api("POST", "/ledger/admin/credits", {
+                        accountNumber: acc.accountNumber,
+                        amount,
+                        reason: v.reason.slice(0, 120),
+                        idempotencyKey,
+                    });
                     toast(`Abono de ${money(amount, acc.currency)} realizado.`);
                     refreshAll();
-                }
+                },
             });
         });
 
-        $("aLimits")?.addEventListener("click", () => formModal({
-            title: "Cambiar límites de transferencia", confirm: "Guardar", icon: "money",
-            desc: "Aplican a las transferencias que el cliente hace desde la app.",
-            fields: [
-                { name: "dailyLimit", label: `Límite diario (${acc.currency})`, type: "number", value: acc.dailyLimit, min: 0, step: "0.01", required: true },
-                { name: "monthlyLimit", label: `Límite mensual (${acc.currency})`, type: "number", value: acc.monthlyLimit, min: 0, step: "0.01", required: true },
-                reasonField
-            ],
-            onSubmit: async v => {
-                const daily = Number(v.dailyLimit), monthly = Number(v.monthlyLimit);
-                if (!(daily >= 0) || !(monthly >= 0)) throw new Error("Los límites deben ser números válidos.");
-                if (daily > monthly) throw new Error("El límite diario no puede ser mayor que el mensual.");
-                await api("PATCH", `/accounts/admin/accounts/${id}/limits`, { dailyLimit: daily, monthlyLimit: monthly, reason: v.reason });
-                toast("Límites actualizados.");
-                refreshAll();
-            }
-        }));
+        $("aLimits")?.addEventListener("click", () =>
+            formModal({
+                title: "Cambiar límites de transferencia",
+                confirm: "Guardar",
+                icon: "money",
+                desc: "Aplican a las transferencias que el cliente hace desde la app.",
+                fields: [
+                    {
+                        name: "dailyLimit",
+                        label: `Límite diario (${acc.currency})`,
+                        type: "number",
+                        value: acc.dailyLimit,
+                        min: 0,
+                        step: "0.01",
+                        required: true,
+                    },
+                    {
+                        name: "monthlyLimit",
+                        label: `Límite mensual (${acc.currency})`,
+                        type: "number",
+                        value: acc.monthlyLimit,
+                        min: 0,
+                        step: "0.01",
+                        required: true,
+                    },
+                    reasonField,
+                ],
+                onSubmit: async v => {
+                    const daily = Number(v.dailyLimit),
+                        monthly = Number(v.monthlyLimit);
+                    if (!(daily >= 0) || !(monthly >= 0)) throw new Error("Los límites deben ser números válidos.");
+                    if (daily > monthly) throw new Error("El límite diario no puede ser mayor que el mensual.");
+                    await api("PATCH", `/accounts/admin/accounts/${id}/limits`, {
+                        dailyLimit: daily,
+                        monthlyLimit: monthly,
+                        reason: v.reason,
+                    });
+                    toast("Límites actualizados.");
+                    refreshAll();
+                },
+            })
+        );
     });
 }
-
 
 // =========================================================
 // 10. MOVIMIENTOS (y reversos)
@@ -1031,9 +1454,10 @@ function moveTable(items, perspective = null) {
     if (!items.length) return emptyBox("Sin movimientos", "No hay movimientos para mostrar.", "movements");
     return `<div class="table-wrap"><table>
         <thead><tr><th>Fecha</th><th>Tipo</th><th>Origen → Destino</th><th>Descripción</th><th class="amount">Monto</th><th></th></tr></thead>
-        <tbody>${items.map(t => {
-            const sign = perspective ? (t.destinationAccountId === perspective ? "+" : "−") : "";
-            return `<tr class="clickable" data-tx="${esc(t.id)}">
+        <tbody>${items
+            .map(t => {
+                const sign = perspective ? (t.destinationAccountId === perspective ? "+" : "−") : "";
+                return `<tr class="clickable" data-tx="${esc(t.id)}">
                 <td style="white-space:nowrap">${fdate(t.createdAt)}</td>
                 <td>${esc(TX[t.type] || t.type)}</td>
                 <td class="mono">${esc(t.sourceAccountNumber || "Sistema")} → ${esc(t.destinationAccountNumber || "—")}</td>
@@ -1041,11 +1465,13 @@ function moveTable(items, perspective = null) {
                 <td class="amount ${sign === "+" ? "in" : ""}">${sign}${money(t.amount, t.currency)}</td>
                 <td>${t.reversed ? '<span class="badge b-info">Reversado</span>' : t.type === "reversal" ? '<span class="badge b-gray">Reverso</span>' : ""}</td>
             </tr>`;
-        }).join("")}
+            })
+            .join("")}
         </tbody></table></div>`;
 }
 
-const bindMoveRows = root => root.querySelectorAll("tr[data-tx]").forEach(tr => tr.onclick = () => openTransaction(tr.dataset.tx));
+const bindMoveRows = root =>
+    root.querySelectorAll("tr[data-tx]").forEach(tr => (tr.onclick = () => openTransaction(tr.dataset.tx)));
 
 const moveFilters = { account: "", accountId: "", type: "", from: "", to: "", page: 1 };
 
@@ -1061,13 +1487,20 @@ async function resolveAccountId(value) {
 }
 
 async function renderMovements(el) {
-
     const f = moveFilters;
 
-    el.innerHTML = pageHead("Movimientos", "Todas las transacciones del ledger (doble partida).", `<button class="btn btn-sm" id="exportM" disabled>${svg("download")} Exportar</button>`) + `
+    el.innerHTML =
+        pageHead(
+            "Movimientos",
+            "Todas las transacciones del ledger (doble partida).",
+            `<button class="btn btn-sm" id="exportM" disabled>${svg("download")} Exportar</button>`
+        ) +
+        `
         <form class="filters" id="mf">
             <div class="grow"><label for="mq">Cuenta</label><div class="search-input">${svg("search")}<input id="mq" value="${esc(f.account)}" placeholder="Opcional: número o ID de la cuenta"></div></div>
-            <div><label for="mt">Tipo</label><select id="mt"><option value="">Todos</option>${Object.entries(TX).map(([k, t]) => `<option value="${k}" ${f.type === k ? "selected" : ""}>${t}</option>`).join("")}</select></div>
+            <div><label for="mt">Tipo</label><select id="mt"><option value="">Todos</option>${Object.entries(TX)
+                .map(([k, t]) => `<option value="${k}" ${f.type === k ? "selected" : ""}>${t}</option>`)
+                .join("")}</select></div>
             <div><label for="mfrom">Desde</label><input type="date" id="mfrom" value="${esc(f.from)}"></div>
             <div><label for="mto">Hasta</label><input type="date" id="mto" value="${esc(f.to)}"></div>
             <button class="btn btn-primary" type="submit">Filtrar</button>
@@ -1077,34 +1510,70 @@ async function renderMovements(el) {
 
     $("mf").onsubmit = e => {
         e.preventDefault();
-        Object.assign(f, { account: $("mq").value.trim(), accountId: null, type: $("mt").value, from: $("mfrom").value, to: $("mto").value, page: 1 });
+        Object.assign(f, {
+            account: $("mq").value.trim(),
+            accountId: null,
+            type: $("mt").value,
+            from: $("mfrom").value,
+            to: $("mto").value,
+            page: 1,
+        });
         renderMovements(el);
     };
-    $("mclear")?.addEventListener("click", () => { Object.assign(f, { account: "", accountId: "", type: "", from: "", to: "", page: 1 }); renderMovements(el); });
+    $("mclear")?.addEventListener("click", () => {
+        Object.assign(f, { account: "", accountId: "", type: "", from: "", to: "", page: 1 });
+        renderMovements(el);
+    });
 
     try {
         if (f.accountId === null || (f.account && !f.accountId)) f.accountId = await resolveAccountId(f.account);
         // "Hasta" incluye todo ese día (hora de Colombia).
         const from = f.from ? new Date(f.from + "T00:00:00-05:00").toISOString() : "";
         const to = f.to ? new Date(new Date(f.to + "T00:00:00-05:00").getTime() + 86400000).toISOString() : "";
-        const data = await api("GET", "/ledger/admin/transactions" + qs({ accountId: f.accountId, type: f.type, from, to, page: f.page, limit: 25 }));
+        const data = await api(
+            "GET",
+            "/ledger/admin/transactions" +
+                qs({ accountId: f.accountId, type: f.type, from, to, page: f.page, limit: 25 })
+        );
 
-        const ins = f.accountId ? data.items.filter(t => t.destinationAccountId === f.accountId).reduce((s, t) => s + t.amount, 0) : 0;
-        const outs = f.accountId ? data.items.filter(t => t.sourceAccountId === f.accountId).reduce((s, t) => s + t.amount, 0) : 0;
+        const ins = f.accountId
+            ? data.items.filter(t => t.destinationAccountId === f.accountId).reduce((s, t) => s + t.amount, 0)
+            : 0;
+        const outs = f.accountId
+            ? data.items.filter(t => t.sourceAccountId === f.accountId).reduce((s, t) => s + t.amount, 0)
+            : 0;
 
         $("mres").innerHTML = `
             <div class="chips">
                 <span class="chip">Movimientos <b>${data.total}</b></span>
                 ${f.accountId ? `<span class="chip">Entradas (esta página) <b style="color:var(--good)">+${money(ins)}</b></span><span class="chip">Salidas (esta página) <b>−${money(outs)}</b></span>` : ""}
             </div>
-            ${moveTable(data.items, f.accountId || null)}${data.items.length ? pager(data, p => { f.page = p; renderMovements(el); }) : ""}`;
+            ${moveTable(data.items, f.accountId || null)}${
+                data.items.length
+                    ? pager(data, p => {
+                          f.page = p;
+                          renderMovements(el);
+                      })
+                    : ""
+            }`;
 
         bindMoveRows($("mres"));
         $("exportM").disabled = !data.items.length;
-        $("exportM").onclick = () => downloadCSV("movimientos-banklite.csv", [
-            ["Fecha", "Tipo", "Cuenta origen", "Cuenta destino", "Descripción", "Monto", "Moneda", "ID", "Estado"],
-            ...data.items.map(t => [fdate(t.createdAt), TX[t.type] || t.type, t.sourceAccountNumber || "Sistema", t.destinationAccountNumber, t.description, t.amount, t.currency, t.id, t.reversed ? "Reversado" : ""])
-        ]);
+        $("exportM").onclick = () =>
+            downloadCSV("movimientos-banklite.csv", [
+                ["Fecha", "Tipo", "Cuenta origen", "Cuenta destino", "Descripción", "Monto", "Moneda", "ID", "Estado"],
+                ...data.items.map(t => [
+                    fdate(t.createdAt),
+                    TX[t.type] || t.type,
+                    t.sourceAccountNumber || "Sistema",
+                    t.destinationAccountNumber,
+                    t.description,
+                    t.amount,
+                    t.currency,
+                    t.id,
+                    t.reversed ? "Reversado" : "",
+                ]),
+            ]);
     } catch (err) {
         $("mres").innerHTML = errorBox(err);
     }
@@ -1112,9 +1581,13 @@ async function renderMovements(el) {
 
 function openTransaction(id) {
     openDrawer("Detalle del movimiento", async body => {
-
         let t;
-        try { t = await api("GET", `/ledger/admin/transactions/${id}`); } catch (err) { body.innerHTML = errorBox(err); return; }
+        try {
+            t = await api("GET", `/ledger/admin/transactions/${id}`);
+        } catch (err) {
+            body.innerHTML = errorBox(err);
+            return;
+        }
         const canReverse = isAdmin() && t.type !== "reversal" && !t.reversal && t.sourceAccountId;
         const entries = t.entries || [];
 
@@ -1141,32 +1614,40 @@ function openTransaction(id) {
             <div class="table-wrap"><table class="mini-table">
                 <thead><tr><th>Cuenta</th><th class="amount">Débito / crédito</th></tr></thead>
                 <tbody>${entries.map(e => `<tr><td class="mono">${esc(e.accountId)}</td><td class="amount ${e.amount >= 0 ? "in" : ""}">${e.amount >= 0 ? "+" : ""}${money(e.amount, e.currency)}</td></tr>`).join("")}
-                    <tr><td><strong>Total (debe ser 0)</strong></td><td class="amount"><strong>${money(entries.reduce((a, e) => a + Number(e.amount), 0), t.currency)}</strong></td></tr>
+                    <tr><td><strong>Total (debe ser 0)</strong></td><td class="amount"><strong>${money(
+                        entries.reduce((a, e) => a + Number(e.amount), 0),
+                        t.currency
+                    )}</strong></td></tr>
                 </tbody>
             </table></div>`;
 
-        $("tOrig")?.addEventListener("click", e => { e.preventDefault(); openTransaction(t.reversedTransactionId); });
+        $("tOrig")?.addEventListener("click", e => {
+            e.preventDefault();
+            openTransaction(t.reversedTransactionId);
+        });
 
-        $("tRev")?.addEventListener("click", () => formModal({
-            title: "Reversar movimiento", danger: true, confirm: "Reversar",
-            desc: `Se devolverán <strong>${esc(money(t.amount, t.currency))}</strong> a la cuenta de origen con asientos contrarios. Solo se puede hacer una vez, y falla si el destinatario ya no tiene ese saldo.`,
-            fields: [{ ...reasonField, label: "Motivo (máx. 120 caracteres, queda en la auditoría)", max: 120 }],
-            onSubmit: async v => {
-                await api("POST", `/ledger/admin/transactions/${id}/reversal`, { reason: v.reason.slice(0, 120) });
-                toast("Movimiento reversado.");
-                refreshAll();
-            }
-        }));
+        $("tRev")?.addEventListener("click", () =>
+            formModal({
+                title: "Reversar movimiento",
+                danger: true,
+                confirm: "Reversar",
+                desc: `Se devolverán <strong>${esc(money(t.amount, t.currency))}</strong> a la cuenta de origen con asientos contrarios. Solo se puede hacer una vez, y falla si el destinatario ya no tiene ese saldo.`,
+                fields: [{ ...reasonField, label: "Motivo (máx. 120 caracteres, queda en la auditoría)", max: 120 }],
+                onSubmit: async v => {
+                    await api("POST", `/ledger/admin/transactions/${id}/reversal`, { reason: v.reason.slice(0, 120) });
+                    toast("Movimiento reversado.");
+                    refreshAll();
+                },
+            })
+        );
     });
 }
-
 
 // =========================================================
 // 11. MONITOREO
 // =========================================================
 
 async function renderMonitoring(el) {
-
     el.innerHTML = loadingBox;
 
     const [h, authOb, kycOb, recon, accDlq, notDlq, fraudDlq, compDlq, failed, pending] = await Promise.all([
@@ -1179,40 +1660,63 @@ async function renderMonitoring(el) {
         tryApi("GET", "/fraud/admin/dlq"),
         tryApi("GET", "/compliance/admin/dlq"),
         tryApi("GET", "/notifications/admin/notifications" + qs({ status: "failed", limit: 20 })),
-        tryApi("GET", "/notifications/admin/notifications" + qs({ status: "pending", channel: "email", limit: 20 }))
+        tryApi("GET", "/notifications/admin/notifications" + qs({ status: "pending", channel: "email", limit: 20 })),
     ]);
 
     const services = h?.services || [];
     const upList = services.filter(s => s.status === "ok");
-    const avgLatency = upList.length ? Math.round(upList.reduce((a, s) => a + (Number(s.latencyMs) || 0), 0) / upList.length) : null;
+    const avgLatency = upList.length
+        ? Math.round(upList.reduce((a, s) => a + (Number(s.latencyMs) || 0), 0) / upList.length)
+        : null;
     const outboxTotal = (authOb?.pending || 0) + (kycOb?.pending || 0) + (recon?.pendingEvents?.count || 0);
 
-    const outboxRow = (name, ob) => ob
-        ? `<tr><td class="mono">${name}</td><td>${esc(ob.pending)}</td><td>${esc(ob.failing ?? "—")}</td><td>${fdate(ob.oldestPending)}</td><td>${ob.brokerConnected === false ? '<span class="badge b-bad">Sin RabbitMQ</span>' : '<span class="badge b-good">Conectado</span>'}</td></tr>`
-        : `<tr><td class="mono">${name}</td><td colspan="4" class="muted">No disponible</td></tr>`;
+    const outboxRow = (name, ob) =>
+        ob
+            ? `<tr><td class="mono">${name}</td><td>${esc(ob.pending)}</td><td>${esc(ob.failing ?? "—")}</td><td>${fdate(ob.oldestPending)}</td><td>${ob.brokerConnected === false ? '<span class="badge b-bad">Sin RabbitMQ</span>' : '<span class="badge b-good">Conectado</span>'}</td></tr>`
+            : `<tr><td class="mono">${name}</td><td colspan="4" class="muted">No disponible</td></tr>`;
 
     const dlqCard = (name, path, d) => `
         <div class="card">
             <div class="card-head"><div><h3>${esc(name)}</h3><p class="mono">${esc(d?.queue || path + ".events")}</p></div>${d?.connected ? (d.deadLetters ? `<span class="badge b-bad">${d.deadLetters} en DLQ</span>` : '<span class="badge b-good">Vacía</span>') : '<span class="badge b-gray">Sin conexión</span>'}</div>
-            ${d?.connected ? `
+            ${
+                d?.connected
+                    ? `
                 <dl class="kv"><dt>Por procesar</dt><dd>${esc(d.ready)}</dd><dt>Consumidores</dt><dd>${esc(d.consumers)}</dd><dt>Esperando reintento</dt><dd>${esc(d.waitingRetry)}</dd><dt>Mensajes muertos</dt><dd style="color:${d.deadLetters ? "var(--bad)" : "inherit"}">${esc(d.deadLetters)}</dd></dl>
                 <div class="actions" style="margin-top:12px">${d.deadLetters ? `<button class="btn btn-sm" data-peek="${path}">Ver mensajes</button>${isAdmin() ? `<button class="btn btn-sm btn-primary" data-requeue="${path}">Reprocesar</button>` : ""}` : '<span class="muted" style="font-size:.8rem">Sin mensajes muertos.</span>'}</div>
                 <div data-peekout="${path}"></div>`
-                : '<p class="muted">El consumidor no está conectado a RabbitMQ.</p>'}
+                    : '<p class="muted">El consumidor no está conectado a RabbitMQ.</p>'
+            }
         </div>`;
 
-    const notifTable = list => list?.items?.length ? `<div class="table-wrap"><table>
+    const notifTable = list =>
+        list?.items?.length
+            ? `<div class="table-wrap"><table>
         <thead><tr><th>Notificación</th><th>Cliente</th><th>Intentos</th><th>Último error</th><th>Fecha</th><th></th></tr></thead>
-        <tbody>${list.items.map(n => `
+        <tbody>${list.items
+            .map(
+                n => `
             <tr><td><strong>${esc(n.title)}</strong><div class="muted mono" style="font-size:.72rem">${esc(n.event)}</div></td>
             <td class="mono">${short(n.idUser)}</td>
             <td>${esc(n.deliveryAttempts ?? 0)}</td>
             <td style="color:var(--bad)">${esc(n.lastError || "—")}${n.nextAttemptAt ? `<div class="muted">Próximo: ${fdate(n.nextAttemptAt)}</div>` : ""}</td>
             <td>${fdate(n.createdAt)}</td>
-            <td><button class="btn btn-sm" data-retry="${esc(n.id)}">Reintentar</button></td></tr>`).join("")}
-        </tbody></table></div>` : emptyBox(list ? "Ninguno" : "No disponible", list ? "No hay correos en este estado." : "notification-service no respondió.", "mail");
+            <td><button class="btn btn-sm" data-retry="${esc(n.id)}">Reintentar</button></td></tr>`
+            )
+            .join("")}
+        </tbody></table></div>`
+            : emptyBox(
+                  list ? "Ninguno" : "No disponible",
+                  list ? "No hay correos en este estado." : "notification-service no respondió.",
+                  "mail"
+              );
 
-    el.innerHTML = pageHead("Monitoreo", "Salud técnica: servicios, eventos, colas y correos. Valores del momento de la consulta.", `<button class="btn btn-sm" id="refresh">${svg("refresh")} Actualizar</button>`) + `
+    el.innerHTML =
+        pageHead(
+            "Monitoreo",
+            "Salud técnica: servicios, eventos, colas y correos. Valores del momento de la consulta.",
+            `<button class="btn btn-sm" id="refresh">${svg("refresh")} Actualizar</button>`
+        ) +
+        `
 
         <div class="grid g4">
             <div class="card stat"><div class="stat-top"><span class="label">Servicios en línea</span><span class="stat-icon">${svg("server")}</span></div><div class="value" style="color:${h && upList.length === services.length ? "var(--good)" : "var(--bad)"}">${h ? `${upList.length}/${services.length}` : "—"}</div><div class="sub">${h ? (upList.length === services.length ? "Todo operativo" : `${services.length - upList.length} caído(s)`) : "Gateway sin respuesta"}</div></div>
@@ -1236,13 +1740,17 @@ async function renderMonitoring(el) {
                         ${recon ? `<tr><td class="mono">ledger-service</td><td>${esc(recon.pendingEvents.count)}</td><td>—</td><td>${fdate(recon.pendingEvents.oldest)}</td><td>—</td></tr>` : '<tr><td class="mono">ledger-service</td><td colspan="4" class="muted">No disponible</td></tr>'}
                     </tbody>
                 </table></div>
-                ${recon?.systemAccounts?.length ? `
+                ${
+                    recon?.systemAccounts?.length
+                        ? `
                     <h3 style="margin-top:18px;font-size:.92rem">Cuentas del sistema (contrapartidas)</h3>
                     <div class="table-wrap" style="margin-top:10px;box-shadow:none"><table class="mini-table">
                         <thead><tr><th>Cuenta</th><th>ID</th><th class="amount">Saldo</th></tr></thead>
                         <tbody>${recon.systemAccounts.map(a => `<tr><td>${esc(a.name)}</td><td class="mono">${short(a.accountId)}</td><td class="amount">${money(a.balance, a.currency)}</td></tr>`).join("")}</tbody>
                     </table></div>
-                    <p class="muted" style="margin-top:6px;font-size:.78rem">Un saldo negativo es el dinero que entró a clientes por esa vía.</p>` : ""}
+                    <p class="muted" style="margin-top:6px;font-size:.78rem">Un saldo negativo es el dinero que entró a clientes por esa vía.</p>`
+                        : ""
+                }
             </div>
             <div class="grid" style="gap:16px">
                 ${dlqCard("account-service", "accounts", accDlq)}
@@ -1258,45 +1766,70 @@ async function renderMonitoring(el) {
         <div class="section-title" style="margin:22px 0 12px"><h3>Correos en reintento automático</h3></div>
         ${notifTable(pending)}`;
 
-    $("refresh").onclick = () => { renderMonitoring(el); toast("Monitoreo actualizado."); };
+    $("refresh").onclick = () => {
+        renderMonitoring(el);
+        toast("Monitoreo actualizado.");
+    };
 
-    el.querySelectorAll("[data-peek]").forEach(b => b.onclick = async () => {
-        const out = el.querySelector(`[data-peekout="${b.dataset.peek}"]`);
-        out.innerHTML = loadingBox;
-        try {
-            const msgs = await api("GET", `/${b.dataset.peek}/admin/dlq/messages`);
-            out.innerHTML = msgs.map(m => `<p style="margin-top:12px;font-size:.8rem"><strong>${esc(m.routingKey)}</strong> · ${esc(m.attempts)} intento(s) · <span style="color:var(--bad)">${esc(m.lastError || "")}</span></p><pre class="json">${esc(JSON.stringify(m.message, null, 2))}</pre>`).join("") || '<p class="muted">Vacía.</p>';
-        } catch (err) {
-            out.innerHTML = `<p style="color:var(--bad);margin-top:10px">${esc(err.message)}</p>`;
-        }
-    });
+    el.querySelectorAll("[data-peek]").forEach(
+        b =>
+            (b.onclick = async () => {
+                const out = el.querySelector(`[data-peekout="${b.dataset.peek}"]`);
+                out.innerHTML = loadingBox;
+                try {
+                    const msgs = await api("GET", `/${b.dataset.peek}/admin/dlq/messages`);
+                    out.innerHTML =
+                        msgs
+                            .map(
+                                m =>
+                                    `<p style="margin-top:12px;font-size:.8rem"><strong>${esc(m.routingKey)}</strong> · ${esc(m.attempts)} intento(s) · <span style="color:var(--bad)">${esc(m.lastError || "")}</span></p><pre class="json">${esc(JSON.stringify(m.message, null, 2))}</pre>`
+                            )
+                            .join("") || '<p class="muted">Vacía.</p>';
+                } catch (err) {
+                    out.innerHTML = `<p style="color:var(--bad);margin-top:10px">${esc(err.message)}</p>`;
+                }
+            })
+    );
 
-    el.querySelectorAll("[data-requeue]").forEach(b => b.onclick = () => formModal({
-        title: "Reprocesar mensajes de la DLQ", confirm: "Reprocesar", icon: "refresh",
-        desc: "Se devuelven a la cola principal (hasta 100) con el contador de intentos en cero. Hazlo después de corregir la causa del fallo.",
-        fields: [],
-        onSubmit: async () => {
-            const r = await api("POST", `/${b.dataset.requeue}/admin/dlq/requeue`);
-            toast(`${r.moved} mensaje(s) devueltos a la cola.`);
-            refreshAll();
-        }
-    }));
+    el.querySelectorAll("[data-requeue]").forEach(
+        b =>
+            (b.onclick = () =>
+                formModal({
+                    title: "Reprocesar mensajes de la DLQ",
+                    confirm: "Reprocesar",
+                    icon: "refresh",
+                    desc: "Se devuelven a la cola principal (hasta 100) con el contador de intentos en cero. Hazlo después de corregir la causa del fallo.",
+                    fields: [],
+                    onSubmit: async () => {
+                        const r = await api("POST", `/${b.dataset.requeue}/admin/dlq/requeue`);
+                        toast(`${r.moved} mensaje(s) devueltos a la cola.`);
+                        refreshAll();
+                    },
+                }))
+    );
 
-    el.querySelectorAll("[data-retry]").forEach(b => b.onclick = async () => {
-        b.disabled = true;
-        b.innerHTML = '<span class="spin"></span>';
-        try {
-            const r = await api("POST", `/notifications/admin/notifications/${b.dataset.retry}/retry`);
-            toast(r.status === "sent" ? "Correo enviado." : "El envío volvió a fallar; quedó programado para reintento.", r.status !== "sent");
-            refreshAll();
-        } catch (err) {
-            toast(err.message, true);
-            b.disabled = false;
-            b.textContent = "Reintentar";
-        }
-    });
+    el.querySelectorAll("[data-retry]").forEach(
+        b =>
+            (b.onclick = async () => {
+                b.disabled = true;
+                b.innerHTML = '<span class="spin"></span>';
+                try {
+                    const r = await api("POST", `/notifications/admin/notifications/${b.dataset.retry}/retry`);
+                    toast(
+                        r.status === "sent"
+                            ? "Correo enviado."
+                            : "El envío volvió a fallar; quedó programado para reintento.",
+                        r.status !== "sent"
+                    );
+                    refreshAll();
+                } catch (err) {
+                    toast(err.message, true);
+                    b.disabled = false;
+                    b.textContent = "Reintentar";
+                }
+            })
+    );
 }
-
 
 // =========================================================
 // 12. EMPLEADOS (solo administradores)
@@ -1306,20 +1839,32 @@ const PASSWORD_RULE = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{12,}$/;
 const PASSWORD_MESSAGE = "La contraseña debe tener 12 o más caracteres, con mayúsculas, minúsculas y números.";
 
 async function renderStaff(el) {
-
     el.innerHTML = loadingBox;
 
     let list;
-    try { list = await api("GET", "/auth/admin/staff"); } catch (err) { el.innerHTML = errorBox(err); return; }
+    try {
+        list = await api("GET", "/auth/admin/staff");
+    } catch (err) {
+        el.innerHTML = errorBox(err);
+        return;
+    }
 
-    el.innerHTML = pageHead("Empleados", "Quién puede entrar al panel y con qué permisos.", `<button class="btn btn-primary btn-sm" id="sNew">${svg("plus")} Nuevo empleado</button>`) + `
+    el.innerHTML =
+        pageHead(
+            "Empleados",
+            "Quién puede entrar al panel y con qué permisos.",
+            `<button class="btn btn-primary btn-sm" id="sNew">${svg("plus")} Nuevo empleado</button>`
+        ) +
+        `
         <div class="perm-card">
             <div class="perm"><strong><span class="badge b-gray">Soporte</span></strong><ul><li>Consulta clientes, cuentas y movimientos</li><li>Ve el monitoreo y reintenta correos</li><li>Exporta reportes</li></ul></div>
             <div class="perm"><strong><span class="badge b-info">Administrador</span></strong><ul><li>Todo lo de soporte</li><li>Suspende clientes, bloquea o cierra cuentas, abona y cambia límites</li><li>Reversa movimientos, reprocesa colas y gestiona empleados</li></ul></div>
         </div>
         <div class="table-wrap"><table>
             <thead><tr><th>Empleado</th><th>Rol</th><th>Estado</th><th>Último ingreso</th><th>Creado</th><th></th></tr></thead>
-            <tbody>${list.map(s => `
+            <tbody>${list
+                .map(
+                    s => `
                 <tr>
                     <td>${who(s.nombre, "@" + esc(s.username))}</td>
                     <td>${s.role === "admin" ? '<span class="badge b-info">Administrador</span>' : '<span class="badge b-gray">Soporte</span>'}</td>
@@ -1327,52 +1872,103 @@ async function renderStaff(el) {
                     <td>${fdate(s.lastLoginAt)}</td>
                     <td>${fdate(s.createdAt, "day")}</td>
                     <td>${s.id === ME.id ? '<span class="muted">Tú</span>' : `<button class="btn btn-sm" data-edit="${esc(s.id)}">Editar</button>`}</td>
-                </tr>`).join("")}
+                </tr>`
+                )
+                .join("")}
             </tbody>
         </table></div>`;
 
-    $("sNew").onclick = () => formModal({
-        title: "Nuevo empleado", confirm: "Crear", icon: "user",
-        desc: "Comparte la contraseña inicial por un canal seguro.",
-        fields: [
-            { name: "nombre", label: "Nombre completo", required: true },
-            { name: "username", label: "Usuario (minúsculas, números, . _ -)", required: true, placeholder: "ej.: laura.gomez" },
-            { name: "password", label: "Contraseña inicial (12+ caracteres, mayúsculas, minúsculas y números)", type: "password", required: true },
-            { name: "role", label: "Rol", type: "select", value: "support", options: [["support", "Soporte"], ["admin", "Administrador"]] }
-        ],
-        onSubmit: async v => {
-            const username = v.username.toLowerCase();
-            if (!/^[a-z0-9._-]{3,40}$/.test(username)) throw new Error("El usuario solo admite minúsculas, números, punto, guion y guion bajo (3 a 40).");
-            if (!PASSWORD_RULE.test(v.password)) throw new Error(PASSWORD_MESSAGE);
-            await api("POST", "/auth/admin/staff", { ...v, username });
-            toast("Empleado creado.");
-            refreshAll();
-        }
-    });
-
-    el.querySelectorAll("[data-edit]").forEach(b => b.onclick = () => {
-        const s = list.find(x => x.id === b.dataset.edit);
+    $("sNew").onclick = () =>
         formModal({
-            title: `Editar a ${s.nombre}`, confirm: "Guardar", icon: "user",
+            title: "Nuevo empleado",
+            confirm: "Crear",
+            icon: "user",
+            desc: "Comparte la contraseña inicial por un canal seguro.",
             fields: [
-                { name: "role", label: "Rol", type: "select", value: s.role, options: [["support", "Soporte"], ["admin", "Administrador"]] },
-                { name: "active", label: "Estado", type: "select", value: String(s.active), options: [["true", "Activo"], ["false", "Desactivado"]] },
-                { name: "password", label: "Nueva contraseña (opcional; también lo desbloquea)", type: "password" }
+                { name: "nombre", label: "Nombre completo", required: true },
+                {
+                    name: "username",
+                    label: "Usuario (minúsculas, números, . _ -)",
+                    required: true,
+                    placeholder: "ej.: laura.gomez",
+                },
+                {
+                    name: "password",
+                    label: "Contraseña inicial (12+ caracteres, mayúsculas, minúsculas y números)",
+                    type: "password",
+                    required: true,
+                },
+                {
+                    name: "role",
+                    label: "Rol",
+                    type: "select",
+                    value: "support",
+                    options: [
+                        ["support", "Soporte"],
+                        ["admin", "Administrador"],
+                    ],
+                },
             ],
             onSubmit: async v => {
-                const changes = { role: v.role, active: v.active === "true" };
-                if (v.password) {
-                    if (!PASSWORD_RULE.test(v.password)) throw new Error(PASSWORD_MESSAGE);
-                    changes.password = v.password;
-                }
-                await api("PATCH", `/auth/admin/staff/${s.id}`, changes);
-                toast("Empleado actualizado.");
+                const username = v.username.toLowerCase();
+                if (!/^[a-z0-9._-]{3,40}$/.test(username))
+                    throw new Error("El usuario solo admite minúsculas, números, punto, guion y guion bajo (3 a 40).");
+                if (!PASSWORD_RULE.test(v.password)) throw new Error(PASSWORD_MESSAGE);
+                await api("POST", "/auth/admin/staff", { ...v, username });
+                toast("Empleado creado.");
                 refreshAll();
-            }
+            },
         });
-    });
-}
 
+    el.querySelectorAll("[data-edit]").forEach(
+        b =>
+            (b.onclick = () => {
+                const s = list.find(x => x.id === b.dataset.edit);
+                formModal({
+                    title: `Editar a ${s.nombre}`,
+                    confirm: "Guardar",
+                    icon: "user",
+                    fields: [
+                        {
+                            name: "role",
+                            label: "Rol",
+                            type: "select",
+                            value: s.role,
+                            options: [
+                                ["support", "Soporte"],
+                                ["admin", "Administrador"],
+                            ],
+                        },
+                        {
+                            name: "active",
+                            label: "Estado",
+                            type: "select",
+                            value: String(s.active),
+                            options: [
+                                ["true", "Activo"],
+                                ["false", "Desactivado"],
+                            ],
+                        },
+                        {
+                            name: "password",
+                            label: "Nueva contraseña (opcional; también lo desbloquea)",
+                            type: "password",
+                        },
+                    ],
+                    onSubmit: async v => {
+                        const changes = { role: v.role, active: v.active === "true" };
+                        if (v.password) {
+                            if (!PASSWORD_RULE.test(v.password)) throw new Error(PASSWORD_MESSAGE);
+                            changes.password = v.password;
+                        }
+                        await api("PATCH", `/auth/admin/staff/${s.id}`, changes);
+                        toast("Empleado actualizado.");
+                        refreshAll();
+                    },
+                });
+            })
+    );
+}
 
 // =========================================================
 // 13. AUDITORÍA
@@ -1385,29 +1981,45 @@ const AUDIT_SOURCES = [
     ["ledger", "/ledger/admin/audit"],
     ["notifications", "/notifications/admin/audit"],
     ["fraud", "/fraud/admin/audit"],
-    ["compliance", "/compliance/admin/audit"]
+    ["compliance", "/compliance/admin/audit"],
 ];
 
 async function loadAudit({ q = "", limit = 100 } = {}) {
-    const results = await Promise.all(AUDIT_SOURCES.map(([svc, path]) =>
-        tryApi("GET", path + qs({ q, limit })).then(r => ({ svc, ok: !!r, items: (r?.items || []).map(i => ({ ...i, svc })) }))));
+    const results = await Promise.all(
+        AUDIT_SOURCES.map(([svc, path]) =>
+            tryApi("GET", path + qs({ q, limit })).then(r => ({
+                svc,
+                ok: !!r,
+                items: (r?.items || []).map(i => ({ ...i, svc })),
+            }))
+        )
+    );
     return {
         items: results.flatMap(r => r.items).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)),
-        failed: results.filter(r => !r.ok).map(r => r.svc)
+        failed: results.filter(r => !r.ok).map(r => r.svc),
     };
 }
 
 const auditFilters = { q: "", staff: "", action: "", hideLogins: true, page: 1 };
 
 async function renderAudit(el) {
-
     const f = auditFilters;
 
-    el.innerHTML = pageHead("Auditoría", "Cada acción de un empleado, registrada por el microservicio que la ejecutó.", `<button class="btn btn-sm" id="exportAu" disabled>${svg("download")} Exportar</button>`) + `
+    el.innerHTML =
+        pageHead(
+            "Auditoría",
+            "Cada acción de un empleado, registrada por el microservicio que la ejecutó.",
+            `<button class="btn btn-sm" id="exportAu" disabled>${svg("download")} Exportar</button>`
+        ) +
+        `
         <form class="filters" id="auf">
             <div class="grow"><label for="auq">ID afectado</label><div class="search-input">${svg("search")}<input id="auq" value="${esc(f.q)}" placeholder="Cliente, cuenta, transacción…"></div></div>
             <div><label for="aus">Empleado</label><select id="aus"><option value="">Todos</option></select></div>
-            <div><label for="aua">Acción</label><select id="aua"><option value="">Todas</option>${Object.entries(ACTIONS).map(([k, t]) => `<option value="${k}" ${f.action === k ? "selected" : ""}>${esc(t)}</option>`).join("")}</select></div>
+            <div><label for="aua">Acción</label><select id="aua"><option value="">Todas</option>${Object.entries(
+                ACTIONS
+            )
+                .map(([k, t]) => `<option value="${k}" ${f.action === k ? "selected" : ""}>${esc(t)}</option>`)
+                .join("")}</select></div>
             <div><label for="aul">Ingresos al panel</label><select id="aul"><option value="1" ${f.hideLogins ? "selected" : ""}>Ocultar</option><option value="0" ${!f.hideLogins ? "selected" : ""}>Mostrar</option></select></div>
             <button class="btn btn-primary" type="submit">Filtrar</button>
         </form>
@@ -1415,27 +2027,40 @@ async function renderAudit(el) {
 
     $("auf").onsubmit = e => {
         e.preventDefault();
-        Object.assign(f, { q: $("auq").value.trim(), staff: $("aus").value, action: $("aua").value, hideLogins: $("aul").value === "1", page: 1 });
+        Object.assign(f, {
+            q: $("auq").value.trim(),
+            staff: $("aus").value,
+            action: $("aua").value,
+            hideLogins: $("aul").value === "1",
+            page: 1,
+        });
         renderAudit(el);
     };
 
     const { items: all, failed } = await loadAudit({ q: f.q, limit: 200 });
     const staffNames = [...new Set(all.map(a => a.staffUsername))].sort();
-    $("aus").innerHTML = `<option value="">Todos</option>${staffNames.map(n => `<option value="${esc(n)}" ${f.staff === n ? "selected" : ""}>@${esc(n)}</option>`).join("")}`;
+    $("aus").innerHTML =
+        `<option value="">Todos</option>${staffNames.map(n => `<option value="${esc(n)}" ${f.staff === n ? "selected" : ""}>@${esc(n)}</option>`).join("")}`;
 
-    const list = all.filter(a =>
-        (!f.hideLogins || a.action !== "staff.login")
-        && (!f.staff || a.staffUsername === f.staff)
-        && (!f.action || a.action === f.action));
+    const list = all.filter(
+        a =>
+            (!f.hideLogins || a.action !== "staff.login") &&
+            (!f.staff || a.staffUsername === f.staff) &&
+            (!f.action || a.action === f.action)
+    );
 
     const size = 20;
     const pageList = list.slice((f.page - 1) * size, f.page * size);
 
     $("aures").innerHTML = `
         ${failed.length ? `<div class="alert alert-warn" style="margin-bottom:12px">No respondió la auditoría de: ${esc(failed.join(", "))}.</div>` : ""}
-        ${pageList.length ? `<div class="table-wrap"><table>
+        ${
+            pageList.length
+                ? `<div class="table-wrap"><table>
             <thead><tr><th>Fecha</th><th>Empleado</th><th>Acción</th><th>Afectado</th><th>Motivo</th><th>Servicio</th></tr></thead>
-            <tbody>${pageList.map(a => `
+            <tbody>${pageList
+                .map(
+                    a => `
                 <tr>
                     <td style="white-space:nowrap">${fdate(a.createdAt)}</td>
                     <td>${who(a.staffUsername, "@" + esc(a.staffUsername))}</td>
@@ -1443,17 +2068,31 @@ async function renderAudit(el) {
                     <td class="mono">${esc(a.targetType || "")} ${short(a.targetId)}</td>
                     <td>${esc(a.reason || "—")}</td>
                     <td><span class="badge b-gray">${esc(a.svc)}</span></td>
-                </tr>`).join("")}
-            </tbody></table></div>${pager({ total: list.length, page: f.page, limit: size }, p => { f.page = p; renderAudit(el); })}`
-            : emptyBox("Sin registros", "Las acciones de los empleados aparecerán aquí.", "audit")}`;
+                </tr>`
+                )
+                .join("")}
+            </tbody></table></div>${pager({ total: list.length, page: f.page, limit: size }, p => {
+                f.page = p;
+                renderAudit(el);
+            })}`
+                : emptyBox("Sin registros", "Las acciones de los empleados aparecerán aquí.", "audit")
+        }`;
 
     $("exportAu").disabled = !list.length;
-    $("exportAu").onclick = () => downloadCSV("auditoria-banklite.csv", [
-        ["Fecha", "Empleado", "Acción", "Tipo", "ID afectado", "Motivo", "Servicio"],
-        ...list.map(a => [fdate(a.createdAt), a.staffUsername, ACTIONS[a.action] || a.action, a.targetType, a.targetId, a.reason, a.svc])
-    ]);
+    $("exportAu").onclick = () =>
+        downloadCSV("auditoria-banklite.csv", [
+            ["Fecha", "Empleado", "Acción", "Tipo", "ID afectado", "Motivo", "Servicio"],
+            ...list.map(a => [
+                fdate(a.createdAt),
+                a.staffUsername,
+                ACTIONS[a.action] || a.action,
+                a.targetType,
+                a.targetId,
+                a.reason,
+                a.svc,
+            ]),
+        ]);
 }
-
 
 // =========================================================
 // 13b. FRAUDE
@@ -1462,17 +2101,26 @@ async function renderAudit(el) {
 // descarta la alerta (decisión de alcance, ver README sección 4).
 // =========================================================
 
-const FLAG_STATUS = { pending: ["Pendiente", "b-warn"], confirmed: ["Confirmada", "b-bad"], dismissed: ["Descartada", "b-gray"] };
+const FLAG_STATUS = {
+    pending: ["Pendiente", "b-warn"],
+    confirmed: ["Confirmada", "b-bad"],
+    dismissed: ["Descartada", "b-gray"],
+};
 
 const fraudFilters = { status: "", page: 1 };
 
 async function renderFraud(el) {
-
     const f = fraudFilters;
 
-    el.innerHTML = pageHead("Fraude", "Transacciones marcadas por el motor de reglas para revisión manual.") + `
+    el.innerHTML =
+        pageHead("Fraude", "Transacciones marcadas por el motor de reglas para revisión manual.") +
+        `
         <form class="filters" id="frf">
-            <div><label for="frs">Estado</label><select id="frs"><option value="">Todos</option>${Object.entries(FLAG_STATUS).map(([k, [t]]) => `<option value="${k}" ${f.status === k ? "selected" : ""}>${t}</option>`).join("")}</select></div>
+            <div><label for="frs">Estado</label><select id="frs"><option value="">Todos</option>${Object.entries(
+                FLAG_STATUS
+            )
+                .map(([k, [t]]) => `<option value="${k}" ${f.status === k ? "selected" : ""}>${t}</option>`)
+                .join("")}</select></div>
             <button class="btn btn-primary" type="submit">Filtrar</button>
         </form>
         <div id="frres">${loadingBox}</div>`;
@@ -1485,9 +2133,12 @@ async function renderFraud(el) {
 
     try {
         const data = await api("GET", "/fraud/admin/flags" + qs({ status: f.status, page: f.page, limit: 25 }));
-        $("frres").innerHTML = data.items.length ? `<div class="table-wrap"><table>
+        $("frres").innerHTML = data.items.length
+            ? `<div class="table-wrap"><table>
             <thead><tr><th>Fecha</th><th>Cuenta</th><th>Score</th><th>Motivo</th><th>Estado</th><th></th></tr></thead>
-            <tbody>${data.items.map(x => `
+            <tbody>${data.items
+                .map(
+                    x => `
                 <tr>
                     <td>${fdate(x.createdAt)}</td>
                     <td class="mono">${short(x.accountId)}</td>
@@ -1495,10 +2146,15 @@ async function renderFraud(el) {
                     <td>${esc((x.reason || "").slice(0, 80))}</td>
                     <td>${badge(FLAG_STATUS, x.status)}</td>
                     <td><button class="btn btn-sm" data-open="${esc(x.id)}">Ver</button></td>
-                </tr>`).join("")}
-            </tbody></table></div>${pager(data, p => { f.page = p; renderFraud(el); })}`
+                </tr>`
+                )
+                .join("")}
+            </tbody></table></div>${pager(data, p => {
+                f.page = p;
+                renderFraud(el);
+            })}`
             : emptyBox("Sin alertas", "Las transacciones marcadas por el motor de reglas aparecerán aquí.", "fraud");
-        el.querySelectorAll("[data-open]").forEach(b => b.onclick = () => openFlag(b.dataset.open));
+        el.querySelectorAll("[data-open]").forEach(b => (b.onclick = () => openFlag(b.dataset.open)));
     } catch (err) {
         $("frres").innerHTML = errorBox(err);
     }
@@ -1507,7 +2163,12 @@ async function renderFraud(el) {
 function openFlag(id) {
     openDrawer("Alerta de fraude", async body => {
         let x;
-        try { x = await api("GET", `/fraud/admin/flags/${id}`); } catch (err) { body.innerHTML = errorBox(err); return; }
+        try {
+            x = await api("GET", `/fraud/admin/flags/${id}`);
+        } catch (err) {
+            body.innerHTML = errorBox(err);
+            return;
+        }
 
         body.innerHTML = `
             <div class="money-head">
@@ -1531,34 +2192,44 @@ function openFlag(id) {
                 <tbody>${(x.rulesTriggered || []).map(r => `<tr><td class="mono">${esc(r.rule)}</td><td>${esc(r.points)}</td><td>${esc(r.detail)}</td></tr>`).join("") || '<tr><td colspan="3" class="muted">Sin detalle</td></tr>'}</tbody>
             </table></div>
 
-            ${x.status === "pending" && isAdmin() ? `<div class="actions" style="margin-top:16px">
+            ${
+                x.status === "pending" && isAdmin()
+                    ? `<div class="actions" style="margin-top:16px">
                 <button class="btn btn-sm btn-primary" id="frConfirm">Confirmar fraude</button>
                 <button class="btn btn-sm" id="frDismiss">Descartar</button>
-            </div>` : ""}`;
+            </div>`
+                    : ""
+            }`;
 
-        $("frConfirm")?.addEventListener("click", () => formModal({
-            title: "Confirmar como fraude", danger: true, confirm: "Confirmar",
-            desc: "Queda registrado como confirmado. Esto <strong>no</strong> bloquea la cuenta ni reversa el dinero automáticamente: esas acciones, si corresponden, se hacen aparte desde Cuentas o Movimientos.",
-            fields: [reasonField],
-            onSubmit: async v => {
-                await api("PATCH", `/fraud/admin/flags/${id}`, { status: "confirmed", note: v.reason });
-                toast("Alerta confirmada.");
-                refreshAll();
-            }
-        }));
-        $("frDismiss")?.addEventListener("click", () => formModal({
-            title: "Descartar alerta", confirm: "Descartar",
-            desc: "Se marca como revisada y descartada (falso positivo).",
-            fields: [reasonField],
-            onSubmit: async v => {
-                await api("PATCH", `/fraud/admin/flags/${id}`, { status: "dismissed", note: v.reason });
-                toast("Alerta descartada.");
-                refreshAll();
-            }
-        }));
+        $("frConfirm")?.addEventListener("click", () =>
+            formModal({
+                title: "Confirmar como fraude",
+                danger: true,
+                confirm: "Confirmar",
+                desc: "Queda registrado como confirmado. Esto <strong>no</strong> bloquea la cuenta ni reversa el dinero automáticamente: esas acciones, si corresponden, se hacen aparte desde Cuentas o Movimientos.",
+                fields: [reasonField],
+                onSubmit: async v => {
+                    await api("PATCH", `/fraud/admin/flags/${id}`, { status: "confirmed", note: v.reason });
+                    toast("Alerta confirmada.");
+                    refreshAll();
+                },
+            })
+        );
+        $("frDismiss")?.addEventListener("click", () =>
+            formModal({
+                title: "Descartar alerta",
+                confirm: "Descartar",
+                desc: "Se marca como revisada y descartada (falso positivo).",
+                fields: [reasonField],
+                onSubmit: async v => {
+                    await api("PATCH", `/fraud/admin/flags/${id}`, { status: "dismissed", note: v.reason });
+                    toast("Alerta descartada.");
+                    refreshAll();
+                },
+            })
+        );
     });
 }
-
 
 // =========================================================
 // 13c. CUMPLIMIENTO
@@ -1579,17 +2250,30 @@ function defaultPeriod() {
 }
 
 async function renderCompliance(el) {
-
     const f = complianceFilters;
     const period = defaultPeriod();
 
-    el.innerHTML = pageHead("Cumplimiento", "KPIs de negocio, reportes de actividad sospechosa (SAR) y reportes AML.", `<button class="btn btn-sm btn-primary" id="newReport">${svg("plus")} Generar reporte</button>`) + `
+    el.innerHTML =
+        pageHead(
+            "Cumplimiento",
+            "KPIs de negocio, reportes de actividad sospechosa (SAR) y reportes AML.",
+            `<button class="btn btn-sm btn-primary" id="newReport">${svg("plus")} Generar reporte</button>`
+        ) +
+        `
         <div class="grid g4" id="kpis">${loadingBox}</div>
 
         <div class="section-title" style="margin:22px 0 12px"><h3>Reportes de Actividad Sospechosa (SAR)</h3></div>
         <form class="filters" id="cf">
-            <div><label for="cfs">Estado</label><select id="cfs"><option value="">Todos</option>${Object.entries(SAR_STATUS).map(([k, [t]]) => `<option value="${k}" ${f.status === k ? "selected" : ""}>${t}</option>`).join("")}</select></div>
-            <div><label for="cfv">Severidad</label><select id="cfv"><option value="">Todas</option>${Object.entries(SAR_SEVERITY).map(([k, [t]]) => `<option value="${k}" ${f.severity === k ? "selected" : ""}>${t}</option>`).join("")}</select></div>
+            <div><label for="cfs">Estado</label><select id="cfs"><option value="">Todos</option>${Object.entries(
+                SAR_STATUS
+            )
+                .map(([k, [t]]) => `<option value="${k}" ${f.status === k ? "selected" : ""}>${t}</option>`)
+                .join("")}</select></div>
+            <div><label for="cfv">Severidad</label><select id="cfv"><option value="">Todas</option>${Object.entries(
+                SAR_SEVERITY
+            )
+                .map(([k, [t]]) => `<option value="${k}" ${f.severity === k ? "selected" : ""}>${t}</option>`)
+                .join("")}</select></div>
             <button class="btn btn-primary" type="submit">Filtrar</button>
         </form>
         <div id="cres">${loadingBox}</div>
@@ -1604,7 +2288,8 @@ async function renderCompliance(el) {
     };
 
     tryApi("GET", "/compliance/admin/kpis" + qs({ from: period.from, to: period.to })).then(k => {
-        $("kpis").innerHTML = k ? `
+        $("kpis").innerHTML = k
+            ? `
             <div class="card stat"><div class="stat-top"><span class="label">Transacciones (30 días)</span><span class="stat-icon">${svg("movements")}</span></div><div class="value">${esc(k.totalTransactions)}</div><div class="sub">${esc(period.from)} a ${esc(period.to)}</div></div>
             <div class="card stat"><div class="stat-top"><span class="label">Volumen (30 días)</span><span class="stat-icon">${svg("money")}</span></div><div class="value">${compact(k.totalVolume)}</div><div class="sub">Salidas + ingresos externos</div></div>
             <div class="card stat"><div class="stat-top"><span class="label">Cuentas nuevas</span><span class="stat-icon">${svg("customers")}</span></div><div class="value">${esc(k.newAccounts)}</div><div class="sub">Tasa de aprobación KYC: ${k.kycApprovalRate !== null ? esc(k.kycApprovalRate) + "%" : "—"}</div></div>
@@ -1613,10 +2298,16 @@ async function renderCompliance(el) {
     });
 
     try {
-        const data = await api("GET", "/compliance/admin/sars" + qs({ status: f.status, severity: f.severity, page: f.page, limit: 25 }));
-        $("cres").innerHTML = data.items.length ? `<div class="table-wrap"><table>
+        const data = await api(
+            "GET",
+            "/compliance/admin/sars" + qs({ status: f.status, severity: f.severity, page: f.page, limit: 25 })
+        );
+        $("cres").innerHTML = data.items.length
+            ? `<div class="table-wrap"><table>
             <thead><tr><th>Fecha</th><th>Cliente</th><th>Origen</th><th>Severidad</th><th>Motivo</th><th>Estado</th><th></th></tr></thead>
-            <tbody>${data.items.map(s => `
+            <tbody>${data.items
+                .map(
+                    s => `
                 <tr>
                     <td>${fdate(s.createdAt)}</td>
                     <td class="mono">${short(s.idUser)}</td>
@@ -1625,44 +2316,63 @@ async function renderCompliance(el) {
                     <td>${esc((s.reason || "").slice(0, 80))}</td>
                     <td>${badge(SAR_STATUS, s.status)}</td>
                     <td><button class="btn btn-sm" data-open="${esc(s.id)}">Ver</button></td>
-                </tr>`).join("")}
-            </tbody></table></div>${pager(data, p => { f.page = p; renderCompliance(el); })}`
+                </tr>`
+                )
+                .join("")}
+            </tbody></table></div>${pager(data, p => {
+                f.page = p;
+                renderCompliance(el);
+            })}`
             : emptyBox("Sin SAR", "Los reportes de actividad sospechosa aparecerán aquí.", "compliance");
-        el.querySelectorAll("[data-open]").forEach(b => b.onclick = () => openSar(b.dataset.open));
+        el.querySelectorAll("[data-open]").forEach(b => (b.onclick = () => openSar(b.dataset.open)));
     } catch (err) {
         $("cres").innerHTML = errorBox(err);
     }
 
     try {
         const reports = await api("GET", "/compliance/admin/reports" + qs({ page: 1, limit: 10 }));
-        $("crep").innerHTML = reports.items.length ? `<div class="table-wrap"><table>
+        $("crep").innerHTML = reports.items.length
+            ? `<div class="table-wrap"><table>
             <thead><tr><th>Periodo</th><th>Transacciones</th><th>Volumen</th><th>SAR</th><th>Generado por</th><th>Fecha</th></tr></thead>
-            <tbody>${reports.items.map(r => `
-                <tr><td>${esc(r.periodFrom)} a ${esc(r.periodTo)}</td><td>${esc(r.totalTransactions)}</td><td>${money(r.totalVolume)}</td><td>${esc(r.sarCount)}</td><td>@${esc(r.generatedBy)}</td><td>${fdate(r.generatedAt)}</td></tr>`).join("")}
-            </tbody></table></div>` : emptyBox("Sin reportes", "Genera el primero con el botón de arriba.", "compliance");
+            <tbody>${reports.items
+                .map(
+                    r => `
+                <tr><td>${esc(r.periodFrom)} a ${esc(r.periodTo)}</td><td>${esc(r.totalTransactions)}</td><td>${money(r.totalVolume)}</td><td>${esc(r.sarCount)}</td><td>@${esc(r.generatedBy)}</td><td>${fdate(r.generatedAt)}</td></tr>`
+                )
+                .join("")}
+            </tbody></table></div>`
+            : emptyBox("Sin reportes", "Genera el primero con el botón de arriba.", "compliance");
     } catch (err) {
         $("crep").innerHTML = errorBox(err);
     }
 
-    $("newReport").onclick = () => formModal({
-        title: "Generar reporte AML", confirm: "Generar", icon: "compliance",
-        desc: "Calcula un snapshot de KPIs para el periodo indicado y lo guarda de forma permanente (no se puede editar después).",
-        fields: [
-            { name: "periodFrom", label: "Desde", type: "date", required: true, value: period.from },
-            { name: "periodTo", label: "Hasta", type: "date", required: true, value: period.to },
-        ],
-        onSubmit: async v => {
-            await api("POST", "/compliance/admin/reports", { periodFrom: v.periodFrom, periodTo: v.periodTo });
-            toast("Reporte generado.");
-            refreshAll();
-        }
-    });
+    $("newReport").onclick = () =>
+        formModal({
+            title: "Generar reporte AML",
+            confirm: "Generar",
+            icon: "compliance",
+            desc: "Calcula un snapshot de KPIs para el periodo indicado y lo guarda de forma permanente (no se puede editar después).",
+            fields: [
+                { name: "periodFrom", label: "Desde", type: "date", required: true, value: period.from },
+                { name: "periodTo", label: "Hasta", type: "date", required: true, value: period.to },
+            ],
+            onSubmit: async v => {
+                await api("POST", "/compliance/admin/reports", { periodFrom: v.periodFrom, periodTo: v.periodTo });
+                toast("Reporte generado.");
+                refreshAll();
+            },
+        });
 }
 
 function openSar(id) {
     openDrawer("Reporte de Actividad Sospechosa", async body => {
         let s;
-        try { s = await api("GET", `/compliance/admin/sars/${id}`); } catch (err) { body.innerHTML = errorBox(err); return; }
+        try {
+            s = await api("GET", `/compliance/admin/sars/${id}`);
+        } catch (err) {
+            body.innerHTML = errorBox(err);
+            return;
+        }
 
         body.innerHTML = `
             <div class="money-head">
@@ -1682,34 +2392,43 @@ function openSar(id) {
                 ${s.resolutionNote ? `<dt>Nota</dt><dd>${esc(s.resolutionNote)}</dd>` : ""}
             </dl></div>
 
-            ${s.status === "open" && isAdmin() ? `<div class="actions" style="margin-top:16px">
+            ${
+                s.status === "open" && isAdmin()
+                    ? `<div class="actions" style="margin-top:16px">
                 <button class="btn btn-sm btn-primary" id="sarFile">Radicar</button>
                 <button class="btn btn-sm" id="sarDismiss">Descartar</button>
-            </div>` : ""}`;
+            </div>`
+                    : ""
+            }`;
 
-        $("sarFile")?.addEventListener("click", () => formModal({
-            title: "Radicar SAR", confirm: "Radicar",
-            desc: "Marca que este reporte fue radicado ante la autoridad competente.",
-            fields: [reasonField],
-            onSubmit: async v => {
-                await api("PATCH", `/compliance/admin/sars/${id}`, { status: "filed", note: v.reason });
-                toast("SAR radicado.");
-                refreshAll();
-            }
-        }));
-        $("sarDismiss")?.addEventListener("click", () => formModal({
-            title: "Descartar SAR", confirm: "Descartar",
-            desc: "Se marca como revisado y descartado (falso positivo).",
-            fields: [reasonField],
-            onSubmit: async v => {
-                await api("PATCH", `/compliance/admin/sars/${id}`, { status: "dismissed", note: v.reason });
-                toast("SAR descartado.");
-                refreshAll();
-            }
-        }));
+        $("sarFile")?.addEventListener("click", () =>
+            formModal({
+                title: "Radicar SAR",
+                confirm: "Radicar",
+                desc: "Marca que este reporte fue radicado ante la autoridad competente.",
+                fields: [reasonField],
+                onSubmit: async v => {
+                    await api("PATCH", `/compliance/admin/sars/${id}`, { status: "filed", note: v.reason });
+                    toast("SAR radicado.");
+                    refreshAll();
+                },
+            })
+        );
+        $("sarDismiss")?.addEventListener("click", () =>
+            formModal({
+                title: "Descartar SAR",
+                confirm: "Descartar",
+                desc: "Se marca como revisado y descartado (falso positivo).",
+                fields: [reasonField],
+                onSubmit: async v => {
+                    await api("PATCH", `/compliance/admin/sars/${id}`, { status: "dismissed", note: v.reason });
+                    toast("SAR descartado.");
+                    refreshAll();
+                },
+            })
+        );
     });
 }
-
 
 // =========================================================
 // 14. ARRANQUE DE CADA PÁGINA
@@ -1724,13 +2443,12 @@ const RENDER = {
     compliance: renderCompliance,
     monitoring: renderMonitoring,
     staff: renderStaff,
-    audit: renderAudit
+    audit: renderAudit,
 };
 
 let PAGE = null;
 
 document.addEventListener("DOMContentLoaded", async () => {
-
     const pageId = document.body.dataset.page;
 
     if (pageId === "login") {
@@ -1763,13 +2481,18 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Filtros que llegan por la dirección (desde otras páginas)
     const p = params();
-    if (pageId === "movements" && p.get("cuenta")) Object.assign(moveFilters, { account: p.get("cuenta"), accountId: null });
+    if (pageId === "movements" && p.get("cuenta"))
+        Object.assign(moveFilters, { account: p.get("cuenta"), accountId: null });
 
     const el = $("admPage");
     PAGE = { render: () => RENDER[pageId](el) };
     PAGE.render();
 
     // La sesión vence a los 20 min sin uso.
-    ["pointerdown", "keydown", "scroll"].forEach(type => window.addEventListener(type, () => SESSION.touch(), { passive: true }));
-    setInterval(() => { if (SESSION.expired()) goLogin("expirada"); }, 15000);
+    ["pointerdown", "keydown", "scroll"].forEach(type =>
+        window.addEventListener(type, () => SESSION.touch(), { passive: true })
+    );
+    setInterval(() => {
+        if (SESSION.expired()) goLogin("expirada");
+    }, 15000);
 });

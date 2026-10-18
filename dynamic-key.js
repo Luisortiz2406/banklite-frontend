@@ -9,7 +9,7 @@
 // =========================================================
 
 const BankliteDynamicKey = (() => {
-    const RING_LENGTH = 100;   // pathLength del borde del óvalo
+    const RING_LENGTH = 100; // pathLength del borde del óvalo
 
     function template() {
         return `
@@ -26,14 +26,14 @@ const BankliteDynamicKey = (() => {
 
     function mount(root) {
         if (!root || root.dataset.ready) return;
-        root.dataset.ready = '1';
+        root.dataset.ready = "1";
         root.innerHTML = template();
 
-        const oval = root.querySelector('.dk-oval');
-        const code = root.querySelector('.dk-code');
-        const seconds = root.querySelector('.dk-seconds b');
-        const progress = root.querySelector('.dk-progress');
-        let current = null;      // { code, period, expiresAt (ms locales) }
+        const oval = root.querySelector(".dk-oval");
+        const code = root.querySelector(".dk-code");
+        const seconds = root.querySelector(".dk-seconds b");
+        const progress = root.querySelector(".dk-progress");
+        let current = null; // { code, period, expiresAt (ms locales) }
         let tick = null;
         let loading = false;
 
@@ -41,7 +41,7 @@ const BankliteDynamicKey = (() => {
             if (loading) return;
             loading = true;
             try {
-                const data = await BlApi.authed(BlApi.config.authApi, 'GET', '/auth/dynamic-key');
+                const data = await BlApi.authed(BlApi.config.authApi, "GET", "/auth/dynamic-key");
                 current = {
                     code: data.code,
                     period: data.period || 60,
@@ -49,12 +49,12 @@ const BankliteDynamicKey = (() => {
                     expiresAt: Date.now() + data.secondsLeft * 1000,
                 };
                 code.textContent = `${data.code.slice(0, 3)} ${data.code.slice(3)}`;
-                root.classList.remove('is-error');
+                root.classList.remove("is-error");
                 paint();
             } catch (err) {
                 if (BlApi.handleAuthError(err)) return;
-                root.classList.add('is-error');
-                code.textContent = 'Sin conexión';
+                root.classList.add("is-error");
+                code.textContent = "Sin conexión";
                 current = null;
                 setTimeout(load, 5000);
             } finally {
@@ -67,7 +67,7 @@ const BankliteDynamicKey = (() => {
             const left = Math.max(0, (current.expiresAt - Date.now()) / 1000);
             seconds.textContent = String(Math.ceil(left));
             progress.style.strokeDashoffset = String(RING_LENGTH * (1 - left / current.period));
-            root.classList.toggle('is-ending', left <= 10);
+            root.classList.toggle("is-ending", left <= 10);
             if (left <= 0) load();
         }
 
@@ -78,18 +78,18 @@ const BankliteDynamicKey = (() => {
         }
 
         // En segundo plano no se consulta; al volver se pide el código vigente.
-        document.addEventListener('visibilitychange', () => {
+        document.addEventListener("visibilitychange", () => {
             if (document.hidden) clearInterval(tick);
             else start();
         });
 
-        oval.addEventListener('click', async () => {
+        oval.addEventListener("click", async () => {
             if (!current) return;
             try {
                 await navigator.clipboard.writeText(current.code);
-                toast('Clave dinámica copiada.', 'ok');
+                toast("Clave dinámica copiada.", "ok");
             } catch {
-                toast('No se pudo copiar. Escríbela a mano.', 'info');
+                toast("No se pudo copiar. Escríbela a mano.", "info");
             }
         });
 
@@ -97,9 +97,9 @@ const BankliteDynamicKey = (() => {
     }
 
     return {
-        mount: (root) => {
+        mount: root => {
             if (root) return mount(root);
-            document.querySelectorAll('[data-dynamic-key]').forEach(mount);
+            document.querySelectorAll("[data-dynamic-key]").forEach(mount);
         },
     };
 })();
