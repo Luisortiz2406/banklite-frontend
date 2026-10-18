@@ -493,6 +493,9 @@ const errorBox = err =>
 const who = (name, sub) =>
     `<div class="who"><span class="avatar">${esc(initials(name))}</span><div><strong>${esc(name)}</strong><small>${sub}</small></div></div>`;
 
+// Estado de la base de cada servicio según el /health del gateway.
+const DB_STATE = { ok: "Responde", down: "No responde", unknown: "Sin datos" };
+
 const serviceRows = h =>
     h?.services?.length
         ? `<div class="svc-grid">${h.services
@@ -500,7 +503,7 @@ const serviceRows = h =>
                   s => `
         <div class="svc ${s.status === "ok" ? "" : "is-down"}">
             <div class="svc-top"><div><strong>${esc(s.name)}</strong></div>${s.status === "ok" ? '<span class="badge b-good">En línea</span>' : '<span class="badge b-bad">Caído</span>'}</div>
-            <div class="svc-meta"><span>Latencia <b>${s.status === "ok" ? esc(s.latencyMs) + " ms" : "—"}</b></span></div>
+            <div class="svc-meta"><span>Latencia <b>${s.status === "ok" ? esc(s.latencyMs) + " ms" : "—"}</b></span><span>Base <b>${DB_STATE[s.database] || "Sin datos"}</b></span></div>
         </div>`
               )
               .join("")}</div>`
