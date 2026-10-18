@@ -68,14 +68,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const { config } = BlApi;
     const api = config.savingsApi || config.transferApi;
-    const $ = id => document.getElementById(id);
     const state = { goals: [], balance: null, busy: false, depositKey: null };
     const goalDrawn = {};
 
-    const money = v =>
-        new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(
-            Number(v) || 0
-        );
     const uuid = () =>
         crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2);
     const accountChanged = () => document.dispatchEvent(new CustomEvent("banklite:account-changed"));
@@ -126,12 +121,12 @@ document.addEventListener("DOMContentLoaded", () => {
         const months = Math.max(1, Math.ceil(days / 30));
         const perMonth = Math.ceil(missing / months / 1000) * 1000;
         const when = days === 0 ? "Vence hoy" : `Faltan ${days} ${days === 1 ? "día" : "días"}`;
-        return `<span class="goal-plan">${when} · ahorra <b>${money(perMonth)}</b> al mes</span>`;
+        return `<span class="goal-plan">${when} · ahorra <b>${formatMoney(perMonth)}</b> al mes</span>`;
     }
 
     function render() {
-        const summary = $("goalsSummary");
-        const tip = $("goalTip");
+        const summary = byId("goalsSummary");
+        const tip = byId("goalTip");
         const goals = state.goals;
 
         if (tip) {
@@ -170,7 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <div class="goal-hero">
                     <div class="goal-hero-text">
                         <span>Total ahorrado en metas</span>
-                        <strong>${money(totalSaved)}</strong>
+                        <strong>${formatMoney(totalSaved)}</strong>
                         <small>${activeCount} ${activeCount === 1 ? "meta activa" : "metas activas"} · ${doneCount} ${doneCount === 1 ? "cumplida" : "cumplidas"}</small>
                     </div>
                     <div class="goal-hero-ring" style="--p:${totalPct.toFixed(1)}" role="img" aria-label="Llevas el ${Math.round(totalPct)} % del total">
@@ -201,14 +196,14 @@ document.addEventListener("DOMContentLoaded", () => {
                             <strong title="${escapeHTML(goal.name)}">${escapeHTML(goal.name)}</strong>
                             <span class="goal-pct">${completed ? "Cumplida" : Math.round(percentage) + "%"}</span>
                         </div>
-                        <div class="goal-amounts"><b>${money(goal.balance)}</b> de ${money(goal.target)}</div>
+                        <div class="goal-amounts"><b>${formatMoney(goal.balance)}</b> de ${formatMoney(goal.target)}</div>
                         <div class="goal-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(percentage)}" aria-label="Progreso de ${escapeHTML(goal.name)}">
                             <div class="goal-track-bar" style="width:${from}%"></div>
                             ${[25, 50, 75].map(mark => `<i class="goal-mark${percentage >= mark ? " is-reached" : ""}" style="left:${mark}%"></i>`).join("")}
                         </div>
                         <div class="goal-meta">
                             <span class="goal-mood">${mood(percentage, completed)}</span>
-                            ${completed ? "" : `<span class="goal-missing">Faltan <b>${money(missing)}</b></span>`}
+                            ${completed ? "" : `<span class="goal-missing">Faltan <b>${formatMoney(missing)}</b></span>`}
                         </div>
                         ${completed ? "" : plan(goal, missing)}
                     </div>
@@ -273,8 +268,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // CREAR META
     // -----------------------------------------------------
 
-    const goalForm = $("goalForm");
-    const goalIconPicker = $("goalIconPicker");
+    const goalForm = byId("goalForm");
+    const goalIconPicker = byId("goalIconPicker");
     goalIconPicker.innerHTML = Object.entries(GOAL_ICONS)
         .map(
             ([key, icon], index) => `
@@ -286,13 +281,13 @@ document.addEventListener("DOMContentLoaded", () => {
         )
         .join("");
 
-    const goalDateInput = $("goalDate");
+    const goalDateInput = byId("goalDate");
     const tomorrow = new Date(Date.now() + 86400000 - new Date().getTimezoneOffset() * 60000)
         .toISOString()
         .slice(0, 10);
     goalDateInput.min = tomorrow;
 
-    $("newGoal").addEventListener("click", () => {
+    byId("newGoal").addEventListener("click", () => {
         goalForm.reset();
         openModal("goalModal");
     });
@@ -300,9 +295,9 @@ document.addEventListener("DOMContentLoaded", () => {
     goalForm.addEventListener("submit", async event => {
         event.preventDefault();
         if (state.busy) return;
-        const name = $("goalName").value.trim();
-        const target = Number($("goalTarget").value) || 0;
-        const initial = Number($("goalSaved").value) || 0;
+        const name = byId("goalName").value.trim();
+        const target = Number(byId("goalTarget").value) || 0;
+        const initial = Number(byId("goalSaved").value) || 0;
         const icon = goalForm.querySelector('input[name="goalIcon"]:checked')?.value || "otro";
         const date = goalDateInput.value || "";
 
@@ -356,28 +351,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (presetButton) {
             goalForm.reset();
-            $("goalName").value = presetButton.dataset.goalName;
+            byId("goalName").value = presetButton.dataset.goalName;
             const radio = goalForm.querySelector(`input[name="goalIcon"][value="${presetButton.dataset.goalPreset}"]`);
             if (radio) radio.checked = true;
             openModal("goalModal");
-            $("goalTarget").focus();
+            byId("goalTarget").focus();
             return;
         }
 
         if (depositButton) {
             const goal = state.goals.find(item => item.id === depositButton.dataset.goalDeposit);
             if (!goal) return;
-            $("goalDepositId").value = goal.id;
+            byId("goalDepositId").value = goal.id;
             setText("goalDepositName", goal.name);
             const missing = Math.max(0, Math.ceil(goal.target - goal.balance));
-            setText("goalDepositMissing", money(missing));
+            setText("goalDepositMissing", formatMoney(missing));
             state.depositKey = uuid(); // una clave por intento: un doble clic abona una vez
             const amounts = [50000, 100000, 200000, 500000].filter(value => value < missing);
-            $("goalQuick").innerHTML =
+            byId("goalQuick").innerHTML =
                 amounts
                     .map(
                         value =>
-                            `<button type="button" class="goal-quick-btn" data-amount="${value}">${money(value)}</button>`
+                            `<button type="button" class="goal-quick-btn" data-amount="${value}">${formatMoney(value)}</button>`
                     )
                     .join("") +
                 `<button type="button" class="goal-quick-btn is-all" data-amount="${missing}">Lo que falta</button>`;
@@ -392,13 +387,13 @@ document.addEventListener("DOMContentLoaded", () => {
             const confirmed = goal.completed
                 ? await confirmAction(
                       "Pasar a mi saldo",
-                      `Los ${money(saved)} de "${goal.name}" volverán a tu saldo y la meta se cerrará.`,
+                      `Los ${formatMoney(saved)} de "${goal.name}" volverán a tu saldo y la meta se cerrará.`,
                       "Pasar a mi saldo"
                   )
                 : await confirmAction(
                       "Eliminar meta",
                       saved > 0
-                          ? `Se eliminará "${goal.name}" y los ${money(saved)} ahorrados volverán a tu saldo.`
+                          ? `Se eliminará "${goal.name}" y los ${formatMoney(saved)} ahorrados volverán a tu saldo.`
                           : `Se eliminará la meta "${goal.name}".`,
                       "Eliminar"
                   );
@@ -406,7 +401,7 @@ document.addEventListener("DOMContentLoaded", () => {
             try {
                 await BlApi.authed(api, "POST", `/savings/pockets/${goal.id}/close`, { idempotencyKey: uuid() });
                 if (saved > 0) accountChanged();
-                toast(goal.completed ? `Pasamos ${money(saved)} a tu saldo.` : "Meta eliminada.", "ok");
+                toast(goal.completed ? `Pasamos ${formatMoney(saved)} a tu saldo.` : "Meta eliminada.", "ok");
             } catch (err) {
                 fail(err, "No se pudo cerrar la meta.");
             }
@@ -414,21 +409,21 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    $("goalQuick").addEventListener("click", event => {
+    byId("goalQuick").addEventListener("click", event => {
         const chip = event.target.closest("[data-amount]");
         if (!chip) return;
-        $("goalDepositAmount").value = chip.dataset.amount;
-        $("goalDepositAmount").focus();
+        byId("goalDepositAmount").value = chip.dataset.amount;
+        byId("goalDepositAmount").focus();
         document
             .querySelectorAll("#goalQuick .goal-quick-btn")
             .forEach(btn => btn.classList.toggle("is-selected", btn === chip));
     });
 
-    $("goalDepositForm").addEventListener("submit", async event => {
+    byId("goalDepositForm").addEventListener("submit", async event => {
         event.preventDefault();
         if (state.busy) return;
-        const id = $("goalDepositId").value;
-        const amount = Number($("goalDepositAmount").value) || 0;
+        const id = byId("goalDepositId").value;
+        const amount = Number(byId("goalDepositAmount").value) || 0;
         const goal = state.goals.find(item => item.id === id);
         if (!goal) return;
         const missing = Math.max(0, Math.ceil(goal.target - goal.balance));
@@ -437,7 +432,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (state.balance !== null && amount > state.balance)
             return showMessage("Saldo insuficiente", "No tienes saldo suficiente para este abono.", "!");
         if (amount > missing)
-            return showMessage("Monto muy alto", `A esta meta solo le faltan ${money(missing)}.`, "!");
+            return showMessage("Monto muy alto", `A esta meta solo le faltan ${formatMoney(missing)}.`, "!");
 
         state.busy = true;
         try {
@@ -445,7 +440,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 amount,
                 idempotencyKey: state.depositKey,
             });
-            $("goalDepositForm").reset();
+            byId("goalDepositForm").reset();
             closeModalById("goalDepositModal");
             accountChanged();
             await load();
@@ -457,7 +452,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     "✓"
                 );
             } else {
-                toast(`Abonaste ${money(amount)} a ${goal.name}.`, "ok");
+                toast(`Abonaste ${formatMoney(amount)} a ${goal.name}.`, "ok");
             }
         } catch (err) {
             fail(err, "No se pudo abonar.");

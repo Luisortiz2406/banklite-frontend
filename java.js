@@ -36,6 +36,21 @@ function hasSession() {
 // UTILIDADES
 // =========================================================
 
+// Atajo de document.getElementById
+function byId(id) {
+    return document.getElementById(id);
+}
+
+// Monto en pesos (o en la moneda de la cuenta): $ 1.250.000 · US$ 12,50
+function formatMoney(value, currency) {
+    const code = currency || "COP";
+    return new Intl.NumberFormat("es-CO", {
+        style: "currency",
+        currency: code,
+        maximumFractionDigits: code === "COP" ? 0 : 2,
+    }).format(Number(value) || 0);
+}
+
 function initials(name) {
     if (!name) return "";
 
@@ -559,8 +574,6 @@ function initBusinessCalculator() {
     const ranges = Array.from(form.querySelectorAll("[data-calc-pct]"));
     const warn = document.getElementById("entCalcWarn");
     const live = document.getElementById("entCalcLive");
-    const money = value =>
-        new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(value);
     let liveTimer = null;
 
     const salesValue = () => Number(sales.value.replace(/\D/g, "")) || 0;
@@ -578,21 +591,21 @@ function initBusinessCalculator() {
             pct += value;
             used += amount;
             document.getElementById(`entPct${key}Out`).textContent = `${value} %`;
-            document.getElementById(`entAmt${key}`).textContent = money(amount);
+            document.getElementById(`entAmt${key}`).textContent = formatMoney(amount);
             range.style.setProperty("--fill", `${value}%`);
-            parts.push(`${LABELS[key]} ${money(amount)}`);
+            parts.push(`${LABELS[key]} ${formatMoney(amount)}`);
         });
 
         const over = pct > 100;
         warn.hidden = !over;
-        document.getElementById("entFree").textContent = over ? "—" : money(Math.max(total - used, 0));
+        document.getElementById("entFree").textContent = over ? "—" : formatMoney(Math.max(total - used, 0));
         form.classList.toggle("is-over", over);
 
         // Lector de pantalla: un resumen cuando el usuario deja de mover los controles
         clearTimeout(liveTimer);
         liveTimer = setTimeout(() => {
             live.textContent = total
-                ? `Con ventas de ${money(total)}: ${parts.join(", ")}. ${over ? "Los porcentajes suman más de 100 %." : `Te queda libre ${money(Math.max(total - used, 0))}.`}`
+                ? `Con ventas de ${formatMoney(total)}: ${parts.join(", ")}. ${over ? "Los porcentajes suman más de 100 %." : `Te queda libre ${formatMoney(Math.max(total - used, 0))}.`}`
                 : "";
         }, 500);
     }

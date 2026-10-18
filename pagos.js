@@ -33,7 +33,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const { config, session } = BlApi;
     const api = config.paymentApi || config.transferApi;
-    const $ = id => document.getElementById(id);
     const ACCOUNT_TYPES = { savings: "Cuenta de ahorros", checking: "Cuenta corriente" };
 
     const state = {
@@ -48,10 +47,6 @@ document.addEventListener("DOMContentLoaded", () => {
         lastMovement: null,
     };
 
-    const money = v =>
-        new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(
-            Number(v) || 0
-        );
     const parseMoney = v => Number(String(v || "").replace(/\D/g, "")) || 0;
     const uuid = () =>
         crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2);
@@ -98,7 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
             session.accountId = state.account.id;
             const balance = await BlApi.authed(config.ledgerApi, "GET", `/ledger/accounts/${state.account.id}/balance`);
             state.balance = Number(balance.balance) || 0;
-            setText("payAvailable", money(state.balance));
+            setText("payAvailable", formatMoney(state.balance));
         } catch (err) {
             fail(err, "No se pudo cargar tu cuenta.");
         }
@@ -121,7 +116,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const active = tab.dataset.tab === id;
             tab.classList.toggle("active", active);
             tab.setAttribute("aria-selected", String(active));
-            $(tab.dataset.tab).hidden = !active;
+            byId(tab.dataset.tab).hidden = !active;
         });
     }
 
@@ -132,10 +127,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // FACTURAS: ELEGIR SERVICIO Y EMPRESA
     // -----------------------------------------------------
 
-    const picker = $("servicePicker");
-    const company = $("billCompany");
-    const reference = $("billReference");
-    const invoiceCard = $("invoiceCard");
+    const picker = byId("servicePicker");
+    const company = byId("billCompany");
+    const reference = byId("billReference");
+    const invoiceCard = byId("invoiceCard");
     let service = null;
     let invoice = null;
 
@@ -203,7 +198,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        const button = $("billLookupForm").querySelector("[type=submit]");
+        const button = byId("billLookupForm").querySelector("[type=submit]");
         setBusy(button, true, "Consultando…");
         try {
             const query = new URLSearchParams({ billerCode: company.value, reference: ref });
@@ -217,14 +212,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const paid = invoice.status !== "pending";
 
-        $("invoiceIcon").innerHTML = paySvg(invoice.service);
+        byId("invoiceIcon").innerHTML = paySvg(invoice.service);
         setText("invoiceCompany", invoice.billerName);
         setText("invoiceRef", `${invoice.serviceName} · Ref. ${invoice.reference}`);
         setText("invoicePeriod", monthLabel(invoice.billedPeriod));
         setText("invoiceDue", formatDate(`${invoice.dueDate}T12:00:00`, { dateStyle: "medium" }));
-        setText("invoiceAmount", money(invoice.amount));
+        setText("invoiceAmount", formatMoney(invoice.amount));
 
-        const status = $("invoiceStatus");
+        const status = byId("invoiceStatus");
         status.textContent =
             invoice.status === "paid"
                 ? "Pagada"
@@ -235,23 +230,23 @@ document.addEventListener("DOMContentLoaded", () => {
                     : "Pendiente";
         status.className = "panel-chip" + (paid ? " is-on" : invoice.overdue ? " is-off" : "");
 
-        $("invoiceSaveBox").hidden = invoice.saved;
-        $("invoiceSave").checked = false;
+        byId("invoiceSaveBox").hidden = invoice.saved;
+        byId("invoiceSave").checked = false;
 
-        const payButton = $("payInvoice");
+        const payButton = byId("payInvoice");
         payButton.disabled = paid;
         payButton.textContent =
             invoice.status === "paid"
                 ? `Pagada el ${formatDate(invoice.paidAt, { dateStyle: "medium" })}`
                 : invoice.status === "processing"
                   ? "Pago en proceso"
-                  : `Pagar ${money(invoice.amount)}`;
+                  : `Pagar ${formatMoney(invoice.amount)}`;
 
         invoiceCard.hidden = false;
         invoiceCard.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
 
-    $("billLookupForm").addEventListener("submit", event => {
+    byId("billLookupForm").addEventListener("submit", event => {
         event.preventDefault();
         lookup();
     });
@@ -314,7 +309,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function showSuccess(title, rows, payment) {
         state.lastMovement = payment;
         setText("paySuccessTitle", title);
-        $("paySuccessContent").innerHTML = rows
+        byId("paySuccessContent").innerHTML = rows
             .map(
                 ([label, value]) => `<div><span>${escapeHTML(label)}</span><strong>${escapeHTML(value)}</strong></div>`
             )
@@ -322,7 +317,7 @@ document.addEventListener("DOMContentLoaded", () => {
         openModal("paySuccessModal");
     }
 
-    $("payInvoice").addEventListener("click", async () => {
+    byId("payInvoice").addEventListener("click", async () => {
         if (!invoice) return;
 
         if (invoice.status !== "pending") {
@@ -331,19 +326,19 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         if (invoice.amount > state.balance) {
-            toast(`No tienes saldo suficiente. Disponible: ${money(state.balance)}.`, "err");
+            toast(`No tienes saldo suficiente. Disponible: ${formatMoney(state.balance)}.`, "err");
             return;
         }
 
         const confirmed = await confirmAction(
             "Confirmar pago",
-            `Vas a pagar ${money(invoice.amount)} a ${invoice.billerName} (Ref. ${invoice.reference}). Tu clave dinámica se valida automáticamente.`,
+            `Vas a pagar ${formatMoney(invoice.amount)} a ${invoice.billerName} (Ref. ${invoice.reference}). Tu clave dinámica se valida automáticamente.`,
             "Pagar"
         );
         if (!confirmed) return;
 
         const current = invoice;
-        const button = $("payInvoice");
+        const button = byId("payInvoice");
         setBusy(button, true, "Pagando…");
         let payment;
         try {
@@ -355,7 +350,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         setBusy(button, false);
 
-        if ($("invoiceSave").checked) {
+        if (byId("invoiceSave").checked) {
             try {
                 state.saved = await BlApi.authed(api, "POST", "/payments/saved-bills", {
                     billerCode: current.billerCode,
@@ -373,7 +368,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 ["Empresa", current.billerName],
                 ["Servicio", current.serviceName],
                 ["Referencia", current.reference],
-                ["Valor pagado", money(payment.amount)],
+                ["Valor pagado", formatMoney(payment.amount)],
                 ["Fecha", formatDate(payment.updatedAt || new Date(), { dateStyle: "medium", timeStyle: "short" })],
             ],
             payment
@@ -388,7 +383,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // FACTURAS INSCRITAS Y ÚLTIMOS PAGOS
     // -----------------------------------------------------
 
-    const savedBox = $("savedBills");
+    const savedBox = byId("savedBills");
 
     function renderSavedBills() {
         const list = state.saved;
@@ -449,7 +444,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     function renderHistory(boxId, kind, empty) {
-        const box = $(boxId);
+        const box = byId(boxId);
         const list = state.payments.filter(payment => payment.kind === kind).slice(0, 4);
 
         if (!list.length) {
@@ -465,29 +460,29 @@ document.addEventListener("DOMContentLoaded", () => {
                     <strong>${escapeHTML(payment.description)}</strong>
                     <small>${formatDate(payment.updatedAt || payment.createdAt, { dateStyle: "medium" })}</small>
                 </div>
-                <b>−${money(payment.amount)}</b>
+                <b>−${formatMoney(payment.amount)}</b>
                 <button type="button" class="pay-history-pdf" data-receipt="${escapeHTML(payment.id)}" aria-label="Descargar comprobante" title="Descargar comprobante">${PDF_ICON}</button>
             </div>`
             )
             .join("");
     }
 
-    $("paymentsPage").addEventListener("click", event => {
+    byId("paymentsPage").addEventListener("click", event => {
         const button = event.target.closest("[data-receipt]");
         if (!button) return;
         downloadPaymentReceipt(state.payments.find(entry => entry.id === button.dataset.receipt));
     });
 
-    $("payReceipt").addEventListener("click", () => downloadPaymentReceipt(state.lastMovement));
+    byId("payReceipt").addEventListener("click", () => downloadPaymentReceipt(state.lastMovement));
 
     // -----------------------------------------------------
     // RECARGAS
     // -----------------------------------------------------
 
-    const operatorPicker = $("operatorPicker");
-    const rcNumber = $("rcNumber");
-    const rcAmount = $("rcAmount");
-    const rcType = $("rcType");
+    const operatorPicker = byId("operatorPicker");
+    const rcNumber = byId("rcNumber");
+    const rcAmount = byId("rcAmount");
+    const rcType = byId("rcType");
     let operator = null;
 
     function renderOperators() {
@@ -526,12 +521,12 @@ document.addEventListener("DOMContentLoaded", () => {
         rcAmount.value = value ? value.toLocaleString("es-CO") : "";
     });
 
-    $("rcChips").addEventListener("click", event => {
+    byId("rcChips").addEventListener("click", event => {
         const chip = event.target.closest("[data-rc]");
         if (chip) rcAmount.value = Number(chip.dataset.rc).toLocaleString("es-CO");
     });
 
-    $("rechargePageForm").addEventListener("submit", async event => {
+    byId("rechargePageForm").addEventListener("submit", async event => {
         event.preventDefault();
 
         const phone = rcNumber.value.trim();
@@ -549,29 +544,29 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         if (amount < state.topup.min) {
-            toast(`La recarga mínima es de ${money(state.topup.min)}.`, "err");
+            toast(`La recarga mínima es de ${formatMoney(state.topup.min)}.`, "err");
             rcAmount.focus();
             return;
         }
 
         if (amount > state.topup.max) {
-            toast(`La recarga máxima es de ${money(state.topup.max)}.`, "err");
+            toast(`La recarga máxima es de ${formatMoney(state.topup.max)}.`, "err");
             return;
         }
 
         if (amount > state.balance) {
-            toast(`No tienes saldo suficiente. Disponible: ${money(state.balance)}.`, "err");
+            toast(`No tienes saldo suficiente. Disponible: ${formatMoney(state.balance)}.`, "err");
             return;
         }
 
         const confirmed = await confirmAction(
             "Confirmar recarga",
-            `Vas a recargar ${money(amount)} al ${phone} (${operator.name}, ${rcType.value.toLowerCase()}). Tu clave dinámica se valida automáticamente.`,
+            `Vas a recargar ${formatMoney(amount)} al ${phone} (${operator.name}, ${rcType.value.toLowerCase()}). Tu clave dinámica se valida automáticamente.`,
             "Recargar"
         );
         if (!confirmed) return;
 
-        const button = event.submitter || $("rechargePageForm").querySelector("[type=submit]");
+        const button = event.submitter || byId("rechargePageForm").querySelector("[type=submit]");
         setBusy(button, true, "Recargando…");
         let payment;
         try {
@@ -596,7 +591,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 ["Operador", operator.name],
                 ["Número", phone],
                 ["Tipo", payment.topupType || rcType.value],
-                ["Valor", money(payment.amount)],
+                ["Valor", formatMoney(payment.amount)],
                 ["Fecha", formatDate(payment.updatedAt || new Date(), { dateStyle: "medium", timeStyle: "short" })],
             ],
             payment
@@ -611,7 +606,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // NÚMEROS RECIENTES
     // -----------------------------------------------------
 
-    const recentBox = $("recentNumbers");
+    const recentBox = byId("recentNumbers");
 
     function renderRecentNumbers() {
         const seen = new Map();

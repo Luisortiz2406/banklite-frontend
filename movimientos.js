@@ -12,7 +12,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const { config, session } = BlApi;
     const get = path => BlApi.authed(config.ledgerApi, "GET", path);
-    const $ = id => document.getElementById(id);
     const PAGE_SIZE = 50;
 
     const TYPE_LABELS = {
@@ -46,16 +45,12 @@ document.addEventListener("DOMContentLoaded", () => {
         selected: null,
         ticket: null,
     };
-    const container = $("fullMovements");
-    const search = $("movementSearch");
-    const modal = $("movementModal");
+    const container = byId("fullMovements");
+    const search = byId("movementSearch");
+    const modal = byId("movementModal");
 
-    const money = (v, currency = state.account?.currency || "COP") =>
-        new Intl.NumberFormat("es-CO", {
-            style: "currency",
-            currency,
-            maximumFractionDigits: currency === "COP" ? 0 : 2,
-        }).format(Number(v) || 0);
+    // Moneda de la cuenta por defecto
+    const money = (v, currency = state.account?.currency) => formatMoney(v, currency);
     const monthStart = (year, month) => new Date(Date.UTC(year, month, 1, 5)); // 00:00 en Bogotá
 
     function fail(err, fallback) {
@@ -83,7 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 container.innerHTML =
                     '<div class="movement-empty"><span aria-hidden="true">↔</span><strong>Aún no tienes una cuenta</strong><p>Ábrela desde el inicio para empezar a moverte con Banklite.</p><a class="btn primary" href="dashboard.html">Ir al inicio</a></div>';
                 ["sumBalance", "sumIncome", "sumExpense"].forEach(id => {
-                    $(id).textContent = "—";
+                    byId(id).textContent = "—";
                 });
                 return;
             }
@@ -122,14 +117,14 @@ document.addEventListener("DOMContentLoaded", () => {
             if (m.direction === "in") income += Number(m.amount) || 0;
             else expense += Number(m.amount) || 0;
         });
-        $("sumBalance").textContent = money(balance.balance, balance.currency);
-        $("sumIncome").textContent = "+" + money(income);
-        $("sumExpense").textContent = "−" + money(expense);
+        byId("sumBalance").textContent = money(balance.balance, balance.currency);
+        byId("sumIncome").textContent = "+" + money(income);
+        byId("sumExpense").textContent = "−" + money(expense);
     }
 
     async function loadMore() {
         if (state.done) return;
-        const button = $("loadMoreMovements");
+        const button = byId("loadMoreMovements");
         button.disabled = true;
         try {
             const batch = await get(
@@ -146,7 +141,7 @@ document.addEventListener("DOMContentLoaded", () => {
             button.hidden = state.done;
         }
     }
-    $("loadMoreMovements").addEventListener("click", loadMore);
+    byId("loadMoreMovements").addEventListener("click", loadMore);
 
     // ---------- filtros, búsqueda y lista agrupada por día ----------
     function visible() {
@@ -401,16 +396,16 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function paintTicket(m, ticket) {
-        $("detailTitle").textContent = ticket.title;
-        $("detailSub").textContent = ticket.sub;
-        $("detailIcon").className = `ticket-check ${ticket.incoming ? "is-in" : ""}`;
-        $("detailAmount").textContent = `${ticket.incoming ? "+" : "−"}${money(m.amount, m.currency)}`;
-        $("detailAmount").className = `ticket-amount ${ticket.incoming ? "is-in" : ""}`;
-        $("detailRef").textContent = String(m.transactionId || "")
+        byId("detailTitle").textContent = ticket.title;
+        byId("detailSub").textContent = ticket.sub;
+        byId("detailIcon").className = `ticket-check ${ticket.incoming ? "is-in" : ""}`;
+        byId("detailAmount").textContent = `${ticket.incoming ? "+" : "−"}${money(m.amount, m.currency)}`;
+        byId("detailAmount").className = `ticket-amount ${ticket.incoming ? "is-in" : ""}`;
+        byId("detailRef").textContent = String(m.transactionId || "")
             .slice(0, 8)
             .toUpperCase();
-        $("detailRef").title = m.transactionId || "";
-        const body = $("detailBody");
+        byId("detailRef").title = m.transactionId || "";
+        const body = byId("detailBody");
         body.replaceChildren();
         ticket.rows.forEach(([label, value]) => {
             const row = document.createElement("div");
@@ -444,14 +439,14 @@ document.addEventListener("DOMContentLoaded", () => {
         if (event.target === modal) closeTicket();
     });
 
-    $("detailReceipt").addEventListener("click", () => {
+    byId("detailReceipt").addEventListener("click", () => {
         if (!state.selected) return;
         downloadReceipt(state.selected, holder());
         toast("Comprobante descargado.", "ok");
     });
 
     // Compartir: menú del sistema en el celular; si no hay, se copia el resumen.
-    $("detailShare").addEventListener("click", async () => {
+    byId("detailShare").addEventListener("click", async () => {
         const m = state.selected;
         const ticket = state.ticket;
         if (!m || !ticket) return;
@@ -478,7 +473,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // ---------- CSV (lo cargado y filtrado) ----------
-    $("exportMovements").addEventListener("click", () => {
+    byId("exportMovements").addEventListener("click", () => {
         const items = visible();
         if (!items.length)
             return showMessage("Sin movimientos", "No hay movimientos para descargar con este filtro.", "i");
@@ -524,9 +519,9 @@ document.addEventListener("DOMContentLoaded", () => {
         "Noviembre",
         "Diciembre",
     ];
-    const statementSelect = $("statementMonth");
+    const statementSelect = byId("statementMonth");
 
-    $("openStatement").addEventListener("click", () => {
+    byId("openStatement").addEventListener("click", () => {
         if (!state.account) return showMessage("Sin cuenta", "Abre tu cuenta para descargar extractos.", "i");
         // Meses desde la apertura de la cuenta hasta hoy (más reciente primero).
         const opened = new Date(state.account.createdAt || Date.now());
@@ -549,7 +544,7 @@ document.addEventListener("DOMContentLoaded", () => {
         openModal("statementModal");
     });
 
-    $("statementForm").addEventListener("submit", async event => {
+    byId("statementForm").addEventListener("submit", async event => {
         event.preventDefault();
         const [year, month] = statementSelect.value.split("-").map(Number);
         const from = monthStart(year, month).toISOString();

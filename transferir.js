@@ -15,7 +15,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!BlApi.protectPage()) return;
 
     const { config, session } = BlApi;
-    const $ = id => document.getElementById(id);
     const ACCOUNT_TYPES = { savings: "Cuenta de ahorros", checking: "Cuenta corriente" };
     const state = {
         step: 1,
@@ -30,12 +29,8 @@ document.addEventListener("DOMContentLoaded", () => {
         done: null,
     };
 
-    const money = (v, currency = state.account?.currency || "COP") =>
-        new Intl.NumberFormat("es-CO", {
-            style: "currency",
-            currency,
-            maximumFractionDigits: currency === "COP" ? 0 : 2,
-        }).format(Number(v) || 0);
+    // Moneda de la cuenta por defecto
+    const money = (v, currency = state.account?.currency) => formatMoney(v, currency);
     const uuid = () =>
         crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2);
     const formatAccount = n => (n || "").replace(/^(\d{3})(\d{4})(\d{4})$/, "$1 $2 $3");
@@ -60,9 +55,9 @@ document.addEventListener("DOMContentLoaded", () => {
             const usable = (accounts || []).filter(a => a.status !== "closed");
             state.account = usable.find(a => a.id === session.accountId) || usable[0] || null;
             if (!state.account) {
-                $("availableTransfer").textContent = "—";
+                byId("availableTransfer").textContent = "—";
                 showMessage("Sin cuenta", "Primero debes abrir una cuenta Banklite desde el inicio.", "!");
-                $("nextTransfer").disabled = true;
+                byId("nextTransfer").disabled = true;
                 return;
             }
             session.accountId = state.account.id;
@@ -71,12 +66,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 BlApi.authed(config.accountApi, "GET", `/accounts/${state.account.id}/limits`),
             ]);
             Object.assign(state, { balance, limits });
-            $("availableTransfer").textContent = money(balance.balance, balance.currency);
-            $("limitHint").textContent =
+            byId("availableTransfer").textContent = money(balance.balance, balance.currency);
+            byId("limitHint").textContent =
                 `Se descuenta de tu saldo disponible. Límite diario: ${money(limits.dailyLimit)}.`;
             if (state.account.status !== "active") {
                 showMessage("Cuenta no disponible", "Tu cuenta no está activa, por eso no puedes transferir.", "!");
-                $("nextTransfer").disabled = true;
+                byId("nextTransfer").disabled = true;
             }
         } catch (err) {
             fail(err, "No se pudo cargar tu cuenta.");
@@ -99,10 +94,10 @@ document.addEventListener("DOMContentLoaded", () => {
             s.classList.toggle("active", i + 1 === step);
             s.classList.toggle("complete", i + 1 < step);
         });
-        $("prevTransfer").style.visibility = step === 1 ? "hidden" : "visible";
-        $("nextTransfer").textContent = step === 4 ? "Enviar" : "Continuar";
-        if (step === 2) setTimeout(() => $(isBreb() ? "brebKey" : "accountNumber").focus(), 60);
-        if (step === 3) setTimeout(() => $("transferAmount").focus(), 60);
+        byId("prevTransfer").style.visibility = step === 1 ? "hidden" : "visible";
+        byId("nextTransfer").textContent = step === 4 ? "Enviar" : "Continuar";
+        if (step === 2) setTimeout(() => byId(isBreb() ? "brebKey" : "accountNumber").focus(), 60);
+        if (step === 3) setTimeout(() => byId("transferAmount").focus(), 60);
         if (step === 4) paintReview();
     }
 
@@ -125,16 +120,16 @@ document.addEventListener("DOMContentLoaded", () => {
             )
         );
         brebOption.classList.toggle("selected", mode === "breb");
-        $("brebBox").hidden = mode !== "breb";
-        $("accountFields").hidden = mode === "breb";
-        $("accountTypeField").hidden = !(mode === "external" && !isWallet());
-        $("recipientNameField").hidden = mode !== "external";
-        $("externalNote").hidden = mode !== "external";
-        $("accountNumberField").classList.toggle("two-span", !(mode === "external" && !isWallet()));
-        const number = $("accountNumber");
+        byId("brebBox").hidden = mode !== "breb";
+        byId("accountFields").hidden = mode === "breb";
+        byId("accountTypeField").hidden = !(mode === "external" && !isWallet());
+        byId("recipientNameField").hidden = mode !== "external";
+        byId("externalNote").hidden = mode !== "external";
+        byId("accountNumberField").classList.toggle("two-span", !(mode === "external" && !isWallet()));
+        const number = byId("accountNumber");
         number.maxLength = mode === "external" ? (isWallet() ? 10 : 16) : 11;
         number.value = number.value.slice(0, number.maxLength);
-        $("accountNumberLabel").textContent =
+        byId("accountNumberLabel").textContent =
             mode !== "external"
                 ? "Número de cuenta Banklite (11 dígitos)"
                 : isWallet()
@@ -142,7 +137,7 @@ document.addEventListener("DOMContentLoaded", () => {
                   : "Número de cuenta";
         number.placeholder =
             mode !== "external" ? "Ej. 86091953267" : isWallet() ? "Ej. 3001234567" : "Número del destinatario";
-        $("recipientHelp").textContent =
+        byId("recipientHelp").textContent =
             mode === "breb"
                 ? "Escribe la llave de quien recibe y te mostramos a nombre de quién está antes de enviar."
                 : mode === "external"
@@ -163,13 +158,13 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // ---------- llave Bre-B: a nombre de quién está ----------
-    const brebInput = $("brebKey");
-    const brebResult = $("brebResult");
+    const brebInput = byId("brebKey");
+    const brebResult = byId("brebResult");
     let brebTimer = null;
     let brebSeq = 0;
 
     function paintBreb(message, kind) {
-        const chip = $("brebType");
+        const chip = byId("brebType");
         const target = state.breb;
         chip.hidden = !target;
         if (target) chip.innerHTML = `${brebSvg(target.type, 13)} ${escapeHTML(BREB_TYPES[target.type].label)}`;
@@ -227,13 +222,13 @@ document.addEventListener("DOMContentLoaded", () => {
         brebTimer = setTimeout(lookupBreb, 300);
     });
 
-    $("accountNumber").addEventListener("input", e => {
+    byId("accountNumber").addEventListener("input", e => {
         e.target.value = e.target.value.replace(/\D/g, "").slice(0, e.target.maxLength);
     });
 
-    const amountInput = $("transferAmount");
+    const amountInput = byId("transferAmount");
     const paintAmount = () => {
-        $("amountPreview").textContent = money(amountInput.value);
+        byId("amountPreview").textContent = money(amountInput.value);
     };
     amountInput.addEventListener("input", paintAmount);
     form.querySelectorAll("[data-amount]").forEach(chip =>
@@ -244,7 +239,7 @@ document.addEventListener("DOMContentLoaded", () => {
     );
 
     function destination() {
-        return $("accountNumber").value.trim();
+        return byId("accountNumber").value.trim();
     }
     function amount() {
         return Number(amountInput.value);
@@ -252,28 +247,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function paintReview() {
         if (isExternal()) {
-            const name = $("recipientName").value.trim();
-            $("recipientInitials").textContent = initials(name) || "?";
-            $("recipientPreview").textContent = name;
-            $("recipientAccountPreview").textContent = [
+            const name = byId("recipientName").value.trim();
+            byId("recipientInitials").textContent = initials(name) || "?";
+            byId("recipientPreview").textContent = name;
+            byId("recipientAccountPreview").textContent = [
                 state.bank,
-                isWallet() ? null : $("accountType").value,
+                isWallet() ? null : byId("accountType").value,
                 destination(),
             ]
                 .filter(Boolean)
                 .join(" · ");
         } else if (isBreb()) {
-            $("recipientInitials").textContent = initials(state.breb.holderName.replace(/•/g, "")) || "?";
-            $("recipientPreview").textContent = state.breb.holderName;
-            $("recipientAccountPreview").textContent = `Llave Bre-B ${state.breb.maskedKey}`;
+            byId("recipientInitials").textContent = initials(state.breb.holderName.replace(/•/g, "")) || "?";
+            byId("recipientPreview").textContent = state.breb.holderName;
+            byId("recipientAccountPreview").textContent = `Llave Bre-B ${state.breb.maskedKey}`;
         } else {
-            $("recipientInitials").textContent = "B";
-            $("recipientPreview").textContent = "Cuenta Banklite";
-            $("recipientAccountPreview").textContent = formatAccount(destination());
+            byId("recipientInitials").textContent = "B";
+            byId("recipientPreview").textContent = "Cuenta Banklite";
+            byId("recipientAccountPreview").textContent = formatAccount(destination());
         }
-        $("recipientAmountPreview").textContent = money(amount());
+        byId("recipientAmountPreview").textContent = money(amount());
         const after = (Number(state.balance?.balance) || 0) - amount();
-        $("transferSummary").innerHTML = "";
+        byId("transferSummary").innerHTML = "";
         [
             [
                 "Desde",
@@ -286,7 +281,7 @@ document.addEventListener("DOMContentLoaded", () => {
             row.innerHTML = "<span></span><strong></strong>";
             row.querySelector("span").textContent = label;
             row.querySelector("strong").textContent = value;
-            $("transferSummary").appendChild(row);
+            byId("transferSummary").appendChild(row);
         });
     }
 
@@ -294,10 +289,10 @@ document.addEventListener("DOMContentLoaded", () => {
         if (step === 2 && isExternal()) {
             if (isWallet() && !/^3\d{9}$/.test(destination()))
                 return `El número de ${state.bank} es un celular de 10 dígitos que empieza por 3.`;
-            if (!isWallet() && !$("accountType").value) return "Elige el tipo de cuenta.";
+            if (!isWallet() && !byId("accountType").value) return "Elige el tipo de cuenta.";
             if (!isWallet() && !/^\d{6,16}$/.test(destination()))
                 return "El número de cuenta debe tener entre 6 y 16 dígitos.";
-            if ($("recipientName").value.trim().length < 3) return "Escribe el nombre de quien recibe.";
+            if (byId("recipientName").value.trim().length < 3) return "Escribe el nombre de quien recibe.";
         } else if (step === 2 && isBreb()) {
             if (!state.breb) return "Escribe una llave Bre-B registrada en Banklite.";
             if (state.breb.own) return "Esta llave es tuya. Escribe la llave de la persona que va a recibir.";
@@ -314,10 +309,10 @@ document.addEventListener("DOMContentLoaded", () => {
         return null;
     }
 
-    $("prevTransfer").addEventListener("click", () => {
+    byId("prevTransfer").addEventListener("click", () => {
         if (state.step > 1) goTo(state.step - 1);
     });
-    $("nextTransfer").addEventListener("click", async () => {
+    byId("nextTransfer").addEventListener("click", async () => {
         if (state.step === 1)
             return (
                 isBreb()
@@ -334,7 +329,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // ---------- preparar → confirmar / cancelar ----------
     async function prepare() {
-        const button = $("nextTransfer");
+        const button = byId("nextTransfer");
         setLoading(button, true);
         try {
             state.pending = await BlApi.authed(config.transferApi, "POST", "/transfers/prepare", {
@@ -344,16 +339,16 @@ document.addEventListener("DOMContentLoaded", () => {
                     : isExternal()
                       ? {
                             destinationBank: state.bank,
-                            destinationAccountType: isWallet() ? undefined : $("accountType").value,
+                            destinationAccountType: isWallet() ? undefined : byId("accountType").value,
                             destinationAccountNumber: destination(),
-                            recipientName: $("recipientName").value.trim(),
+                            recipientName: byId("recipientName").value.trim(),
                         }
                       : { destinationAccountNumber: destination() }),
                 amount: amount(),
-                description: $("concept").value.trim() || undefined,
+                description: byId("concept").value.trim() || undefined,
                 idempotencyKey: uuid(),
             });
-            const box = $("confirmTransferContent");
+            const box = byId("confirmTransferContent");
             box.replaceChildren();
             [
                 ...destinationRows(state.pending),
@@ -409,13 +404,13 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!BlApi.handleAuthError(err)) toast(err.message || "No se pudo cancelar la solicitud.", "err");
         }
     }
-    $("transferConfirmModal")
+    byId("transferConfirmModal")
         .querySelectorAll("[data-close]")
         .forEach(b => b.addEventListener("click", cancelPending));
 
-    $("confirmTransfer").addEventListener("click", async () => {
+    byId("confirmTransfer").addEventListener("click", async () => {
         if (!state.pending) return;
-        const button = $("confirmTransfer");
+        const button = byId("confirmTransfer");
         setLoading(button, true);
         try {
             // Validación interna: se pide la clave vigente y se envía con la confirmación.
@@ -458,7 +453,7 @@ document.addEventListener("DOMContentLoaded", () => {
     async function showSuccess(result) {
         const movement = await findMovement(result.ledgerTransactionId);
         state.done.movement = movement;
-        const box = $("successTransferContent");
+        const box = byId("successTransferContent");
         box.replaceChildren();
         [
             ["Valor", money(result.amount)],
@@ -478,11 +473,11 @@ document.addEventListener("DOMContentLoaded", () => {
             row.querySelector("strong").textContent = value;
             box.appendChild(row);
         });
-        $("downloadReceipt").hidden = !movement;
+        byId("downloadReceipt").hidden = !movement;
         openModal("transferSuccessModal");
     }
 
-    $("downloadReceipt").addEventListener("click", () => {
+    byId("downloadReceipt").addEventListener("click", () => {
         const movement = state.done?.movement;
         if (!movement) return;
         const k = state.kyc || {};
@@ -495,7 +490,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // "Hacer otra transferencia": empieza de cero.
-    $("transferSuccessModal")
+    byId("transferSuccessModal")
         .querySelector("[data-close]")
         ?.addEventListener("click", () => {
             form.reset();

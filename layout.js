@@ -213,13 +213,12 @@ const BlLayout = (() => {
 
     // ---------- datos del encabezado (después de cargar api.js y la página) ----------
     const state = { notifications: [] };
-    const $ = id => document.getElementById(id);
     const htmlToText = value =>
         new DOMParser().parseFromString(String(value ?? ""), "text/html").body.textContent || "";
 
     function setUser(name) {
-        $("headerName").textContent = name || "Mi cuenta";
-        $("avatar").textContent = initials(name || "B");
+        byId("headerName").textContent = name || "Mi cuenta";
+        byId("avatar").textContent = initials(name || "B");
     }
 
     async function loadUser() {
@@ -264,7 +263,7 @@ const BlLayout = (() => {
     }
 
     function renderNotifications() {
-        const list = $("notifList");
+        const list = byId("notifList");
         list.replaceChildren();
         if (!state.notifications.length) {
             list.innerHTML = '<li class="notif-empty">No tienes notificaciones todavía.</li>';
@@ -319,7 +318,7 @@ const BlLayout = (() => {
 
         // Fuera del dashboard el avatar lleva a "Mis datos"; en el dashboard lo conecta dashboard.js.
         if (!onDashboard) {
-            const avatar = $("avatar");
+            const avatar = byId("avatar");
             avatar.setAttribute("role", "link");
             avatar.setAttribute("tabindex", "0");
             avatar.setAttribute("aria-label", "Ver mis datos");

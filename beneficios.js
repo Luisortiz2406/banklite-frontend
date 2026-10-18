@@ -479,11 +479,6 @@ function benefitStore(saved) {
     }
 }
 
-const benefitMoney = value =>
-    new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(
-        Number(value) || 0
-    );
-
 function benefitCode() {
     const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
     const part = () => Array.from({ length: 4 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
@@ -588,8 +583,8 @@ function benefitItemHTML(key, item) {
                     <small>${item.where}</small>
                     <div class="bf-price">
                         <span>${item.nights} noches desde</span>
-                        <s>${benefitMoney(before)}</s>
-                        <b>${benefitMoney(item.price)}</b>
+                        <s>${formatMoney(before)}</s>
+                        <b>${formatMoney(item.price)}</b>
                     </div>
                     ${benefitAction(key, item)}
                 </div>

@@ -11,9 +11,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!BlApi.protectPage()) return;
 
     const { config, session } = BlApi;
-    const $ = id => document.getElementById(id);
-    const grid = $("keysGrid");
-    const keyInput = $("keyValue");
+    const grid = byId("keysGrid");
+    const keyInput = byId("keyValue");
     const state = { keys: [], accountNumber: null, kyc: null };
     let editing = null;
 
@@ -118,7 +117,7 @@ document.addEventListener("DOMContentLoaded", () => {
         editing = type;
         const info = BREB_TYPES[type];
         setText("keyModalTitle", `Registrar llave: ${info.label}`);
-        $("keyModalIcon").innerHTML = brebSvg(type, 22);
+        byId("keyModalIcon").innerHTML = brebSvg(type, 22);
         setText(
             "keyModalHint",
             type === "alfanumerica"
@@ -137,7 +136,7 @@ document.addEventListener("DOMContentLoaded", () => {
         openModal("keyModal");
     }
 
-    $("keyForm").addEventListener("submit", async event => {
+    byId("keyForm").addEventListener("submit", async event => {
         event.preventDefault();
 
         const found = brebDetect(keyInput.value);
@@ -221,8 +220,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // ENVIAR CON LLAVE: A NOMBRE DE QUIÉN ESTÁ
     // -----------------------------------------------------
 
-    const lookupInput = $("keyLookup");
-    const lookupResult = $("keyLookupResult");
+    const lookupInput = byId("keyLookup");
+    const lookupResult = byId("keyLookupResult");
     let lookupTimer = null;
     let lookupSeq = 0;
 

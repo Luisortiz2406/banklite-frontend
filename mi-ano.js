@@ -153,10 +153,6 @@ const WRAPPED_PERSONAS = {
     },
 };
 
-const wrMoney = value =>
-    new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(
-        Number(value) || 0
-    );
 const wrPoints = value => Number(value || 0).toLocaleString("es-CO");
 
 // Año y mes en hora de Colombia (el navegador puede estar en otra zona).
@@ -311,7 +307,6 @@ async function wrappedSummary(year = wrYearMonth(new Date()).year) {
 }
 
 function wrappedSlides(data) {
-    const money = wrMoney;
     const slides = [];
 
     slides.push({
@@ -339,10 +334,10 @@ function wrappedSlides(data) {
             scene: "moneybag",
             html: `
                 <span class="wr-kicker">Este año moviste</span>
-                <b class="wr-big" data-wr-count="${Math.round(data.moved)}" data-wr-money>${money(0)}</b>
+                <b class="wr-big" data-wr-count="${Math.round(data.moved)}" data-wr-money>${formatMoney(0)}</b>
                 <div class="wr-split">
-                    <div><small>Entró</small><b>${money(data.income)}</b></div>
-                    <div><small>Salió</small><b>${money(data.spent)}</b></div>
+                    <div><small>Entró</small><b>${formatMoney(data.income)}</b></div>
+                    <div><small>Salió</small><b>${formatMoney(data.spent)}</b></div>
                 </div>
                 <p>En ${data.total} movimientos.</p>`,
         });
@@ -377,7 +372,7 @@ function wrappedSlides(data) {
                             .toUpperCase()
                     )}</span>
                     <h2>${escapeHTML(data.topPerson.name)}</h2>
-                    <p>Le enviaste ${data.topPerson.count} ${data.topPerson.count === 1 ? "vez" : "veces"}, en total ${money(data.topPerson.total)}.</p>
+                    <p>Le enviaste ${data.topPerson.count} ${data.topPerson.count === 1 ? "vez" : "veces"}, en total ${formatMoney(data.topPerson.total)}.</p>
                     ${data.peopleCount > 1 ? `<small class="wr-note">Le transferiste a ${data.peopleCount} personas distintas.</small>` : ""}`,
             });
         }
@@ -390,7 +385,7 @@ function wrappedSlides(data) {
                     <span class="wr-kicker">Donde más usaste tu plata</span>
                     <span class="wr-icon">${data.topCategory.icon}</span>
                     <h2>${data.topCategory.name}</h2>
-                    <p>${money(data.topCategory.total)} en ${data.topCategory.count} ${data.topCategory.count === 1 ? "operación" : "operaciones"}.</p>
+                    <p>${formatMoney(data.topCategory.total)} en ${data.topCategory.count} ${data.topCategory.count === 1 ? "operación" : "operaciones"}.</p>
                     <ol class="wr-rank">
                         ${data.categories
                             .slice(0, 4)
@@ -408,8 +403,8 @@ function wrappedSlides(data) {
             html: `
                 <span class="wr-kicker">Tu ahorro</span>
                 <p>Este año apartaste</p>
-                <b class="wr-big" data-wr-count="${Math.round(data.savedIn)}" data-wr-money>${money(0)}</b>
-                <p>en bolsillos, metas y CDT. Hoy tienes ${money(data.savingsNow)} ahorrados${data.interest >= 1 ? ` y ganaste ${money(data.interest)} en intereses` : ""}.</p>`,
+                <b class="wr-big" data-wr-count="${Math.round(data.savedIn)}" data-wr-money>${formatMoney(0)}</b>
+                <p>en bolsillos, metas y CDT. Hoy tienes ${formatMoney(data.savingsNow)} ahorrados${data.interest >= 1 ? ` y ganaste ${formatMoney(data.interest)} en intereses` : ""}.</p>`,
         });
     }
 
@@ -606,7 +601,7 @@ function openWrapped(data) {
         section.querySelectorAll("[data-wr-count]").forEach(el => {
             const target = Number(el.dataset.wrCount) || 0;
             const isMoney = el.hasAttribute("data-wr-money");
-            const format = value => (isMoney ? wrMoney(value) : wrPoints(value));
+            const format = value => (isMoney ? formatMoney(value) : wrPoints(value));
             if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
                 el.textContent = format(target);
                 return;

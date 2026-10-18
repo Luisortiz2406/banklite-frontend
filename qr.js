@@ -126,15 +126,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const { config, session } = BlApi;
     const paymentApi = config.paymentApi || config.transferApi;
-    const $ = id => document.getElementById(id);
     const ACCOUNT_TYPES = { savings: "Cuenta de ahorros", checking: "Cuenta corriente" };
 
     const state = { accounts: [], account: null, keys: [], balance: 0, kyc: null, stores: [] };
 
-    const money = v =>
-        new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(
-            Number(v) || 0
-        );
     const parseMoney = v => Number(String(v || "").replace(/\D/g, "")) || 0;
     const uuid = () =>
         crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2);
@@ -168,7 +163,7 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const balance = await BlApi.authed(config.ledgerApi, "GET", `/ledger/accounts/${state.account.id}/balance`);
             state.balance = Number(balance.balance) || 0;
-            setText("qrAvailable", money(state.balance));
+            setText("qrAvailable", formatMoney(state.balance));
         } catch (err) {
             BlApi.handleAuthError(err);
         }
@@ -207,7 +202,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const active = tab.dataset.qrTab === id;
             tab.classList.toggle("active", active);
             tab.setAttribute("aria-selected", String(active));
-            $(tab.dataset.qrTab).hidden = !active;
+            byId(tab.dataset.qrTab).hidden = !active;
         });
         if (id !== "tabPay") stopCamera();
     }
@@ -218,11 +213,11 @@ document.addEventListener("DOMContentLoaded", () => {
     // COBRAR: MI QR
     // -----------------------------------------------------
 
-    const accountSelect = $("qrKey");
-    const amountInput = $("qrAmount");
-    const noteInput = $("qrNote");
-    const box = $("qrBox");
-    const card = $("qrCard");
+    const accountSelect = byId("qrKey");
+    const amountInput = byId("qrAmount");
+    const noteInput = byId("qrNote");
+    const box = byId("qrBox");
+    const card = byId("qrCard");
     let chargeCanvas = null;
     let presenting = false;
 
@@ -254,9 +249,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function setupCharge() {
         const has = state.accounts.length > 0;
-        $("qrNoKeys").hidden = has;
-        $("qrChargeFields").hidden = !has;
-        $("qrCard").classList.toggle("is-empty", !has);
+        byId("qrNoKeys").hidden = has;
+        byId("qrChargeFields").hidden = !has;
+        byId("qrCard").classList.toggle("is-empty", !has);
         const keyOptions = state.keys.map(
             k =>
                 `<option value="llave:${escapeHTML(k.key)}">${escapeHTML(BREB_TYPES[k.type]?.label || "Llave")} · ${escapeHTML(k.type === "alfanumerica" ? k.key : k.maskedKey)}</option>`
@@ -274,7 +269,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const note = noteInput.value.trim();
 
         setText("qrCardName", fullName());
-        $("qrCopy").textContent = target?.key ? "Copiar llave" : "Copiar número de cuenta";
+        byId("qrCopy").textContent = target?.key ? "Copiar llave" : "Copiar número de cuenta";
 
         if (!target) {
             box.innerHTML = '<div class="qr-placeholder">Abre tu cuenta para crear tu QR</div>';
@@ -295,7 +290,7 @@ document.addEventListener("DOMContentLoaded", () => {
         box.appendChild(chargeCanvas);
 
         setText("qrCardKey", target.label);
-        setText("qrCardAmount", amount ? money(amount) : "Valor libre");
+        setText("qrCardAmount", amount ? formatMoney(amount) : "Valor libre");
         setText("qrCardNote", note);
     }
 
@@ -305,7 +300,7 @@ document.addEventListener("DOMContentLoaded", () => {
         paintCharge();
     });
 
-    $("qrChips").addEventListener("click", event => {
+    byId("qrChips").addEventListener("click", event => {
         const chip = event.target.closest("[data-qr-amount]");
         if (!chip) return;
         const value = Number(chip.dataset.qrAmount);
@@ -324,14 +319,14 @@ document.addEventListener("DOMContentLoaded", () => {
         card.setAttribute("role", on ? "dialog" : "region");
         card.setAttribute("aria-modal", String(on));
         document.body.classList.toggle("qr-presenting", on);
-        $("qrPresentHint").hidden = !on;
-        $("qrPresentClose").hidden = !on;
+        byId("qrPresentHint").hidden = !on;
+        byId("qrPresentClose").hidden = !on;
         paintCharge();
-        if (on) $("qrPresentClose").focus({ preventScroll: true });
-        else $("qrAccept").focus({ preventScroll: true });
+        if (on) byId("qrPresentClose").focus({ preventScroll: true });
+        else byId("qrAccept").focus({ preventScroll: true });
     }
 
-    $("qrChargeForm").addEventListener("submit", event => {
+    byId("qrChargeForm").addEventListener("submit", event => {
         event.preventDefault();
         if (!selectedTarget()) {
             toast("Primero abre tu cuenta Banklite.", "err");
@@ -340,13 +335,13 @@ document.addEventListener("DOMContentLoaded", () => {
         setPresenting(true);
     });
 
-    $("qrPresentClose").addEventListener("click", () => setPresenting(false));
+    byId("qrPresentClose").addEventListener("click", () => setPresenting(false));
     document.addEventListener("keydown", event => {
         if (event.key === "Escape" && presenting && !document.querySelector(".modal.active")) setPresenting(false);
     });
 
     // Descarga una tarjeta con el QR, el nombre y el valor.
-    $("qrDownload").addEventListener("click", () => {
+    byId("qrDownload").addEventListener("click", () => {
         const target = selectedTarget();
         if (!chargeCanvas || !target) {
             toast("Primero abre tu cuenta Banklite.", "err");
@@ -395,7 +390,7 @@ document.addEventListener("DOMContentLoaded", () => {
         ctx.fillText(target.label, 320, 650);
         ctx.fillStyle = "#137C81";
         ctx.font = "800 44px Manrope, Arial, sans-serif";
-        ctx.fillText(amount ? money(amount) : "Valor libre", 320, 715);
+        ctx.fillText(amount ? formatMoney(amount) : "Valor libre", 320, 715);
         ctx.fillStyle = "#8A9B9E";
         ctx.font = "500 18px Inter, Arial, sans-serif";
         ctx.fillText(noteInput.value.trim() || "Escanea con tu app Banklite", 320, 770);
@@ -407,7 +402,7 @@ document.addEventListener("DOMContentLoaded", () => {
         toast("QR descargado.", "ok");
     });
 
-    $("qrCopy").addEventListener("click", async () => {
+    byId("qrCopy").addEventListener("click", async () => {
         const target = selectedTarget();
         if (!target) return;
         try {
@@ -422,10 +417,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // PAGAR: CÁMARA Y FOTO
     // -----------------------------------------------------
 
-    const video = $("qrVideo");
-    const scanner = $("qrScanner");
-    const cameraButton = $("qrCameraBtn");
-    const status = $("qrStatus");
+    const video = byId("qrVideo");
+    const scanner = byId("qrScanner");
+    const cameraButton = byId("qrCameraBtn");
+    const status = byId("qrStatus");
     let stream = null;
     let scanning = false;
 
@@ -481,7 +476,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    $("qrFile").addEventListener("change", event => {
+    byId("qrFile").addEventListener("change", event => {
         const file = event.target.files?.[0];
         event.target.value = "";
         if (!file) return;
@@ -507,8 +502,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // PAGAR: DATOS DEL QR Y CONFIRMACIÓN
     // -----------------------------------------------------
 
-    const payAmount = $("qrPayAmount");
-    const payNote = $("qrPayNote");
+    const payAmount = byId("qrPayAmount");
+    const payNote = byId("qrPayNote");
     let target = null;
     let lastMovement = null;
 
@@ -562,11 +557,11 @@ document.addEventListener("DOMContentLoaded", () => {
         setText("qrPayKind", store ? "Comercio" : holder ? "La llave pertenece a" : "La cuenta pertenece a");
         setText("qrPayName", target.display);
         setText("qrPayEntity", `Banklite · ${target.where.charAt(0).toUpperCase()}${target.where.slice(1)}`);
-        setText("qrPayBalance", money(state.balance));
+        setText("qrPayBalance", formatMoney(state.balance));
 
         payAmount.value = target.amount ? target.amount.toLocaleString("es-CO") : "";
         payAmount.readOnly = target.amount > 0;
-        $("qrPayFixed").hidden = !target.amount;
+        byId("qrPayFixed").hidden = !target.amount;
         payNote.value = target.note;
 
         openModal("qrPayModal");
@@ -605,7 +600,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    $("qrPayForm").addEventListener("submit", async event => {
+    byId("qrPayForm").addEventListener("submit", async event => {
         event.preventDefault();
         if (!target) return;
         if (!state.account) {
@@ -623,7 +618,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         if (amount > state.balance) {
-            toast(`No tienes saldo suficiente. Disponible: ${money(state.balance)}.`, "err");
+            toast(`No tienes saldo suficiente. Disponible: ${formatMoney(state.balance)}.`, "err");
             return;
         }
 
@@ -631,7 +626,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const ok = await confirmAction(
             "Confirmar pago",
-            `Vas a pagar ${money(amount)} a ${target.display} (${target.where}). Tu clave dinámica se valida automáticamente.`,
+            `Vas a pagar ${formatMoney(amount)} a ${target.display} (${target.where}). Tu clave dinámica se valida automáticamente.`,
             "Pagar"
         );
         if (!ok) return;
@@ -668,9 +663,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         lastMovement = await findMovement(transactionId);
-        $("qrReceipt").hidden = !lastMovement;
+        byId("qrReceipt").hidden = !lastMovement;
 
-        $("qrSuccessContent").innerHTML = [
+        byId("qrSuccessContent").innerHTML = [
             [
                 "Comprobante",
                 String(transactionId || "")
@@ -681,7 +676,7 @@ document.addEventListener("DOMContentLoaded", () => {
             current.key
                 ? ["Llave Bre-B", current.where.replace(/^llave /, "")]
                 : ["Cuenta", `Banklite ···· ${last4(current.account)}`],
-            ["Valor pagado", money(amount)],
+            ["Valor pagado", formatMoney(amount)],
             ["Concepto", note],
             ["Fecha", formatDate(lastMovement?.createdAt || new Date(), { dateStyle: "medium", timeStyle: "short" })],
         ]
@@ -697,7 +692,7 @@ document.addEventListener("DOMContentLoaded", () => {
         renderHistory();
     });
 
-    $("qrReceipt").addEventListener("click", () => {
+    byId("qrReceipt").addEventListener("click", () => {
         if (!lastMovement || typeof downloadReceipt !== "function") return;
         downloadReceipt(lastMovement, {
             name: fullName(),
@@ -711,7 +706,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // COMERCIOS DE PRUEBA E HISTORIAL
     // -----------------------------------------------------
 
-    const storesBox = $("qrStores");
+    const storesBox = byId("qrStores");
 
     async function loadStores() {
         try {
@@ -732,7 +727,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <div class="qr-store-code" data-store-code="${index}"></div>
                 <div class="qr-store-info">
                     <strong>${escapeHTML(store.name)}</strong>
-                    <small>${store.amount ? money(store.amount) : "Valor libre"}${store.note ? " · " + escapeHTML(store.note) : ""}</small>
+                    <small>${store.amount ? formatMoney(store.amount) : "Valor libre"}${store.note ? " · " + escapeHTML(store.note) : ""}</small>
                 </div>
                 <button type="button" class="btn soft" data-store-pay="${index}">Pagar</button>
             </div>`
@@ -758,7 +753,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     async function renderHistory() {
-        const box = $("qrHistory");
+        const box = byId("qrHistory");
         if (!state.account) {
             box.innerHTML = '<p class="pay-empty">Aún no has pagado ni recibido con QR.</p>';
             return;
@@ -786,7 +781,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         <strong>${escapeHTML(detail)}</strong>
                         <small>${incoming ? "Pago recibido por QR" : "Pago con QR"} · ${formatDate(movement.createdAt, { dateStyle: "medium" })}</small>
                     </div>
-                    <b class="${incoming ? "is-in" : ""}">${incoming ? "+" : "−"}${money(movement.amount)}</b>
+                    <b class="${incoming ? "is-in" : ""}">${incoming ? "+" : "−"}${formatMoney(movement.amount)}</b>
                     <span></span>
                 </div>`;
                   })

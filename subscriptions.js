@@ -65,14 +65,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!box || typeof BlApi === "undefined" || !BlApi.session.accessToken) return;
 
     const { config } = BlApi;
-    const $ = id => document.getElementById(id);
     const call = (method, path, body) => BlApi.authed(config.cardApi, method, path, body);
-    const money = (v, currency = "COP") =>
-        new Intl.NumberFormat("es-CO", {
-            style: "currency",
-            currency,
-            maximumFractionDigits: currency === "COP" ? 0 : 2,
-        }).format(Number(v) || 0);
     const day = value => (value ? formatDate(`${value}T12:00:00`, { day: "numeric", month: "short" }) : "");
     const state = { items: [], catalog: [], cards: [], picked: null };
 
@@ -106,7 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function render(total) {
         const active = state.items.filter(sub => sub.status === "active");
         const others = state.items.length - active.length;
-        setText("subsTotal", `${money(total)} al mes`);
+        setText("subsTotal", `${formatMoney(total)} al mes`);
         setText(
             "subsCount",
             state.items.length
@@ -133,7 +126,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <strong>${escapeHTML(sub.merchantName)}</strong>
                     <small>${escapeHTML(sub.plan)}${sub.cardLast4 ? ` · ····${sub.cardLast4}` : ""} · ${statusText(sub)}</small>
                 </div>
-                <b class="sub-price">${money(sub.amount, sub.currency)}</b>
+                <b class="sub-price">${formatMoney(sub.amount, sub.currency)}</b>
                 <div class="sub-actions">
                     <button type="button" class="btn soft" data-sub-action="${action[0]}" data-sub-id="${sub.id}">${action[1]}</button>
                     <button type="button" class="sub-cancel" data-sub-history="${sub.id}" aria-label="Historial de cobros de ${escapeHTML(sub.merchantName)}" title="Historial de cobros">
@@ -160,7 +153,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (action === "resume" && sub.status === "suspended") {
                 const ok = await confirmAction(
                     "Reactivar suscripción",
-                    `Para reactivar ${sub.merchantName} cobraremos ${money(sub.amount, sub.currency)} a tu tarjeta en este momento.`,
+                    `Para reactivar ${sub.merchantName} cobraremos ${formatMoney(sub.amount, sub.currency)} a tu tarjeta en este momento.`,
                     "Reactivar y pagar"
                 );
                 if (!ok) return;
@@ -185,7 +178,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!sub) return;
             const ok = await confirmAction(
                 "Cancelar suscripción",
-                `¿Quieres cancelar ${sub.merchantName} (${money(sub.amount, sub.currency)} al mes)? No haremos más cobros a tu tarjeta.`,
+                `¿Quieres cancelar ${sub.merchantName} (${formatMoney(sub.amount, sub.currency)} al mes)? No haremos más cobros a tu tarjeta.`,
                 "Sí, cancelar"
             );
             if (!ok) return;
@@ -206,7 +199,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const sub = state.items.find(item => item.id === id);
         if (!sub) return;
         setText("subHistoryTitle", `Cobros de ${sub.merchantName}`);
-        const list = $("subHistoryList");
+        const list = byId("subHistoryList");
         list.innerHTML = '<li class="pay-empty">Cargando…</li>';
         openModal("subHistoryModal");
         try {
@@ -220,7 +213,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         <strong>${charge.status === "succeeded" ? "Pagado" : "Rechazado"} · ${escapeHTML(charge.period)}</strong>
                         <small>${formatDate(charge.createdAt, { dateStyle: "medium", timeStyle: "short" })}${charge.attempt > 1 ? ` · intento ${charge.attempt}` : ""}${charge.reason ? ` · ${escapeHTML(charge.reason)}` : ""}</small>
                     </div>
-                    <b>${money(charge.amount, charge.currency)}</b>
+                    <b>${formatMoney(charge.amount, charge.currency)}</b>
                 </li>`
                       )
                       .join("")
@@ -232,19 +225,21 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ---------- inscribir ----------
-    const serviceBox = $("subServices");
-    const cardSelect = $("subCard");
+    const serviceBox = byId("subServices");
+    const cardSelect = byId("subCard");
 
     function paintSummary() {
         const item = state.catalog.find(c => c.code === state.picked);
         const dayOfMonth = new Date().getDate();
-        $("subSummary").textContent = item
-            ? `Hoy pagas ${money(item.price, item.currency)} y luego cada mes el día ${dayOfMonth} (en meses más cortos, el último día).`
+        byId("subSummary").textContent = item
+            ? `Hoy pagas ${formatMoney(item.price, item.currency)} y luego cada mes el día ${dayOfMonth} (en meses más cortos, el último día).`
             : "Elige un servicio.";
-        $("subSubmit").textContent = item ? `Inscribir y pagar ${money(item.price, item.currency)}` : "Inscribir";
+        byId("subSubmit").textContent = item
+            ? `Inscribir y pagar ${formatMoney(item.price, item.currency)}`
+            : "Inscribir";
     }
 
-    $("addSub").addEventListener("click", async () => {
+    byId("addSub").addEventListener("click", async () => {
         try {
             const [catalog, cards] = await Promise.all([
                 call("GET", "/cards/subscriptions/catalog"),
@@ -272,7 +267,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <button type="button" class="sub-option" data-service="${item.code}">
                 ${subLogo(item.code, item.name)}
                 <b>${escapeHTML(item.name)}</b>
-                <small>${money(item.price, item.currency)}/mes</small>
+                <small>${formatMoney(item.price, item.currency)}/mes</small>
             </button>`
                   )
                   .join("")
@@ -293,11 +288,11 @@ document.addEventListener("DOMContentLoaded", () => {
         paintSummary();
     });
 
-    $("subForm").addEventListener("submit", async event => {
+    byId("subForm").addEventListener("submit", async event => {
         event.preventDefault();
         const item = state.catalog.find(c => c.code === state.picked);
         if (!item) return toast("Elige un servicio.", "err");
-        const button = $("subSubmit");
+        const button = byId("subSubmit");
         button.disabled = true;
         try {
             const sub = await call("POST", "/cards/subscriptions", {

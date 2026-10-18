@@ -26,14 +26,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const { config, session } = BlApi;
     const api = config.savingsApi || config.transferApi;
-    const $ = id => document.getElementById(id);
     const DAY_MS = 86400000;
     const state = { data: null, balance: 0, term: null, busy: false };
 
-    const money = v =>
-        new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(
-            Number(v) || 0
-        );
     const parseMoney = v => Number(String(v || "").replace(/\D/g, "")) || 0;
     const uuid = () =>
         crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2);
@@ -87,17 +82,17 @@ document.addEventListener("DOMContentLoaded", () => {
     function renderSummary() {
         const t = state.data.totals;
         setText("pocketRateText", rate(state.data.config.pocketRate));
-        setText("savAvailable", money(state.balance));
-        setText("savPockets", money(t.inPockets));
-        setText("savCdts", money(t.inCdts));
-        setText("savInterest", "+" + money(t.interestEarned));
+        setText("savAvailable", formatMoney(state.balance));
+        setText("savPockets", formatMoney(t.inPockets));
+        setText("savCdts", formatMoney(t.inCdts));
+        setText("savInterest", "+" + formatMoney(t.interestEarned));
     }
 
     // -----------------------------------------------------
     // BOLSILLOS
     // -----------------------------------------------------
 
-    const pocketList = $("pocketList");
+    const pocketList = byId("pocketList");
 
     function renderPockets() {
         const list = state.data.pockets;
@@ -127,10 +122,10 @@ document.addEventListener("DOMContentLoaded", () => {
                         </div>
                         <button type="button" class="pocket-delete" data-pocket-delete="${pocket.id}" aria-label="Eliminar bolsillo ${escapeHTML(pocket.name)}">×</button>
                     </div>
-                    <b class="pocket-balance">${money(pocket.balance)}</b>
+                    <b class="pocket-balance">${formatMoney(pocket.balance)}</b>
                     <div class="pocket-stats">
-                        <span>Ganado: <b>+${money(pocket.earned)}</b></span>
-                        <span>${pocket.balance > 0 ? `≈ ${money(daily)} al día · ${money(yearly)} en un año` : "Agrega plata para empezar a ganar"}</span>
+                        <span>Ganado: <b>+${formatMoney(pocket.earned)}</b></span>
+                        <span>${pocket.balance > 0 ? `≈ ${formatMoney(daily)} al día · ${formatMoney(yearly)} en un año` : "Agrega plata para empezar a ganar"}</span>
                     </div>
                     <div class="pocket-actions">
                         <button type="button" class="btn primary" data-pocket-add="${pocket.id}">Agregar</button>
@@ -142,7 +137,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Nuevo bolsillo
-    const iconBox = $("pocketIcons");
+    const iconBox = byId("pocketIcons");
     let chosenIcon = "general";
     iconBox.innerHTML = Object.keys(POCKET_ICONS)
         .map(
@@ -160,22 +155,22 @@ document.addEventListener("DOMContentLoaded", () => {
             item.setAttribute("aria-checked", String(item === option));
         });
     });
-    thousands($("pocketInitial"));
+    thousands(byId("pocketInitial"));
 
-    $("newPocket").addEventListener("click", () => {
-        $("pocketForm").reset();
+    byId("newPocket").addEventListener("click", () => {
+        byId("pocketForm").reset();
         openModal("pocketModal");
     });
 
-    $("pocketForm").addEventListener("submit", async event => {
+    byId("pocketForm").addEventListener("submit", async event => {
         event.preventDefault();
         if (state.busy) return;
-        const name = $("pocketName").value.trim();
-        const initial = parseMoney($("pocketInitial").value);
+        const name = byId("pocketName").value.trim();
+        const initial = parseMoney(byId("pocketInitial").value);
         if (name.length < 2) return toast("Ponle un nombre a tu bolsillo.", "err");
         if (initial && initial < 1000) return toast("El valor mínimo es $1.000.", "err");
         if (initial > state.balance)
-            return toast(`No tienes saldo suficiente. Disponible: ${money(state.balance)}.`, "err");
+            return toast(`No tienes saldo suficiente. Disponible: ${formatMoney(state.balance)}.`, "err");
 
         state.busy = true;
         try {
@@ -201,7 +196,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // Agregar / sacar
-    thousands($("pocketMoveAmount"));
+    thousands(byId("pocketMoveAmount"));
     let moveKey = null;
 
     pocketList.addEventListener("click", async event => {
@@ -212,17 +207,17 @@ document.addEventListener("DOMContentLoaded", () => {
         if (add || take) {
             const id = (add || take).dataset.pocketAdd || (add || take).dataset.pocketTake;
             const pocket = state.data.pockets.find(item => item.id === id);
-            $("pocketMoveId").value = id;
-            $("pocketMoveMode").value = add ? "add" : "take";
-            $("pocketMoveAmount").value = "";
+            byId("pocketMoveId").value = id;
+            byId("pocketMoveMode").value = add ? "add" : "take";
+            byId("pocketMoveAmount").value = "";
             moveKey = uuid(); // una clave por intento: el doble clic usa la misma
             setText("pocketMoveEyebrow", `Bolsillo ${pocket.name}`);
             setText("pocketMoveTitle", add ? "Agregar dinero" : "Sacar dinero");
             setText(
                 "pocketMoveHint",
                 add
-                    ? `Sale de tu saldo disponible (${money(state.balance)}).`
-                    : `Vuelve a tu saldo disponible. En el bolsillo tienes ${money(pocket.balance)}.`
+                    ? `Sale de tu saldo disponible (${formatMoney(state.balance)}).`
+                    : `Vuelve a tu saldo disponible. En el bolsillo tienes ${formatMoney(pocket.balance)}.`
             );
             setText("pocketMoveSubmit", add ? "Agregar al bolsillo" : "Pasar a mi saldo");
             openModal("pocketMoveModal");
@@ -234,7 +229,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const confirmed = await confirmAction(
                 "Eliminar bolsillo",
                 pocket.balance >= 1
-                    ? `Los ${money(pocket.balance)} de "${pocket.name}" volverán a tu saldo disponible.`
+                    ? `Los ${formatMoney(pocket.balance)} de "${pocket.name}" volverán a tu saldo disponible.`
                     : `¿Quieres eliminar el bolsillo "${pocket.name}"?`,
                 "Eliminar"
             );
@@ -249,21 +244,21 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    $("pocketMoveForm").addEventListener("submit", async event => {
+    byId("pocketMoveForm").addEventListener("submit", async event => {
         event.preventDefault();
         if (state.busy) return;
-        const amount = parseMoney($("pocketMoveAmount").value);
-        const id = $("pocketMoveId").value;
-        const mode = $("pocketMoveMode").value;
+        const amount = parseMoney(byId("pocketMoveAmount").value);
+        const id = byId("pocketMoveId").value;
+        const mode = byId("pocketMoveMode").value;
         const pocket = state.data.pockets.find(item => item.id === id);
         if (amount < 1000) return toast("El valor mínimo es $1.000.", "err");
         if (mode === "add" && amount > state.balance)
-            return toast(`No tienes saldo suficiente. Disponible: ${money(state.balance)}.`, "err");
+            return toast(`No tienes saldo suficiente. Disponible: ${formatMoney(state.balance)}.`, "err");
         if (mode === "take" && amount > Math.floor(pocket.balance))
-            return toast(`En este bolsillo tienes ${money(pocket.balance)}.`, "err");
+            return toast(`En este bolsillo tienes ${formatMoney(pocket.balance)}.`, "err");
 
         state.busy = true;
-        $("pocketMoveSubmit").disabled = true;
+        byId("pocketMoveSubmit").disabled = true;
         try {
             await BlApi.authed(api, "POST", `/savings/pockets/${id}/${mode === "add" ? "deposit" : "withdraw"}`, {
                 amount,
@@ -272,15 +267,15 @@ document.addEventListener("DOMContentLoaded", () => {
             closeModalById("pocketMoveModal");
             toast(
                 mode === "add"
-                    ? `Agregaste ${money(amount)} a ${pocket.name}.`
-                    : `Pasaste ${money(amount)} a tu saldo.`,
+                    ? `Agregaste ${formatMoney(amount)} a ${pocket.name}.`
+                    : `Pasaste ${formatMoney(amount)} a tu saldo.`,
                 "ok"
             );
         } catch (err) {
             fail(err, "No se pudo mover la plata.");
         } finally {
             state.busy = false;
-            $("pocketMoveSubmit").disabled = false;
+            byId("pocketMoveSubmit").disabled = false;
             refresh();
         }
     });
@@ -289,8 +284,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // CDT: SIMULADOR
     // -----------------------------------------------------
 
-    const amountInput = $("cdtAmount");
-    const termsBox = $("cdtTerms");
+    const amountInput = byId("cdtAmount");
+    const termsBox = byId("cdtTerms");
 
     function renderTerms() {
         const terms = state.data.config.cdtTerms;
@@ -303,7 +298,7 @@ document.addEventListener("DOMContentLoaded", () => {
             </button>`
             )
             .join("");
-        setText("cdtMinText", `Mínimo ${money(state.data.config.cdtMin)}`);
+        setText("cdtMinText", `Mínimo ${formatMoney(state.data.config.cdtMin)}`);
     }
 
     termsBox.addEventListener("click", event => {
@@ -325,10 +320,10 @@ document.addEventListener("DOMContentLoaded", () => {
         const amount = parseMoney(amountInput.value);
         const result = cdtResult(amount, state.term);
         setText("cdtRate", rate(state.term.rate));
-        setText("cdtGross", "+" + money(result.gross));
-        setText("cdtTax", "-" + money(result.tax));
+        setText("cdtGross", "+" + formatMoney(result.gross));
+        setText("cdtTax", "-" + formatMoney(result.tax));
         setText("cdtDate", formatDate(new Date(Date.now() + state.term.days * DAY_MS), { dateStyle: "long" }));
-        setText("cdtTotal", money(amount ? result.total : 0));
+        setText("cdtTotal", formatMoney(amount ? result.total : 0));
     }
 
     amountInput.addEventListener("input", () => {
@@ -337,7 +332,7 @@ document.addEventListener("DOMContentLoaded", () => {
         paintSimulation();
     });
 
-    $("cdtForm").addEventListener("submit", async event => {
+    byId("cdtForm").addEventListener("submit", async event => {
         event.preventDefault();
         if (state.busy) return;
         const amount = parseMoney(amountInput.value);
@@ -346,17 +341,17 @@ document.addEventListener("DOMContentLoaded", () => {
         const min = state.data.config.cdtMin;
 
         if (amount < min) {
-            toast(`El monto mínimo para un CDT es ${money(min)}.`, "err");
+            toast(`El monto mínimo para un CDT es ${formatMoney(min)}.`, "err");
             amountInput.focus();
             return;
         }
         if (amount > state.balance)
-            return toast(`No tienes saldo suficiente. Disponible: ${money(state.balance)}.`, "err");
+            return toast(`No tienes saldo suficiente. Disponible: ${formatMoney(state.balance)}.`, "err");
 
         const maturity = new Date(Date.now() + term.days * DAY_MS);
         const confirmed = await confirmAction(
             "Abrir CDT",
-            `Vas a invertir ${money(amount)} a ${term.days} días con una tasa de ${rate(term.rate)}.\nEl ${formatDate(maturity, { dateStyle: "long" })} recibirás ${money(result.total)}.\nNo podrás retirar el dinero antes de esa fecha.`,
+            `Vas a invertir ${formatMoney(amount)} a ${term.days} días con una tasa de ${rate(term.rate)}.\nEl ${formatDate(maturity, { dateStyle: "long" })} recibirás ${formatMoney(result.total)}.\nNo podrás retirar el dinero antes de esa fecha.`,
             "Invertir"
         );
         if (!confirmed) return;
@@ -365,7 +360,7 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             await BlApi.authed(api, "POST", "/savings/cdts", { amount, days: term.days, idempotencyKey: uuid() });
             amountInput.value = "";
-            toast(`CDT por ${money(amount)} abierto.`, "ok");
+            toast(`CDT por ${formatMoney(amount)} abierto.`, "ok");
         } catch (err) {
             fail(err, "No se pudo abrir el CDT.");
         } finally {
@@ -378,7 +373,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // CDT: MIS INVERSIONES
     // -----------------------------------------------------
 
-    const cdtList = $("cdtList");
+    const cdtList = byId("cdtList");
 
     function renderCdts() {
         const list = state.data.cdts;
@@ -401,10 +396,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     return `
                     <article class="cdt-item is-paid">
                         <div class="cdt-item-top">
-                            <div><strong>${money(cdt.amount)}</strong><small>${escapeHTML(cdt.number)} · ${cdt.days} días · ${rate(cdt.rate)}</small></div>
+                            <div><strong>${formatMoney(cdt.amount)}</strong><small>${escapeHTML(cdt.number)} · ${cdt.days} días · ${rate(cdt.rate)}</small></div>
                             <span class="panel-chip">Pagado</span>
                         </div>
-                        <p class="cdt-paid">Recibiste ${money(cdt.total)} (ganaste +${money(cdt.net)}) el ${formatDate(cdt.paidAt, { dateStyle: "medium" })}.</p>
+                        <p class="cdt-paid">Recibiste ${formatMoney(cdt.total)} (ganaste +${formatMoney(cdt.net)}) el ${formatDate(cdt.paidAt, { dateStyle: "medium" })}.</p>
                     </article>`;
                 }
                 const opened = new Date(cdt.openedAt).getTime();
@@ -415,17 +410,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 return `
                 <article class="cdt-item${matured ? " is-ready" : ""}">
                     <div class="cdt-item-top">
-                        <div><strong>${money(cdt.amount)}</strong><small>${escapeHTML(cdt.number)} · ${cdt.days} días · ${rate(cdt.rate)}</small></div>
+                        <div><strong>${formatMoney(cdt.amount)}</strong><small>${escapeHTML(cdt.number)} · ${cdt.days} días · ${rate(cdt.rate)}</small></div>
                         <span class="panel-chip ${matured ? "is-on" : ""}">${matured ? "Listo para cobrar" : `Faltan ${daysLeft} días`}</span>
                     </div>
                     <div class="limit-bar" aria-hidden="true"><span style="width:${progress}%"></span></div>
                     <div class="cdt-item-info">
                         <span>Vence: <b>${formatDate(cdt.maturesAt, { dateStyle: "medium" })}</b></span>
-                        <span>Recibirás: <b>${money(cdt.total)}</b></span>
+                        <span>Recibirás: <b>${formatMoney(cdt.total)}</b></span>
                     </div>
                     ${
                         matured
-                            ? `<button type="button" class="btn primary full" data-cdt-redeem="${cdt.id}">Cobrar ${money(cdt.total)}</button>`
+                            ? `<button type="button" class="btn primary full" data-cdt-redeem="${cdt.id}">Cobrar ${formatMoney(cdt.total)}</button>`
                             : state.data.config.demoMaturity
                               ? `<button type="button" class="cdt-demo" data-cdt-demo="${cdt.id}">Simular vencimiento (modo demostración)</button>`
                               : ""
@@ -464,7 +459,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 await BlApi.authed(api, "POST", `/savings/cdts/${cdt.id}/collect`, { idempotencyKey: uuid() });
                 showMessage(
                     "¡Tu CDT se pagó!",
-                    `Recibiste ${money(cdt.total)} en tu saldo disponible.\nCapital: ${money(cdt.amount)}\nIntereses: +${money(cdt.gross)}\nRetención: -${money(cdt.tax)}`,
+                    `Recibiste ${formatMoney(cdt.total)} en tu saldo disponible.\nCapital: ${formatMoney(cdt.amount)}\nIntereses: +${formatMoney(cdt.gross)}\nRetención: -${formatMoney(cdt.tax)}`,
                     "✓"
                 );
             } catch (err) {

@@ -13,14 +13,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const { config } = BlApi;
     const api = config.rewardsApi || config.transferApi;
-    const $ = id => document.getElementById(id);
     const levelNames = ["is-bronze", "is-silver", "is-gold"];
     const state = { data: null, busy: false };
 
-    const money = v =>
-        new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(
-            Number(v) || 0
-        );
     const formatPoints = v => Number(v || 0).toLocaleString("es-CO");
     const uuid = () =>
         crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2);
@@ -47,7 +42,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const progress = next ? Math.min(100, ((data.earned - level.min) / (next.min - level.min)) * 100) : 100;
 
         setText("pointsTotal", formatPoints(data.balance));
-        setText("pointsValue", money(data.value));
+        setText("pointsValue", formatMoney(data.value));
         setText("pointsLevel", `Nivel ${level.name}`);
         setText("pointsMultiplier", `x${String(level.multiplier).replace(".", ",")} puntos`);
         setText(
@@ -57,7 +52,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 : "¡Llegaste al nivel más alto!"
         );
 
-        const bar = $("pointsBar");
+        const bar = byId("pointsBar");
         bar.querySelector("span").style.width = `${progress}%`;
         bar.setAttribute("aria-valuenow", Math.round(progress));
 
@@ -69,7 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         // Catálogo
-        $("rewardGrid").innerHTML = data.rewards
+        byId("rewardGrid").innerHTML = data.rewards
             .map(reward => {
                 const missing = reward.points - data.balance;
                 return `
@@ -88,7 +83,7 @@ document.addEventListener("DOMContentLoaded", () => {
             .join("");
 
         // Retos
-        $("badgeGrid").innerHTML = data.badges
+        byId("badgeGrid").innerHTML = data.badges
             .map(badge => {
                 const inner = `
                 <span class="badge-icon" aria-hidden="true">${badge.done ? "✓" : escapeHTML(badge.icon)}</span>
@@ -103,7 +98,7 @@ document.addEventListener("DOMContentLoaded", () => {
         setText("badgeCount", `${achievable.filter(b => b.done).length} de ${achievable.length}`);
 
         // Bonos
-        $("couponList").innerHTML = data.coupons.length
+        byId("couponList").innerHTML = data.coupons.length
             ? data.coupons
                   .map(
                       coupon => `
@@ -120,7 +115,7 @@ document.addEventListener("DOMContentLoaded", () => {
             : '<p class="pay-empty">Cuando canjees un bono, su código aparece aquí.</p>';
 
         // Historial
-        $("pointsHistory").innerHTML = data.history.length
+        byId("pointsHistory").innerHTML = data.history.length
             ? data.history
                   .slice(0, 12)
                   .map(
@@ -138,7 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
             : '<p class="pay-empty">Aún no tienes movimientos de puntos.</p>';
 
         // Operadores del canje de recarga
-        $("rechargeOperator").innerHTML = (data.operators || [])
+        byId("rechargeOperator").innerHTML = (data.operators || [])
             .map(op => `<option value="${escapeHTML(op.code)}">${escapeHTML(op.name)}</option>`)
             .join("");
     }
@@ -156,12 +151,12 @@ document.addEventListener("DOMContentLoaded", () => {
             if (reward.kind === "cash") {
                 showMessage(
                     "¡Canje exitoso!",
-                    `Sumamos ${money(reward.value)} a tu cuenta. Ya lo ves en tus movimientos.`
+                    `Sumamos ${formatMoney(reward.value)} a tu cuenta. Ya lo ves en tus movimientos.`
                 );
             } else if (reward.kind === "recharge") {
                 showMessage(
                     "¡Recarga enviada!",
-                    `Recargamos ${money(reward.value)} a tu celular ${String(result.phone || "").replace(/^(\d{3})(\d{3})(\d{4})$/, "$1 $2 $3")} (${result.operator}).`
+                    `Recargamos ${formatMoney(reward.value)} a tu celular ${String(result.phone || "").replace(/^(\d{3})(\d{3})(\d{4})$/, "$1 $2 $3")} (${result.operator}).`
                 );
             } else {
                 showMessage(
@@ -177,7 +172,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    $("rewardGrid").addEventListener("click", async event => {
+    byId("rewardGrid").addEventListener("click", async event => {
         const button = event.target.closest("[data-reward]");
         if (!button || !state.data) return;
         const reward = state.data.rewards.find(item => item.id === button.dataset.reward);
@@ -191,7 +186,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const detail =
             reward.kind === "cash"
-                ? `Se suman ${money(reward.value)} a tu cuenta.`
+                ? `Se suman ${formatMoney(reward.value)} a tu cuenta.`
                 : "Te damos un código para usar en los próximos 30 días.";
         const ok = await confirmAction(
             "Canjear puntos",
@@ -201,15 +196,15 @@ document.addEventListener("DOMContentLoaded", () => {
         if (ok) redeem(reward);
     });
 
-    $("rechargeForm").addEventListener("submit", event => {
+    byId("rechargeForm").addEventListener("submit", event => {
         event.preventDefault();
         const reward = state.pendingReward;
         if (!reward) return;
         closeModalById("rechargeModal");
-        redeem(reward, $("rechargeOperator").value);
+        redeem(reward, byId("rechargeOperator").value);
     });
 
-    $("couponList").addEventListener("click", async event => {
+    byId("couponList").addEventListener("click", async event => {
         const button = event.target.closest("[data-copy-coupon]");
         if (!button) return;
         try {

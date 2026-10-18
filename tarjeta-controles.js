@@ -13,12 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!document.getElementById("cardOnlineSwitch") || !BlApi.hasSession()) return;
 
     const { config } = BlApi;
-    const $ = id => document.getElementById(id);
     const api = (method, path, body) => BlApi.authed(config.cardApi, method, path, body);
-    const money = v =>
-        new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(
-            Number(v) || 0
-        );
     const short = v =>
         v >= 1_000_000 ? `$ ${String(v / 1_000_000).replace(".", ",")} M` : `$ ${Math.round(v / 1000)} mil`;
 
@@ -47,27 +42,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function paint() {
         const ready = !!(card && controls);
-        $("cardOnlineSwitch").disabled = !ready;
-        $("editCardLimit").disabled = !ready;
+        byId("cardOnlineSwitch").disabled = !ready;
+        byId("editCardLimit").disabled = !ready;
         if (!ready) return;
 
-        $("cardOnlineSwitch").checked = controls.onlineEnabled;
-        setText("cardLimitValue", money(controls.dailyLimit));
+        byId("cardOnlineSwitch").checked = controls.onlineEnabled;
+        setText("cardLimitValue", formatMoney(controls.dailyLimit));
         // dailyLimit ya es el que se aplica: el menor entre el de la tarjeta y el de la cuenta.
         setText(
             "cardLimitUsed",
-            `Usado hoy: ${money(controls.usedToday)} · Disponible: ${money(controls.availableToday)}` +
+            `Usado hoy: ${formatMoney(controls.usedToday)} · Disponible: ${formatMoney(controls.availableToday)}` +
                 (controls.cappedByAccount ? " · Tope del límite diario de tu cuenta" : "")
         );
         const percent = controls.dailyLimit ? Math.min((controls.usedToday / controls.dailyLimit) * 100, 100) : 0;
-        const bar = $("cardLimitBar");
+        const bar = byId("cardLimitBar");
         bar.style.width = `${percent}%`;
         bar.classList.toggle("is-high", percent >= 80);
 
         // Nota bajo la tarjeta, como en la versión simulada.
-        if (!$("cardStatusNote").dataset.cvvNote) {
+        if (!byId("cardStatusNote").dataset.cvvNote) {
             const frozen = card.status !== "active";
-            $("cardStatusNote").textContent = frozen
+            byId("cardStatusNote").textContent = frozen
                 ? "Tu tarjeta está congelada. No se aprobará ninguna compra hasta que la descongeles."
                 : controls.onlineEnabled
                   ? "Tarjeta débito Banklite para compras físicas y online."
@@ -93,7 +88,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const changed = !card || !next || card.id !== next.id || card.status !== next.status;
         card = next;
         // El CVV recién emitido tiene su propio aviso: no se tapa.
-        $("cardStatusNote").dataset.cvvNote = next?.justIssued ? "1" : "";
+        byId("cardStatusNote").dataset.cvvNote = next?.justIssued ? "1" : "";
         if (!card) {
             controls = null;
             return paint();
@@ -106,7 +101,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // COMPRAS POR INTERNET
     // -----------------------------------------------------
 
-    $("cardOnlineSwitch").addEventListener("change", async event => {
+    byId("cardOnlineSwitch").addEventListener("change", async event => {
         if (!card) return;
         const enabled = event.target.checked;
         event.target.disabled = true;
@@ -125,11 +120,11 @@ document.addEventListener("DOMContentLoaded", () => {
     // LÍMITE DIARIO (deslizador, montos rápidos y clave dinámica)
     // -----------------------------------------------------
 
-    const range = $("limitRange");
-    const limitKey = initPinBoxes($("limitKeyBoxes"));
+    const range = byId("limitRange");
+    const limitKey = initPinBoxes(byId("limitKeyBoxes"));
 
     function paintRange() {
-        setText("limitPreview", money(Number(range.value)));
+        setText("limitPreview", formatMoney(Number(range.value)));
         const span = Number(range.max) - Number(range.min);
         const percent = span > 0 ? ((range.value - range.min) / span) * 100 : 100;
         range.style.setProperty(
@@ -139,7 +134,7 @@ document.addEventListener("DOMContentLoaded", () => {
         );
     }
 
-    $("editCardLimit").addEventListener("click", async () => {
+    byId("editCardLimit").addEventListener("click", async () => {
         if (!card) return;
         // Se recarga para tener el máximo vigente (el límite diario de la cuenta).
         await loadControls();
@@ -155,12 +150,12 @@ document.addEventListener("DOMContentLoaded", () => {
         range.value = String(Math.min(Math.max(controls.dailyLimit, min), max));
         setText("limitMinLabel", short(min));
         setText("limitMaxLabel", short(max));
-        $("limitHint").innerHTML =
-            `Es lo máximo que puedes gastar con tu tarjeta en un día. Puedes elegir entre <b>${escapeHTML(money(min))}</b> y <b>${escapeHTML(money(max))}</b>, el límite diario de tu cuenta.`;
+        byId("limitHint").innerHTML =
+            `Es lo máximo que puedes gastar con tu tarjeta en un día. Puedes elegir entre <b>${escapeHTML(formatMoney(min))}</b> y <b>${escapeHTML(formatMoney(max))}</b>, el límite diario de tu cuenta.`;
 
         const chips = [500000, 1000000, 2000000, 5000000].filter(v => v >= min && v <= max);
         if (!chips.includes(max)) chips.push(max);
-        $("limitChips").innerHTML = chips
+        byId("limitChips").innerHTML = chips
             .map(v => `<button type="button" data-limit="${v}">${escapeHTML(short(v).replace(" mil", "K"))}</button>`)
             .join("");
         paintRange();
@@ -170,14 +165,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     range.addEventListener("input", paintRange);
 
-    $("limitChips").addEventListener("click", event => {
+    byId("limitChips").addEventListener("click", event => {
         const chip = event.target.closest("[data-limit]");
         if (!chip) return;
         range.value = chip.dataset.limit;
         paintRange();
     });
 
-    $("limitForm").addEventListener("submit", async event => {
+    byId("limitForm").addEventListener("submit", async event => {
         event.preventDefault();
         if (!card) return;
         if (!limitKey.isComplete()) {
@@ -186,7 +181,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return toast("Escribe los 6 dígitos de tu clave dinámica.", "err");
         }
         const dailyLimit = Number(range.value);
-        const button = $("limitSubmit");
+        const button = byId("limitSubmit");
         button.disabled = true;
         try {
             controls = await api("PATCH", `/cards/${card.id}/controls/daily-limit`, {
@@ -194,7 +189,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 dynamicCode: limitKey.value(),
             });
             closeModalById("limitModal");
-            toast(`Límite diario: ${money(controls.dailyLimit)}.`, "ok");
+            toast(`Límite diario: ${formatMoney(controls.dailyLimit)}.`, "ok");
         } catch (err) {
             if (BlApi.handleAuthError(err)) return;
             // Clave incorrecta, vencida o bloqueada: se queda en el modal para intentarlo de nuevo.
@@ -218,7 +213,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const CHANNEL_LABEL = { in_store: "tienda física", online: "por internet" };
 
-    $("simulatePurchase").addEventListener("click", async () => {
+    byId("simulatePurchase").addEventListener("click", async () => {
         if (!card) return toast("Primero emite tu tarjeta virtual.", "err");
         if (!stores) {
             try {
@@ -226,7 +221,7 @@ document.addEventListener("DOMContentLoaded", () => {
             } catch (err) {
                 return fail(err, "No se pudieron cargar los comercios.");
             }
-            $("purchaseStore").innerHTML = stores
+            byId("purchaseStore").innerHTML = stores
                 .flatMap(store =>
                     store.channels.map(
                         channel =>
@@ -235,32 +230,32 @@ document.addEventListener("DOMContentLoaded", () => {
                 )
                 .join("");
         }
-        $("purchaseForm").reset();
+        byId("purchaseForm").reset();
         purchaseKey = null;
         openModal("purchaseModal");
     });
 
-    $("purchaseAmount").addEventListener("input", event => {
+    byId("purchaseAmount").addEventListener("input", event => {
         const digits = event.target.value.replace(/\D/g, "").slice(0, 9);
         event.target.value = digits ? Number(digits).toLocaleString("es-CO") : "";
         purchaseKey = null; // otro valor es otro intento
     });
 
-    $("purchaseStore").addEventListener("change", () => {
+    byId("purchaseStore").addEventListener("change", () => {
         purchaseKey = null;
     });
 
-    $("purchaseForm").addEventListener("submit", async event => {
+    byId("purchaseForm").addEventListener("submit", async event => {
         event.preventDefault();
         if (!card) return;
-        const select = $("purchaseStore");
+        const select = byId("purchaseStore");
         const option = select.selectedOptions[0];
-        const amount = Number($("purchaseAmount").value.replace(/\D/g, "")) || 0;
+        const amount = Number(byId("purchaseAmount").value.replace(/\D/g, "")) || 0;
         if (!option) return toast("Elige un comercio.", "err");
         if (amount < 1000) return toast("Escribe un valor de al menos $1.000.", "err");
 
         const storeName = option.textContent.split(" · ")[0];
-        const button = $("purchaseSubmit");
+        const button = byId("purchaseSubmit");
         button.disabled = true;
         purchaseKey = purchaseKey || crypto.randomUUID();
         try {
@@ -274,12 +269,12 @@ document.addEventListener("DOMContentLoaded", () => {
             purchaseKey = null;
             closeModalById("purchaseModal");
             if (result.status === "approved") {
-                toast(`Compra aprobada en ${storeName}: ${money(amount)}.`, "ok");
+                toast(`Compra aprobada en ${storeName}: ${formatMoney(amount)}.`, "ok");
                 document.dispatchEvent(new CustomEvent("banklite:account-changed"));
             } else {
                 showMessage(
                     "Compra rechazada",
-                    `${storeName} · ${money(amount)}\n\n${result.reason || "La compra no fue aprobada."}`,
+                    `${storeName} · ${formatMoney(amount)}\n\n${result.reason || "La compra no fue aprobada."}`,
                     "!"
                 );
             }

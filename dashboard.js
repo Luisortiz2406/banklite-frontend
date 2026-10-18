@@ -15,7 +15,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const { config, session } = BlApi;
     const get = (base, path) => BlApi.authed(base, "GET", path);
     const send = (base, method, path, body) => BlApi.authed(base, method, path, body);
-    const $ = id => document.getElementById(id);
 
     // Menú lateral, vistas (#tarjetas, #ahorro, #suscripciones) y carrusel del diseño.
     initSidebar();
@@ -40,12 +39,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const STATUS_LABELS = { pending: "Pendiente", active: "Activa", blocked: "Bloqueada", closed: "Cerrada" };
     const DOC_NAMES = { CC: "Cédula de ciudadanía", CE: "Cédula de extranjería", PA: "Pasaporte" };
 
-    const money = (value, currency = state.account?.currency || "COP") =>
-        new Intl.NumberFormat("es-CO", {
-            style: "currency",
-            currency,
-            maximumFractionDigits: currency === "COP" ? 0 : 2,
-        }).format(Number(value) || 0);
+    // Moneda de la cuenta por defecto
+    const money = (value, currency = state.account?.currency) => formatMoney(value, currency);
     const formatAccount = n => (n || "").replace(/^(\d{3})(\d{4})(\d{4})$/, "$1 $2 $3");
     const maskAccount = n => (n ? `••• •••• ${n.slice(-4)}` : "—");
     const fullName = () => (state.kyc ? `${state.kyc.nombres || ""} ${state.kyc.apellidos || ""}`.trim() : "");
@@ -75,13 +70,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ---------- fecha ----------
-    $("today").textContent = new Intl.DateTimeFormat("es-CO", {
+    byId("today").textContent = new Intl.DateTimeFormat("es-CO", {
         weekday: "long",
         day: "numeric",
         month: "long",
     }).format(new Date());
     const monthLabel = new Intl.DateTimeFormat("es-CO", { month: "long" }).format(new Date());
-    $("spendingMonth").textContent = monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1);
+    byId("spendingMonth").textContent = monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1);
 
     // =====================================================
     // IDENTIDAD (GET /kyc/:idUser)
@@ -96,9 +91,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         const name = fullName();
         const first = state.kyc?.nombres?.split(/\s+/)[0] || "cliente";
-        $("helloName").textContent = first;
+        byId("helloName").textContent = first;
         BlLayout.setUser(name);
-        $("cardHolder").textContent = (name || "TITULAR BANKLITE").toUpperCase();
+        byId("cardHolder").textContent = (name || "TITULAR BANKLITE").toUpperCase();
     }
 
     // =====================================================
@@ -151,29 +146,29 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function renderNoAccount() {
-        $("noAccountBox").hidden = false;
-        $("accountInfo").hidden = true;
-        $("accountLimits").hidden = true;
-        $("accountStatusNote").hidden = true;
-        $("toggleBalance").hidden = true;
-        $("balanceValue").textContent = "—";
-        $("certGroup").hidden = true;
+        byId("noAccountBox").hidden = false;
+        byId("accountInfo").hidden = true;
+        byId("accountLimits").hidden = true;
+        byId("accountStatusNote").hidden = true;
+        byId("toggleBalance").hidden = true;
+        byId("balanceValue").textContent = "—";
+        byId("certGroup").hidden = true;
         renderSpending();
         renderCards();
     }
 
     function renderAccount() {
         const { account, limits } = state;
-        $("noAccountBox").hidden = true;
-        $("accountInfo").hidden = false;
-        $("toggleBalance").hidden = false;
-        $("certGroup").hidden = false;
-        $("accountType").textContent = `${TYPE_LABELS[account.accountType] || "Cuenta"} · ${account.currency}`;
+        byId("noAccountBox").hidden = true;
+        byId("accountInfo").hidden = false;
+        byId("toggleBalance").hidden = false;
+        byId("certGroup").hidden = false;
+        byId("accountType").textContent = `${TYPE_LABELS[account.accountType] || "Cuenta"} · ${account.currency}`;
 
-        $("accountLimits").hidden = !limits;
+        byId("accountLimits").hidden = !limits;
         if (limits) {
-            $("dailyLimit").textContent = money(limits.dailyLimit);
-            $("monthlyLimit").textContent = money(limits.monthlyLimit);
+            byId("dailyLimit").textContent = money(limits.dailyLimit);
+            byId("monthlyLimit").textContent = money(limits.monthlyLimit);
         }
 
         const notes = {
@@ -183,8 +178,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     ? "El banco bloqueó tu cuenta. Comunícate con soporte."
                     : "Tu cuenta está bloqueada.",
         };
-        $("accountStatusNote").hidden = !notes[account.status];
-        $("accountStatusNote").textContent = notes[account.status] || "";
+        byId("accountStatusNote").hidden = !notes[account.status];
+        byId("accountStatusNote").textContent = notes[account.status] || "";
         paintBalance();
     }
 
@@ -193,14 +188,14 @@ document.addEventListener("DOMContentLoaded", () => {
         const { account, balance } = state;
         if (!account || !balance) return;
         const visible = state.showAccount;
-        $("balanceValue").textContent = visible
+        byId("balanceValue").textContent = visible
             ? money(balance.balance, balance.currency)
             : `•••••• ${balance.currency}`;
-        $("balanceValue").dataset.visible = String(visible);
-        $("accountNumberShown").textContent = visible
+        byId("balanceValue").dataset.visible = String(visible);
+        byId("accountNumberShown").textContent = visible
             ? formatAccount(account.accountNumber)
             : maskAccount(account.accountNumber);
-        const toggle = $("toggleBalance");
+        const toggle = byId("toggleBalance");
         toggle.setAttribute("aria-pressed", String(visible));
         toggle.setAttribute(
             "aria-label",
@@ -210,14 +205,14 @@ document.addEventListener("DOMContentLoaded", () => {
             ? '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12"/><circle cx="12" cy="12" r="3"/></svg>'
             : '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.9 4.2A10 10 0 0 1 12 4c6.5 0 10 8 10 8a17 17 0 0 1-2.2 3.2M6.6 6.6C3.9 8.4 2 12 2 12s3.5 8 10 8a9.7 9.7 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/><path d="m2 2 20 20"/></svg>';
     }
-    $("toggleBalance").addEventListener("click", () => {
+    byId("toggleBalance").addEventListener("click", () => {
         state.showAccount = !state.showAccount;
         paintBalance();
     });
 
     // Resumen mensual: solo datos del ledger (salidas por tipo y entradas del mes).
     function renderSpending() {
-        const donut = $("spendingDonut");
+        const donut = byId("spendingDonut");
         const totals = { transfer: 0, debit: 0, income: 0 };
         for (const m of state.monthMovements) {
             // Apartar o sacar de bolsillos, metas y CDT no es gasto ni ingreso: es tu misma plata.
@@ -230,10 +225,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         const out = totals.transfer + totals.debit;
         const compact = v => compactMoney(v);
-        $("spentValue").textContent = state.account ? compact(out) : "—";
-        $("spentTransfer").textContent = state.account ? compact(totals.transfer) : "—";
-        $("spentDebit").textContent = state.account ? compact(totals.debit) : "—";
-        $("spentIncome").textContent = state.account ? compact(totals.income) : "—";
+        byId("spentValue").textContent = state.account ? compact(out) : "—";
+        byId("spentTransfer").textContent = state.account ? compact(totals.transfer) : "—";
+        byId("spentDebit").textContent = state.account ? compact(totals.debit) : "—";
+        byId("spentIncome").textContent = state.account ? compact(totals.income) : "—";
 
         if (!out) {
             donut.style.background = "var(--border-light)";
@@ -252,12 +247,12 @@ document.addEventListener("DOMContentLoaded", () => {
     // ABRIR CUENTA
     // =====================================================
 
-    $("openAccountBtn").addEventListener("click", () => openModal("accountTypeModal"));
+    byId("openAccountBtn").addEventListener("click", () => openModal("accountTypeModal"));
 
-    $("createAccountBtn").addEventListener("click", async () => {
-        const button = $("createAccountBtn");
+    byId("createAccountBtn").addEventListener("click", async () => {
+        const button = byId("createAccountBtn");
         const accountType = document.querySelector('input[name="dashAccountType"]:checked')?.value || "savings";
-        const currency = $("accountCurrency").value;
+        const currency = byId("accountCurrency").value;
         setLoading(button, true);
         try {
             const account = await send(config.accountApi, "POST", "/accounts/create", {
@@ -295,42 +290,43 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function renderCards() {
         const card = state.card;
-        $("noCardBox").hidden = !!card;
-        $("cardLayout").hidden = !card;
-        $("toggleCardNumber").hidden = !card;
+        byId("noCardBox").hidden = !!card;
+        byId("cardLayout").hidden = !card;
+        byId("toggleCardNumber").hidden = !card;
         if (!card) {
             document.dispatchEvent(new CustomEvent("banklite:card", { detail: null }));
             const canIssue = !!state.account && state.account.status === "active";
-            $("issueCardBtn").disabled = !canIssue;
-            $("noCardText").textContent = canIssue
+            byId("issueCardBtn").disabled = !canIssue;
+            byId("noCardText").textContent = canIssue
                 ? "Todavía no tienes tarjeta. Emítela gratis y úsala de inmediato."
                 : "Para emitir tu tarjeta necesitas una cuenta Banklite activa.";
             return;
         }
         const issued = state.issued[card.id];
         const full = issued?.cardNumber || state.revealed;
-        $("cardNumber").textContent = full
+        byId("cardNumber").textContent = full
             ? full.replace(/\s/g, "").replace(/(\d{4})(?=\d)/g, "$1 ")
             : `•••• •••• •••• ${card.lastFour}`;
-        $("cardExp").textContent = `${String(card.expiryMonth).padStart(2, "0")}/${String(card.expiryYear).slice(-2)}`;
-        $("cardCvv").textContent = issued?.cvv || "•••";
-        $("cardStatusNote").textContent = issued
+        byId("cardExp").textContent =
+            `${String(card.expiryMonth).padStart(2, "0")}/${String(card.expiryYear).slice(-2)}`;
+        byId("cardCvv").textContent = issued?.cvv || "•••";
+        byId("cardStatusNote").textContent = issued
             ? "Guarda el CVV ahora: solo se muestra en esta sesión y no se guarda."
             : "El CVV solo se muestra al emitir la tarjeta y no se guarda.";
         const frozen = card.status !== "active";
-        $("realCard").classList.toggle("is-locked", frozen);
-        $("cardStateChip").textContent = frozen ? "Congelada" : "Activa";
-        $("cardLockSwitch").checked = frozen;
-        $("cardAccount").textContent = `Cuenta ····${String(card.accountNumber).slice(-4)} · ${card.currency}`;
-        $("toggleCardNumber").textContent = full && !issued ? "Ocultar número" : "Mostrar número";
-        $("toggleCardNumber").hidden = !!issued;
+        byId("realCard").classList.toggle("is-locked", frozen);
+        byId("cardStateChip").textContent = frozen ? "Congelada" : "Activa";
+        byId("cardLockSwitch").checked = frozen;
+        byId("cardAccount").textContent = `Cuenta ····${String(card.accountNumber).slice(-4)} · ${card.currency}`;
+        byId("toggleCardNumber").textContent = full && !issued ? "Ocultar número" : "Mostrar número";
+        byId("toggleCardNumber").hidden = !!issued;
         // Los controles (internet, límite, compras) los maneja tarjeta-controles.js.
         document.dispatchEvent(new CustomEvent("banklite:card", { detail: { ...card, justIssued: !!issued } }));
     }
 
-    $("issueCardBtn").addEventListener("click", async () => {
+    byId("issueCardBtn").addEventListener("click", async () => {
         if (!state.account) return toast("Primero debes abrir una cuenta Banklite activa.", "err");
-        const button = $("issueCardBtn");
+        const button = byId("issueCardBtn");
         setLoading(button, true);
         try {
             const result = await send(config.cardApi, "POST", "/cards", { accountId: state.account.id });
@@ -349,7 +345,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     let hideTimer = null;
-    $("toggleCardNumber").addEventListener("click", async () => {
+    byId("toggleCardNumber").addEventListener("click", async () => {
         const card = state.card;
         if (!card) return;
         if (state.revealed) {
@@ -372,7 +368,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    $("cardLockSwitch").addEventListener("change", async event => {
+    byId("cardLockSwitch").addEventListener("change", async event => {
         const card = state.card;
         if (!card) return;
         const freeze = event.target.checked;
@@ -394,9 +390,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function openMyProfile() {
         const name = fullName();
-        $("meAvatar").textContent = initials(name || "B");
-        $("meName").textContent = name || "Cliente Banklite";
-        $("meLine").textContent =
+        byId("meAvatar").textContent = initials(name || "B");
+        byId("meName").textContent = name || "Cliente Banklite";
+        byId("meLine").textContent =
             [state.kyc?.email, state.account ? `Cuenta ${maskAccount(state.account.accountNumber)}` : null]
                 .filter(Boolean)
                 .join(" · ") || "—";
@@ -406,8 +402,8 @@ document.addEventListener("DOMContentLoaded", () => {
     function openProfileData() {
         const k = state.kyc || {};
         const name = fullName();
-        $("profileAvatar").textContent = initials(name || "B");
-        $("profileTitle").textContent = name || "Mis datos";
+        byId("profileAvatar").textContent = initials(name || "B");
+        byId("profileTitle").textContent = name || "Mis datos";
         const rows = [
             ["Nombres", k.nombres],
             ["Apellidos", k.apellidos],
@@ -424,7 +420,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     : null,
             ],
         ];
-        const box = $("profileData");
+        const box = byId("profileData");
         box.replaceChildren();
         rows.forEach(([label, value]) => {
             const row = document.createElement("div");
@@ -446,19 +442,19 @@ document.addEventListener("DOMContentLoaded", () => {
         open();
     }
 
-    $("openMyProfile").addEventListener("click", event => {
+    byId("openMyProfile").addEventListener("click", event => {
         event.preventDefault();
         openMyProfile();
     });
-    $("openSettings").addEventListener("click", event => {
+    byId("openSettings").addEventListener("click", event => {
         event.preventDefault();
         openModal("settingsModal");
     });
-    $("openProfile").addEventListener("click", () => {
+    byId("openProfile").addEventListener("click", () => {
         closeModalById("myProfileModal");
         openProfileData();
     });
-    const avatar = $("avatar");
+    const avatar = byId("avatar");
     avatar.setAttribute("role", "button");
     avatar.setAttribute("tabindex", "0");
     avatar.setAttribute("aria-label", "Ver mis datos");
@@ -495,28 +491,28 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     function paintCert() {
         const info = certInfo();
-        $("certName").textContent = info.name;
-        $("certDoc").textContent = info.document;
-        $("certType").textContent = info.accountType;
-        $("certAccount").textContent = info.accountFormatted;
-        $("certStatus").textContent = info.status;
-        $("certStatusChip").textContent = info.status;
-        $("certOpened").textContent = formatDate(info.opened, { dateStyle: "long" });
-        $("certCurrency").textContent = info.currency;
-        $("certBalance").textContent = info.balance;
-        $("certToday").textContent = formatDate(new Date(), { dateStyle: "long" });
-        $("certCode").textContent = certCode();
-        document.querySelector("#accountCertModal .cert-balance").hidden = !$("certIncludeBalance").checked;
+        byId("certName").textContent = info.name;
+        byId("certDoc").textContent = info.document;
+        byId("certType").textContent = info.accountType;
+        byId("certAccount").textContent = info.accountFormatted;
+        byId("certStatus").textContent = info.status;
+        byId("certStatusChip").textContent = info.status;
+        byId("certOpened").textContent = formatDate(info.opened, { dateStyle: "long" });
+        byId("certCurrency").textContent = info.currency;
+        byId("certBalance").textContent = info.balance;
+        byId("certToday").textContent = formatDate(new Date(), { dateStyle: "long" });
+        byId("certCode").textContent = certCode();
+        document.querySelector("#accountCertModal .cert-balance").hidden = !byId("certIncludeBalance").checked;
     }
-    $("openAccountCert").addEventListener("click", () => {
+    byId("openAccountCert").addEventListener("click", () => {
         if (!state.account) return;
         closeModalById("myProfileModal");
         paintCert();
         openModal("accountCertModal");
     });
-    $("certIncludeBalance").addEventListener("change", paintCert);
-    $("downloadAccountCert").addEventListener("click", () => {
-        downloadAccountCertificate(certInfo(), $("certIncludeBalance").checked, certCode());
+    byId("certIncludeBalance").addEventListener("change", paintCert);
+    byId("downloadAccountCert").addEventListener("click", () => {
+        downloadAccountCertificate(certInfo(), byId("certIncludeBalance").checked, certCode());
         toast("Certificado de cuenta descargado.", "ok");
     });
 
@@ -524,21 +520,21 @@ document.addEventListener("DOMContentLoaded", () => {
     // CAMBIAR CLAVE (código por correo o WhatsApp)
     // =====================================================
 
-    const pinModal = $("pinModal");
+    const pinModal = byId("pinModal");
     const pinSteps = {
         send: pinModal.querySelector('[data-step="send"]'),
         reset: pinModal.querySelector('[data-step="reset"]'),
     };
-    const pinCode = initPinBoxes($("pinCode"));
+    const pinCode = initPinBoxes(byId("pinCode"));
     const pinNew = initPinBoxes(pinModal.querySelector('[data-pin-for="pinNew"]'));
     const pinConfirm = initPinBoxes(pinModal.querySelector('[data-pin-for="pinNewConfirm"]'));
     const pinFlow = { channel: "email", timer: null };
 
-    $("changePin").addEventListener("click", () => {
+    byId("changePin").addEventListener("click", () => {
         closeModalById("myProfileModal");
         pinSteps.send.reset();
         [pinCode, pinNew, pinConfirm].forEach(b => b.clear());
-        $("pinEmailHint").textContent = state.kyc?.email ? maskEmail(state.kyc.email) : "Al correo registrado";
+        byId("pinEmailHint").textContent = state.kyc?.email ? maskEmail(state.kyc.email) : "Al correo registrado";
         showFlowStep(pinModal, "send", 1);
         openModal("pinModal");
     });
@@ -550,7 +546,7 @@ document.addEventListener("DOMContentLoaded", () => {
             channel: pinFlow.channel,
         });
         pinFlow.timer?.stop();
-        pinFlow.timer = startCodeTimer($("pinTimer"), $("pinResend"));
+        pinFlow.timer = startCodeTimer(byId("pinTimer"), byId("pinResend"));
     }
 
     pinSteps.send.addEventListener("submit", async event => {
@@ -575,7 +571,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    $("pinResend").addEventListener("click", async () => {
+    byId("pinResend").addEventListener("click", async () => {
         try {
             await requestPinCode();
             toast("Te enviamos un código nuevo.", "ok");
