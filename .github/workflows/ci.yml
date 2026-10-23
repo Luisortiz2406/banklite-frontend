@@ -49,10 +49,10 @@ jobs:
             echo "$ruta -> $code"
             [ "$code" = 200 ] || exit 1
           done
-          # Archivos de configuración que no deben quedar publicados
-          for ruta in /Dockerfile /nginx.conf /package.json /eslint.config.mjs; do
-            code=$(curl -s -o /dev/null -w '%{http_code}' "http://localhost:8080$ruta")
-            echo "$ruta -> $code"
-            [ "$code" = 404 ] || exit 1
-          done
+          # Archivos de configuración que no deben quedar publicados. Una ruta desconocida
+          # responde index.html (try_files de nginx), así que se revisa el contenido.
+          curl -s http://localhost:8080/Dockerfile | grep -q 'FROM nginx' && exit 1
+          curl -s http://localhost:8080/nginx.conf | grep -q 'try_files' && exit 1
+          curl -s http://localhost:8080/package.json | grep -q 'devDependencies' && exit 1
+          curl -s http://localhost:8080/eslint.config.mjs | grep -q 'defineConfig' && exit 1
           curl -fsI http://localhost:8080/ | grep -i "content-security-policy"
