@@ -16748,6 +16748,27 @@ body.qr-presenting {
     }
 }
 
+/* Con "Recargar saldo" son tres elementos: la clave y "Enviar" siguen en la
+   primera fila (la clave conserva hasta 200px y se encoge solo si falta espacio)
+   y la recarga baja a una segunda fila de ancho completo, para que la clave no
+   se aplaste. */
+@media (max-width: 560px) {
+    .welcome-actions {
+        display: grid;
+        grid-template-columns: minmax(0, 200px) 1fr;
+    }
+
+    .welcome-actions [data-dynamic-key] {
+        grid-column: auto;
+    }
+
+    .welcome .welcome-actions .welcome-topup {
+        grid-column: 1 / -1;
+        order: 3;
+        width: 100%;
+    }
+}
+
 /* Pantallas muy angostas: números un poco más chicos y el botón dice solo "Enviar" */
 @media (max-width: 389px) {
     .welcome-actions .dk-oval {
