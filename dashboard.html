@@ -38,6 +38,8 @@
                 <div class="welcome-actions">
                     <!-- Clave dinámica (GET /auth/dynamic-key): se pide al transferir -->
                     <div data-dynamic-key></div>
+                    <!-- Recarga de saldo con Wompi (deposit-service, /deposits) -->
+                    <button class="btn soft" id="topupOpen" type="button" hidden>Recargar saldo</button>
                     <a class="btn primary send-money" href="transferir.html" aria-label="Enviar dinero">
                         <span>Enviar<span class="send-money-long"> dinero</span></span>
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M7 7h10v10"/></svg>
@@ -463,6 +465,25 @@
         </div>
     </div>
 
+    <!-- Recargar saldo con Wompi (deposit-service). En sandbox no se cobra dinero real. -->
+    <div class="modal" id="topupModal" role="dialog" aria-modal="true" aria-labelledby="topupTitle">
+        <div class="modal-card">
+            <button class="modal-close" data-close type="button" aria-label="Cerrar">×</button>
+            <span class="eyebrow">Recargar saldo</span>
+            <h2 id="topupTitle">Recarga tu cuenta con Wompi</h2>
+            <p class="modal-hint">Paga con tarjeta, PSE o Nequi. El saldo se abona cuando Wompi aprueba el pago.</p>
+            <p class="modal-hint" id="topupSandbox" hidden><b>Modo de pruebas (sandbox):</b> no se cobra dinero real. Usa los datos de prueba de Wompi, por ejemplo la tarjeta 4242 4242 4242 4242.</p>
+            <form id="topupForm" class="form-stack">
+                <label>Monto a recargar
+                    <input id="topupAmount" type="number" min="0" step="1000" inputmode="numeric" required placeholder="0">
+                </label>
+                <p class="modal-hint" id="topupRange"></p>
+                <div class="goal-quick" id="topupQuick" aria-label="Montos rápidos"></div>
+                <button class="btn primary full" id="topupSubmit" type="submit">Continuar a Wompi</button>
+            </form>
+        </div>
+    </div>
+
     <!-- Abonar a una meta -->
     <div class="modal" id="goalDepositModal" role="dialog" aria-modal="true" aria-labelledby="goalDepositTitle">
         <div class="modal-card">
@@ -787,6 +808,7 @@
     <script src="tarjeta-controles.js"></script>
     <script src="subscriptions.js"></script>
     <script src="metas.js"></script>
+    <script src="recargas.js"></script>
     <script src="beneficios.js"></script>
     <script src="mi-ano.js"></script>
 

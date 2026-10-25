@@ -27,6 +27,7 @@ const BlApi = (function () {
         paymentApi: API_GATEWAY,
         rewardsApi: API_GATEWAY,
         savingsApi: API_GATEWAY,
+        depositApi: API_GATEWAY,
     };
     const config = Object.assign({}, DEFAULT_CONFIG, window.BANKLITE_CONFIG || {});
 
