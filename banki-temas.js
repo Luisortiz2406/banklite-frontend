@@ -240,6 +240,12 @@ const BOT_TOPICS = [
             "depositar",
             "deposito",
             "cargar saldo",
+            "recargar saldo",
+            "recargar mi cuenta",
+            "recargar cuenta",
+            "wompi",
+            "pse",
+            "nequi",
             "como me pagan",
             "recibo plata",
             "me transfieran",
@@ -251,7 +257,7 @@ const BOT_TOPICS = [
         faq: "¿Cómo recibo plata en mi cuenta?",
         cat: "cuenta",
         answer: () => ({
-            text: "Te pueden enviar plata de tres formas: a tu **número de cuenta** (11 dígitos), a una de tus **llaves Bre-B** (celular, correo, cédula o @llave) o pagándote con tu **código QR de cobro**. Entre cuentas Banklite llega al instante y te avisamos en la campana. También puedes cambiar tus **Puntos Banklite** por plata a tu cuenta.",
+            text: "Te pueden enviar plata de tres formas: a tu **número de cuenta** (11 dígitos), a una de tus **llaves Bre-B** (celular, correo, cédula o @llave) o pagándote con tu **código QR de cobro**. Entre cuentas Banklite llega al instante y te avisamos en la campana. También puedes **recargar saldo** tú mismo desde el inicio con **tarjeta, PSE o Nequi** a través de Wompi (hoy en modo de pruebas: no se cobra dinero real), o cambiar tus **Puntos Banklite** por plata a tu cuenta.",
             links: [
                 { label: "Mis llaves", href: "llaves.html" },
                 { label: "Mi QR de cobro", href: "qr.html" },

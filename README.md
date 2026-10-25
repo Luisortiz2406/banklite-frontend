@@ -17,7 +17,12 @@ todos los datos vienen de la API a través del **api-gateway**.
 - `admin/`: panel de empleados, publicado en `/admin/` (clientes, cuentas,
   movimientos, fraude, cumplimiento, monitoreo, auditoría y empleados).
 - `nginx.conf`: encabezados de seguridad (CSP sin scripts inline, `frame-ancestors
-  'none'`, …), `robots.txt` que bloquea el rastreo y el enrutamiento del panel.
+  'none'`, …), `robots.txt` que bloquea el rastreo y el enrutamiento del panel. La
+  CSP solo admite scripts de terceros para el widget de Wompi (`checkout.wompi.co` y
+  sus scripts antifraude) y su iframe.
+- `recargas.js`: «Recargar saldo» en el inicio. Pide la recarga a deposit-service
+  (`/deposits`), abre el widget de Wompi (tarjeta, PSE, Nequi; sandbox) y consulta el
+  resultado; el saldo lo abona el backend cuando Wompi confirma.
 - `qr-lib.js`: librerías de terceros para generar y leer QR (no se editan a mano).
 
 ## URL de la API
@@ -64,7 +69,7 @@ raíz define el build por `Dockerfile` (nginx) y el health check en `/`; cada pu
 
 - Aplicación web: [https://frontend-production-eff3c.up.railway.app](https://frontend-production-eff3c.up.railway.app)
 - Panel administrativo: [https://frontend-production-eff3c.up.railway.app/admin/](https://frontend-production-eff3c.up.railway.app/admin/)
-- Estado de la API (los 12 servicios y sus bases): [https://api-gateway-production-dd7f.up.railway.app/health](https://api-gateway-production-dd7f.up.railway.app/health)
+- Estado de la API (los 13 servicios y sus bases): [https://api-gateway-production-dd7f.up.railway.app/health](https://api-gateway-production-dd7f.up.railway.app/health)
 
 ## Repositorios relacionados
 
