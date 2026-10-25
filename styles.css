@@ -3631,6 +3631,19 @@ button:focus-visible {
     }
 }
 
+/* Celulares de 360px o menos: las 6 casillas del código (p. ej. la clave dinámica
+   al cambiar el límite de la tarjeta) miden 263px y no caben en el modal. */
+@media (max-width: 360px) {
+    .pin-boxes.code {
+        gap: 6px;
+    }
+    .pin-boxes.code input {
+        width: 32px;
+        height: 42px;
+        font-size: 1rem;
+    }
+}
+
 /* ---------- Flujos por pasos dentro de un modal ---------- */
 
 .flow-box {
