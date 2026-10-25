@@ -2343,6 +2343,14 @@ function openFlag(id) {
             </table></div>
 
             ${
+                canCompliance()
+                    ? `<div class="section-title"><h3>Inicios de sesión recientes</h3></div>
+            <div id="frLogins"><p class="muted">País y red de los últimos inicios de sesión del cliente (la IP completa no se guarda). Cada consulta queda en la auditoría.</p>
+                <button class="btn btn-sm" id="frLoginsLoad">Ver inicios de sesión</button></div>`
+                    : ""
+            }
+
+            ${
                 x.status === "pending" && canCompliance()
                     ? `<div class="actions" style="margin-top:16px">
                 <button class="btn btn-sm btn-primary" id="frConfirm">Confirmar fraude</button>
@@ -2351,6 +2359,7 @@ function openFlag(id) {
                     : ""
             }`;
 
+        $("frLoginsLoad")?.addEventListener("click", () => loadLoginContexts(x.idUser, $("frLogins")));
         $("frConfirm")?.addEventListener("click", () =>
             formModal({
                 title: "Confirmar como fraude",
@@ -2379,6 +2388,38 @@ function openFlag(id) {
             })
         );
     });
+}
+
+const LOGIN_OUTCOME = { success: ["Exitoso", "b-good"], failed: ["Fallido", "b-warn"] };
+const GEO_STATUS = { ok: "", no_disponible: "Sin geolocalización", privada: "Red privada" };
+
+/** Inicios de sesión del cliente (fraud-service): país, red /24 o /48, Tor y reglas. Solo cumplimiento y admin. */
+async function loadLoginContexts(idUser, box) {
+    box.innerHTML = '<p class="muted">Cargando…</p>';
+    let data;
+    try {
+        data = await api("GET", `/fraud/admin/users/${encodeURIComponent(idUser)}/logins`);
+    } catch (err) {
+        box.innerHTML = errorBox(err);
+        return;
+    }
+    const rows = (data.items || [])
+        .map(
+            l => `<tr>
+                <td>${fdate(l.occurredAt)}</td>
+                <td>${badge(LOGIN_OUTCOME, l.outcome)}</td>
+                <td>${esc(l.country || GEO_STATUS[l.geoStatus] || "—")}</td>
+                <td class="mono">${esc(l.ipPrefix)}</td>
+                <td>${l.isTor === true ? '<span class="badge b-bad">Tor</span>' : l.isTor === null ? '<span class="muted">?</span>' : "No"}</td>
+                <td>${(l.rulesTriggered || []).map(rule => `<span class="mono" title="${esc(rule.detail)}">${esc(rule.rule)} (+${esc(rule.points)})</span>`).join("<br>") || '<span class="muted">—</span>'}</td>
+            </tr>`
+        )
+        .join("");
+    box.innerHTML = `<div class="table-wrap"><table class="mini-table">
+            <thead><tr><th>Fecha</th><th>Resultado</th><th>País</th><th>Red</th><th>Tor</th><th>Reglas</th></tr></thead>
+            <tbody>${rows || '<tr><td colspan="6" class="muted">Sin inicios de sesión registrados (se guardan 90 días).</td></tr>'}</tbody>
+        </table></div>
+        <p class="muted" style="margin-top:8px">Geolocalización: GeoLite2 de MaxMind. Nodos de Tor: lista pública del Tor Project.</p>`;
 }
 
 // =========================================================
