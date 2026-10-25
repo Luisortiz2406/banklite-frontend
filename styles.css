@@ -3631,6 +3631,19 @@ button:focus-visible {
     }
 }
 
+/* Celulares de 360px o menos: las 6 casillas del código (p. ej. la clave dinámica
+   al cambiar el límite de la tarjeta) miden 263px y no caben en el modal. */
+@media (max-width: 360px) {
+    .pin-boxes.code {
+        gap: 6px;
+    }
+    .pin-boxes.code input {
+        width: 32px;
+        height: 42px;
+        font-size: 1rem;
+    }
+}
+
 /* ---------- Flujos por pasos dentro de un modal ---------- */
 
 .flow-box {
@@ -16745,6 +16758,27 @@ body.qr-presenting {
         min-height: 52px;
         padding: 0 16px;
         white-space: nowrap;
+    }
+}
+
+/* Con "Recargar saldo" son tres elementos: la clave y "Enviar" siguen en la
+   primera fila (la clave conserva hasta 200px y se encoge solo si falta espacio)
+   y la recarga baja a una segunda fila de ancho completo, para que la clave no
+   se aplaste. */
+@media (max-width: 560px) {
+    .welcome-actions {
+        display: grid;
+        grid-template-columns: minmax(0, 200px) 1fr;
+    }
+
+    .welcome-actions [data-dynamic-key] {
+        grid-column: auto;
+    }
+
+    .welcome .welcome-actions .welcome-topup {
+        grid-column: 1 / -1;
+        order: 3;
+        width: 100%;
     }
 }
 
