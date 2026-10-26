@@ -261,11 +261,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (state.identityVerified && state.identityResult) return renderIdentityResult(state.identityResult);
         field("identityVerifyBtn").textContent = "Verificar identidad";
+        syncIdentityButton();
         field("identityLoading").hidden = true;
         show("identity");
     });
 
     // ---------- 2. Verificación de identidad (KYC: Registraduría + Policía) ----------
+
+    // La autorización (verificación de identidad, términos, privacidad e IP) va en
+    // esta vista: sin la casilla no se envía nada a /kyc/submit. Ya verificada, el
+    // botón dice "Continuar" y no depende de la casilla.
+    function syncIdentityButton() {
+        if (state.identityVerified) return;
+        field("identityVerifyBtn").disabled = !field("regTerms").checked;
+    }
+    field("regTerms").addEventListener("change", syncIdentityButton);
 
     const DOC_NAMES = { CC: "Cédula de ciudadanía", CE: "Cédula de extranjería", PA: "Pasaporte" };
 
@@ -369,6 +379,9 @@ document.addEventListener("DOMContentLoaded", () => {
         // Ya verificada con estos mismos datos (volvió atrás sin cambiar nada): seguir.
         if (state.identityVerified) return showEmailInput();
         const button = field("identityVerifyBtn");
+        if (!field("regTerms").checked) {
+            return alertIn(screen, "Para verificar tu identidad debes marcar la autorización.");
+        }
         if (button.disabled) return;
         setLoading(button, true, "Verificando identidad");
         field("identityLoading").hidden = false;
@@ -402,6 +415,7 @@ document.addEventListener("DOMContentLoaded", () => {
             alertIn(screen, err.message || "No se pudo verificar la identidad.");
         } finally {
             setLoading(button, false, state.identityVerified ? "Continuar" : "Verificar identidad");
+            syncIdentityButton();
             field("identityLoading").hidden = true;
         }
     });
@@ -670,10 +684,11 @@ document.addEventListener("DOMContentLoaded", () => {
             confirmBoxes.clear();
             return alertIn(screen, "Las dos claves no coinciden.");
         }
+        // La autorización se dio en la vista de identidad (la casilla sigue en el formulario).
         if (!field("regTerms").checked)
             return alertIn(
                 screen,
-                "Debes aceptar los términos de uso y la política de privacidad, incluido el uso de tu IP para prevenir fraudes."
+                "Vuelve a la verificación de identidad y marca la autorización para crear tu cuenta."
             );
         if (!state.identityVerified || !state.emailVerified || !state.phoneVerified) {
             return alertIn(screen, "Debes completar identidad, correo y teléfono antes de crear tu cuenta.");
