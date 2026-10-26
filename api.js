@@ -149,6 +149,8 @@ const BlApi = (function () {
             const fresh = await refreshAccessToken();
             if (fresh) return api(baseUrl, method, path, body, fresh, true);
         }
+        // El gateway no deja operar sin la autorización vigente: se pide en el modal.
+        if (res.status === 403 && data.code === "CONSENTIMIENTO_REQUERIDO" && token) showConsentModal();
         if (!res.ok) {
             const msg = Array.isArray(data.message) ? data.message.join(", ") : data.message || "Error";
             const e = new Error(msg);
@@ -255,9 +257,125 @@ const BlApi = (function () {
             return false;
         }
         write(ACTIVITY_KEY, Date.now());
-        if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", startIdleWatch);
-        else startIdleWatch();
+        const onReady = () => {
+            startIdleWatch();
+            ensureConsent();
+        };
+        if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", onReady);
+        else onReady();
         return true;
+    }
+
+    // ---------- autorización de datos (clientes que ya existían) ----------
+    // Versión de la política de privacidad vigente: la fecha de "Última actualización"
+    // de privacidad.html. auth-service la valida; al cambiar la política se actualiza
+    // aquí, en privacidad.html y en auth-service (src/auth/consentimientos.ts).
+    const POLITICA_PRIVACIDAD_VERSION = "2026-10-25";
+    let consentModal = null;
+
+    /**
+     * Revisa la marca "cons" del token: si falta, pregunta a auth-service. Si el
+     * cliente ya había aceptado (p. ej. en el registro), solo se renueva el token;
+     * si no, se muestra el modal. El gateway no deja operar sin la marca.
+     */
+    async function ensureConsent() {
+        const payload = decodeAccessToken(session.accessToken);
+        if (!payload || payload.cons === true) return;
+        try {
+            const estado = await api(config.authApi, "GET", "/auth/consentimientos/estado", null, session.accessToken);
+            if (estado.vigente) {
+                // Ya aceptó (p. ej. en el registro): basta un token con la marca. Si no se
+                // puede renovar, POST es idempotente: no crea filas ni reporta a fraud.
+                if (!(await refreshAccessToken())) {
+                    const data = await api(
+                        config.authApi,
+                        "POST",
+                        "/auth/consentimientos",
+                        { politicaVersion: POLITICA_PRIVACIDAD_VERSION },
+                        session.accessToken
+                    );
+                    if (data.accessToken) session.accessToken = data.accessToken;
+                }
+                return;
+            }
+        } catch (err) {
+            if (err && err.status === 401) return logout("expirada");
+        }
+        showConsentModal();
+    }
+
+    /** Modal que no se puede cerrar: solo "Aceptar y continuar" o "No acepto" (cierra la sesión). */
+    function showConsentModal() {
+        if (!consentModal) {
+            consentModal = document.createElement("div");
+            consentModal.className = "modal consent-modal";
+            consentModal.id = "consentModal";
+            consentModal.dataset.locked = "true";
+            consentModal.setAttribute("role", "dialog");
+            consentModal.setAttribute("aria-modal", "true");
+            consentModal.setAttribute("aria-labelledby", "consentTitle");
+            consentModal.innerHTML = `
+                <div class="modal-card">
+                    <span class="modal-icon" aria-hidden="true">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg>
+                    </span>
+                    <span class="eyebrow">Tus datos</span>
+                    <h2 id="consentTitle">Actualizamos nuestra política de privacidad</h2>
+                    <p class="modal-hint">Para seguir usando Banklite necesitamos tu autorización. Esto es lo nuevo:</p>
+                    <ul class="consent-list">
+                        <li>Usamos la <b>dirección IP</b> de tus inicios de sesión para <b>prevenir fraudes</b>: detectar ingresos desde un país nuevo, «viajes imposibles» o la red Tor.</li>
+                        <li>Solo guardamos el <b>país</b> y la <b>red</b> (por ejemplo, 190.60.37.0/24), <b>nunca tu IP completa</b>. No usamos GPS ni pedimos permiso de ubicación a tu navegador.</li>
+                        <li>Estos datos se borran a los <b>90 días</b> y solo los consulta nuestro equipo de cumplimiento; cada consulta queda registrada.</li>
+                    </ul>
+                    <p class="modal-hint">Lee la <a href="privacidad.html#fraude" target="_blank" rel="noopener">política de privacidad (sección 7)</a> y los <a href="terminos.html" target="_blank" rel="noopener">términos de uso</a>.</p>
+                    <label class="register-terms consent-check">
+                        <input type="checkbox" id="consentCheck">
+                        <span>Autorizo a Banklite a tratar mis datos según la política de privacidad, incluido el uso de la IP de mis inicios de sesión para prevenir fraudes, y acepto los términos de uso.</span>
+                    </label>
+                    <p class="consent-error" id="consentError" role="alert" hidden></p>
+                    <div class="modal-actions">
+                        <button class="btn soft" type="button" id="consentDecline">No acepto</button>
+                        <button class="btn primary" type="button" id="consentAccept" disabled>Aceptar y continuar</button>
+                    </div>
+                </div>`;
+            document.body.appendChild(consentModal);
+
+            const check = consentModal.querySelector("#consentCheck");
+            const accept = consentModal.querySelector("#consentAccept");
+            const error = consentModal.querySelector("#consentError");
+            check.addEventListener("change", () => {
+                accept.disabled = !check.checked;
+            });
+            consentModal.querySelector("#consentDecline").addEventListener("click", () => logout("sin-autorizacion"));
+            accept.addEventListener("click", async () => {
+                if (!check.checked || accept.disabled) return;
+                accept.disabled = true;
+                error.hidden = true;
+                try {
+                    const data = await api(
+                        config.authApi,
+                        "POST",
+                        "/auth/consentimientos",
+                        { politicaVersion: POLITICA_PRIVACIDAD_VERSION },
+                        session.accessToken
+                    );
+                    if (data.accessToken) session.accessToken = data.accessToken;
+                    // Se recarga para que la página vuelva a pedir sus datos con el token nuevo.
+                    window.location.reload();
+                } catch (err) {
+                    if (err && err.status === 401) return logout("expirada");
+                    error.textContent = err.message || "No pudimos guardar tu autorización. Inténtalo de nuevo.";
+                    error.hidden = false;
+                    accept.disabled = !check.checked;
+                }
+            });
+        }
+        // Se cierran los demás modales: este es el único que se puede usar.
+        document.querySelectorAll(".modal.active").forEach(open => {
+            if (open !== consentModal) open.classList.remove("active");
+        });
+        consentModal.classList.add("active");
+        consentModal.querySelector("#consentCheck").focus();
     }
 
     // ---------- cierre por inactividad: 5 min, aviso en el minuto 4 ----------
@@ -338,7 +456,9 @@ const BlApi = (function () {
                 const seconds = Math.ceil(left / 1000);
                 if (!warning) {
                     warning = true;
-                    document.querySelectorAll(".modal.active").forEach(open => open.classList.remove("active"));
+                    document
+                        .querySelectorAll(".modal.active:not([data-locked])")
+                        .forEach(open => open.classList.remove("active"));
                     modal.classList.add("active");
                     modal.querySelector("#idleStay").focus();
                 }
@@ -362,6 +482,7 @@ const BlApi = (function () {
         passwordFromPin,
         isSecurePin,
         pinMatchesBirthdate,
+        politicaPrivacidadVersion: POLITICA_PRIVACIDAD_VERSION,
         startSession,
         logout,
         handleAuthError,
