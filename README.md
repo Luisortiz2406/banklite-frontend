@@ -23,6 +23,15 @@ todos los datos vienen de la API a través del **api-gateway**.
 - `recargas.js`: «Recargar saldo» en el inicio. Pide la recarga a deposit-service
   (`/deposits`), abre el widget de Wompi (tarjeta, PSE, Nequi; sandbox) y consulta el
   resultado; el saldo lo abona el backend cuando Wompi confirma.
+- `cierre-cuenta.js`: «Cancelar mi cuenta» (Mi perfil). Muestra lo que falta para
+  cancelar (`GET /accounts/cierre/requisitos`; si hay saldo ofrece enviarlo con
+  `transferir.html?monto=`), pide la clave y el código por WhatsApp
+  (`/auth/cierre/iniciar` y `/auth/cierre/confirmar`, que entregan un ticket de cierre)
+  y la palabra CANCELAR (`POST /accounts/cierre`). Al terminar cierra la sesión local y
+  el login muestra la confirmación (`login.html?sesion=cancelada`).
+- `admin/` › Cumplimiento: alertas «cuenta cerrada con saldo»
+  (`/accounts/admin/closure-alerts`): un administrador reversa el movimiento y
+  cumplimiento marca la alerta como resuelta.
 - `qr-lib.js`: librerías de terceros para generar y leer QR (no se editan a mano).
 
 ## URL de la API

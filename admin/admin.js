@@ -2480,7 +2480,13 @@ async function loadLoginContexts(idUser, box) {
 const SAR_STATUS = { open: ["Abierto", "b-warn"], filed: ["Radicado", "b-bad"], dismissed: ["Descartado", "b-gray"] };
 const SAR_SEVERITY = { low: ["Baja", "b-gray"], medium: ["Media", "b-warn"], high: ["Alta", "b-bad"] };
 
-const complianceFilters = { status: "", severity: "", page: 1 };
+const complianceFilters = { status: "", severity: "", page: 1, alerts: "open" };
+
+// Alertas «cuenta cerrada con saldo» (account-service): después de que un cliente
+// cancela su cuenta, el sistema vuelve a revisar el saldo; si llegó dinero, se abre
+// una alerta. Un administrador reversa el movimiento (Movimientos → Reversar) y
+// cumplimiento la marca como resuelta (solo se puede si la cuenta ya está en $0).
+const CLOSURE_ALERT_STATUS = { open: ["Abierta", "b-bad"], resolved: ["Resuelta", "b-gray"] };
 
 function defaultPeriod() {
     const to = new Date();
@@ -2495,11 +2501,24 @@ async function renderCompliance(el) {
     el.innerHTML =
         pageHead(
             "Cumplimiento",
-            "KPIs de negocio, reportes de actividad sospechosa (SAR) y reportes AML.",
+            "KPIs de negocio, cuentas cerradas con saldo, reportes de actividad sospechosa (SAR) y reportes AML.",
             `<button class="btn btn-sm btn-primary" id="newReport">${svg("plus")} Generar reporte</button>`
         ) +
         `
         <div class="grid g4" id="kpis">${loadingBox}</div>
+
+        <div class="section-title" style="margin:22px 0 12px"><h3>Cuentas cerradas con saldo</h3></div>
+        <form class="filters" id="caf">
+            <div><label for="cafs">Estado</label><select id="cafs">${[
+                ["open", "Abiertas"],
+                ["resolved", "Resueltas"],
+                ["all", "Todas"],
+            ]
+                .map(([k, t]) => `<option value="${k}" ${f.alerts === k ? "selected" : ""}>${t}</option>`)
+                .join("")}</select></div>
+            <button class="btn btn-primary" type="submit">Filtrar</button>
+        </form>
+        <div id="calerts">${loadingBox}</div>
 
         <div class="section-title" style="margin:22px 0 12px"><h3>Reportes de Actividad Sospechosa (SAR)</h3></div>
         <form class="filters" id="cf">
@@ -2525,6 +2544,12 @@ async function renderCompliance(el) {
         Object.assign(f, { status: $("cfs").value, severity: $("cfv").value, page: 1 });
         renderCompliance(el);
     };
+    $("caf").onsubmit = e => {
+        e.preventDefault();
+        f.alerts = $("cafs").value;
+        renderCompliance(el);
+    };
+    renderClosureAlerts($("calerts"), f.alerts);
 
     tryApi("GET", "/compliance/admin/kpis" + qs({ from: period.from, to: period.to })).then(k => {
         $("kpis").innerHTML = k
@@ -2601,6 +2626,76 @@ async function renderCompliance(el) {
                 refreshAll();
             },
         });
+}
+
+async function renderClosureAlerts(box, status) {
+    let data;
+    try {
+        data = await api("GET", "/accounts/admin/closure-alerts" + qs({ status }));
+    } catch (err) {
+        box.innerHTML = errorBox(err);
+        return;
+    }
+    if (!data.items.length) {
+        box.innerHTML = emptyBox(
+            status === "open" ? "Sin alertas abiertas" : "Sin alertas",
+            "Si a una cuenta cancelada le llega dinero después del cierre, aparecerá aquí para devolverlo.",
+            "compliance"
+        );
+        return;
+    }
+    box.innerHTML = `
+        ${data.abiertas ? `<div class="alert alert-error" style="margin-bottom:12px">${esc(data.abiertas)} ${data.abiertas === 1 ? "cuenta cerrada tiene" : "cuentas cerradas tienen"} saldo por devolver. Un administrador reversa el movimiento que llegó (Movimientos → Reversar) y luego se marca la alerta como resuelta.</div>` : ""}
+        <div class="table-wrap"><table>
+        <thead><tr><th>Detectada</th><th>Cliente</th><th>Cuenta</th><th>Saldo</th><th>Cancelada</th><th>Estado</th><th>Resolución</th><th></th></tr></thead>
+        <tbody>${data.items
+            .map(
+                a => `
+            <tr>
+                <td>${fdate(a.detectedAt)}</td>
+                <td class="mono">${short(a.idUser)}</td>
+                <td class="mono">${esc(a.accountNumber || short(a.accountId))}</td>
+                <td><b>${money(a.balance, a.currency)}</b></td>
+                <td>${fdate(a.closedAt)}</td>
+                <td>${badge(CLOSURE_ALERT_STATUS, a.status)}</td>
+                <td>${a.status === "resolved" ? `@${esc(a.resolvedBy)} — ${fdate(a.resolvedAt)}<br><small>${esc((a.resolutionNote || "").slice(0, 80))}</small>` : "—"}</td>
+                <td class="actions">
+                    <a class="btn btn-sm" href="${BASE}movimientos.html?cuenta=${encodeURIComponent(a.accountNumber || a.accountId)}">Movimientos</a>
+                    ${a.status === "open" && canCompliance() ? `<button class="btn btn-sm btn-primary" data-resolve-alert="${esc(a.id)}">Resolver</button>` : ""}
+                </td>
+            </tr>`
+            )
+            .join("")}
+        </tbody></table></div>`;
+
+    box.querySelectorAll("[data-resolve-alert]").forEach(
+        b =>
+            (b.onclick = () => {
+                const item = data.items.find(a => a.id === b.dataset.resolveAlert);
+                formModal({
+                    title: "Resolver alerta",
+                    confirm: "Marcar como resuelta",
+                    icon: "compliance",
+                    desc: `Cuenta ${esc(item.accountNumber || item.accountId)} con ${esc(money(item.balance, item.currency))}. Primero un administrador reversa el movimiento que llegó (Movimientos → Reversar): solo se puede resolver cuando la cuenta ya está en $0. La cuenta sigue cancelada.`,
+                    fields: [
+                        {
+                            name: "reason",
+                            label: "Cómo se devolvió el dinero (queda en la auditoría)",
+                            type: "textarea",
+                            required: true,
+                            placeholder: "Ej.: Reverso de la transferencia entrante del 26/10, caso #123",
+                        },
+                    ],
+                    onSubmit: async v => {
+                        await api("POST", `/accounts/admin/closure-alerts/${encodeURIComponent(item.id)}/resolve`, {
+                            reason: v.reason,
+                        });
+                        toast("Alerta resuelta.");
+                        refreshAll();
+                    },
+                });
+            })
+    );
 }
 
 function openSar(id) {

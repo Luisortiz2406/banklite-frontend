@@ -216,7 +216,10 @@ const BOT_TOPICS = [
         faq: "¿Cómo cancelo mi cuenta?",
         cat: "cuenta",
         answer: () => ({
-            text: "Por ahora la cancelación no se hace desde la app. Escríbenos a **ayuda@banklite.co** y te ayudamos; antes, transfiere tu saldo a otra cuenta.",
+            text: "Desde el inicio, abre **Mi perfil → Cancelar mi cuenta**. Primero revisamos que tu saldo esté en **$0** (si tienes saldo, te ayudamos a enviarlo), que no tengas dinero en bolsillos o metas ni CDT vigentes, recargas en curso o revisiones de seguridad abiertas. Luego confirmas con tu **clave**, un **código por WhatsApp** y escribiendo **CANCELAR**. Se cierran todas tus cuentas, tu tarjeta se cancela y tus Puntos Banklite dejan de estar disponibles. Es definitivo y te llega la confirmación al correo.",
+            links: botLogged()
+                ? [{ label: "Ir al inicio", href: "dashboard.html" }]
+                : [{ label: "Ingresar", href: "login.html" }],
         }),
     },
     {

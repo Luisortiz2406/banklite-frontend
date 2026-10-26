@@ -586,6 +586,10 @@
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
                         Mis datos
                     </button>
+                    <button id="openCloseAccount" type="button">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+                        Cancelar mi cuenta
+                    </button>
                 </div>
             </div>
 
@@ -600,6 +604,50 @@
                 </div>
             </div>
 
+        </div>
+    </div>
+
+    <!-- Cancelar mi cuenta: requisitos (account) → clave y código por WhatsApp (auth) → CANCELAR (account). Lo maneja cierre-cuenta.js -->
+    <div class="modal" id="closeAccountModal" role="dialog" aria-modal="true" aria-labelledby="closeAccountTitle">
+        <div class="modal-card flow-box close-account">
+            <button class="modal-close" data-close type="button" aria-label="Cerrar">×</button>
+            <div class="flow-progress" aria-hidden="true"><span class="on"></span><span></span><span></span><span></span></div>
+
+            <section class="flow-step" data-step="requisitos">
+                <span class="eyebrow">Tu cuenta</span>
+                <h2 id="closeAccountTitle">Cancelar mi cuenta</h2>
+                <div id="closeReqBody" aria-live="polite"></div>
+            </section>
+
+            <form class="flow-step" data-step="clave" hidden novalidate>
+                <span class="eyebrow">Paso 2 de 4</span>
+                <h2>Confirma que eres tú</h2>
+                <p class="flow-text">Escribe tu clave de 4 dígitos. Después te enviaremos un código por WhatsApp.</p>
+                <div class="pin-boxes" id="closePin" data-length="4" role="group" aria-label="Tu clave"></div>
+                <button class="btn primary full" type="submit">Continuar</button>
+            </form>
+
+            <form class="flow-step" data-step="codigo" hidden novalidate>
+                <span class="eyebrow">Paso 3 de 4</span>
+                <h2>Escribe el código</h2>
+                <p class="flow-text">Te lo enviamos por WhatsApp al celular <b id="closePhone">registrado</b>.</p>
+                <div class="pin-boxes code" id="closeCode" data-length="6" data-visible role="group" aria-label="Código de verificación"></div>
+                <div class="code-meta" id="closeTimer"><span>El código vence en <b>05:00</b></span></div>
+                <button class="btn primary full" type="submit">Verificar código</button>
+                <button class="flow-link" type="button" id="closeResend" disabled>Reenviar código</button>
+            </form>
+
+            <form class="flow-step" data-step="confirmar" hidden novalidate>
+                <span class="eyebrow">Paso 4 de 4</span>
+                <h2>Último paso</h2>
+                <p class="flow-text">Esta acción <b>no se puede deshacer</b>. Para confirmar, escribe <b>CANCELAR</b>.</p>
+                <div class="form-stack">
+                    <label for="closeWord">Escribe CANCELAR</label>
+                    <input id="closeWord" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="20" placeholder="CANCELAR">
+                </div>
+                <button class="btn full close-danger" type="submit" id="closeSubmit" disabled>Cancelar mi cuenta definitivamente</button>
+                <button class="flow-link" type="button" data-close>Mejor no, quiero quedarme</button>
+            </form>
         </div>
     </div>
 
@@ -811,6 +859,7 @@
     <script src="recargas.js"></script>
     <script src="beneficios.js"></script>
     <script src="mi-ano.js"></script>
+    <script src="cierre-cuenta.js"></script>
 
 </body>
 
