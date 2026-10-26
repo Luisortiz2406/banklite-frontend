@@ -1037,6 +1037,45 @@ async function renderCustomers(el) {
     }
 }
 
+const DOC_LEGAL = { privacidad: "Política de privacidad", terminos: "Términos de uso" };
+
+/** Autorización de datos del cliente (auth-service). Solo cumplimiento y admin; queda en la auditoría. */
+async function loadCustomerConsents(idUser, box) {
+    box.innerHTML = '<p class="muted">Cargando…</p>';
+    let c;
+    try {
+        c = await api("GET", `/auth/admin/customers/${encodeURIComponent(idUser)}/consentimientos`);
+    } catch (err) {
+        box.innerHTML = errorBox(err);
+        return;
+    }
+    const vigentes = c.versionesVigentes || {};
+    let summary;
+    if (c.vigente) {
+        const mismaFecha = String(c.privacidad.aceptadoEn) === String(c.terminos.aceptadoEn);
+        summary = mismaFecha
+            ? `<span class="badge b-good">Vigente</span> Aceptó la política v${esc(c.privacidad.version)} y los términos v${esc(c.terminos.version)} el ${fdate(c.privacidad.aceptadoEn)}`
+            : `<span class="badge b-good">Vigente</span> Aceptó la política v${esc(c.privacidad.version)} el ${fdate(c.privacidad.aceptadoEn)} y los términos v${esc(c.terminos.version)} el ${fdate(c.terminos.aceptadoEn)}`;
+    } else if (!(c.historial || []).length) {
+        summary = '<span class="badge b-warn">Pendiente</span> Sin aceptación registrada (cuenta anterior).';
+    } else {
+        summary = `<span class="badge b-warn">Pendiente</span> Aceptó versiones anteriores; falta la vigente (política v${esc(vigentes.privacidad)}, términos v${esc(vigentes.terminos)}).`;
+    }
+    const rows = (c.historial || [])
+        .map(
+            h =>
+                `<tr><td>${esc(DOC_LEGAL[h.documento] || h.documento)}</td><td class="mono">v${esc(h.version)}</td><td>${fdate(h.aceptadoEn)}</td></tr>`
+        )
+        .join("");
+    box.innerHTML = `<p>${summary}</p>${
+        rows
+            ? `<div class="table-wrap" style="margin-top:10px"><table class="mini-table">
+            <thead><tr><th>Documento</th><th>Versión</th><th>Aceptado el</th></tr></thead><tbody>${rows}</tbody>
+        </table></div>`
+            : ""
+    }`;
+}
+
 function openCustomer(idUser) {
     openDrawer("Ficha del cliente", async body => {
         const [auth, kyc, accounts, cards, notifs] = await Promise.all([
@@ -1086,6 +1125,14 @@ function openCustomer(idUser) {
                     : '<p class="muted">Todavía no creó usuario y contraseña.</p>'
             }</div>
 
+            ${
+                canCompliance() && auth
+                    ? `<div class="section-title"><h3>Autorización de datos</h3></div>
+            <div class="card" id="cConsents"><p class="muted">Qué versión de la política de privacidad y de los términos aceptó el cliente y cuándo. Cada consulta queda en la auditoría.</p>
+                <button class="btn btn-sm" id="cConsentsLoad">Ver autorización</button></div>`
+                    : ""
+            }
+
             <div class="section-title"><h3>Cuentas</h3></div>
             ${
                 accounts?.items?.length
@@ -1120,6 +1167,7 @@ function openCustomer(idUser) {
         bindDeclines(body);
         bindKycActions(idUser, name, kyc);
 
+        $("cConsentsLoad")?.addEventListener("click", () => loadCustomerConsents(idUser, $("cConsents")));
         $("cDisable")?.addEventListener("click", () =>
             formModal({
                 title: "Suspender acceso del cliente",
