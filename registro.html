@@ -128,13 +128,20 @@
               <div class="reg-row"><span class="reg-chip" aria-hidden="true">✓</span><div><strong>Datos personales</strong><small>Información ingresada y lista para validar</small></div></div>
             </div>
 
+            <!-- Autorización antes de enviar los datos a /kyc/submit (primera vez que salen del navegador).
+                 Sin marcarla, "Verificar identidad" no se activa. politicaVersion se envía al crear la cuenta. -->
+            <label class="register-terms">
+              <input type="checkbox" id="regTerms">
+              <span>Autorizo a Banklite a verificar mi identidad (consulta de mi documento ante la Registraduría y de mis antecedentes) y acepto los <a href="terminos.html" target="_blank" rel="noopener">términos de uso</a> y la <a href="privacidad.html" target="_blank" rel="noopener">política de privacidad</a>, incluido el uso de la dirección IP de mis inicios de sesión para <a href="privacidad.html#fraude" target="_blank" rel="noopener">prevenir fraudes</a> (país y red, nunca la IP completa).</span>
+            </label>
+
             <div class="verify-loading" id="identityLoading" hidden>
               <span class="spinner" aria-hidden="true"></span>
               <span>Validando tu documento…</span>
             </div>
 
             <div class="reg-alert" data-alert hidden></div>
-            <button class="btn primary register-button" type="submit" id="identityVerifyBtn">Verificar identidad</button>
+            <button class="btn primary register-button" type="submit" id="identityVerifyBtn" disabled>Verificar identidad</button>
           </form>
 
           <!-- 3. Resultado de la identidad -->
@@ -261,11 +268,6 @@
             <div class="pin-boxes reg-otp" data-length="4" data-pin-for="regPinConfirm" role="group" aria-label="Confirma tu clave"></div>
 
             <p class="reg-note">Evita secuencias obvias como 1234 o tu fecha de nacimiento.</p>
-
-            <label class="register-terms">
-              <input type="checkbox" id="regTerms">
-              <span>Acepto los <a href="terminos.html" target="_blank" rel="noopener">términos de uso</a> y la <a href="privacidad.html" target="_blank" rel="noopener">política de privacidad</a> de Banklite, incluido el uso de la dirección IP de mis inicios de sesión para <a href="privacidad.html#fraude" target="_blank" rel="noopener">prevenir fraudes</a> (país y red, nunca la IP completa).</span>
-            </label>
 
             <div class="reg-alert" data-alert hidden></div>
             <button class="btn primary register-button" type="submit">Crear cuenta</button>
