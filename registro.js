@@ -671,7 +671,10 @@ document.addEventListener("DOMContentLoaded", () => {
             return alertIn(screen, "Las dos claves no coinciden.");
         }
         if (!field("regTerms").checked)
-            return alertIn(screen, "Debes aceptar los términos de uso y la política de privacidad.");
+            return alertIn(
+                screen,
+                "Debes aceptar los términos de uso y la política de privacidad, incluido el uso de tu IP para prevenir fraudes."
+            );
         if (!state.identityVerified || !state.emailVerified || !state.phoneVerified) {
             return alertIn(screen, "Debes completar identidad, correo y teléfono antes de crear tu cuenta.");
         }
