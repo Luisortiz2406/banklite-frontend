@@ -16851,3 +16851,145 @@ body.qr-presenting {
         display: none;
     }
 }
+
+/* =========================================================
+   CANCELAR MI CUENTA (dashboard › Mi perfil, cierre-cuenta.js)
+   Solo variables del tema: funciona igual en modo claro y oscuro.
+   ========================================================= */
+.close-account .close-spinner {
+    display: inline-block;
+    margin-right: 6px;
+    vertical-align: -2px;
+}
+
+.close-req-list,
+.close-effects,
+.close-accounts {
+    display: grid;
+    gap: 8px;
+    margin: 12px 0;
+    padding: 0;
+    list-style: none;
+}
+
+.close-req-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--danger);
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+}
+
+.close-req-list p {
+    margin: 0 0 6px;
+    color: var(--text);
+    font-size: 0.8rem;
+    line-height: 1.45;
+}
+
+.close-req-list p:last-child {
+    margin: 0;
+}
+
+.close-req-list small {
+    color: var(--text-light);
+    font-size: 0.74rem;
+}
+
+.close-req-list .btn {
+    padding: 6px 12px;
+    font-size: 0.75rem;
+}
+
+.close-req-icon {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--danger-soft);
+    color: var(--danger);
+    font-size: 0.75rem;
+    font-weight: 800;
+}
+
+.close-accounts li {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    background: var(--surface-2);
+    color: var(--text);
+    font-size: 0.8rem;
+}
+
+.close-effects li {
+    position: relative;
+    padding-left: 18px;
+    color: var(--text-light);
+    font-size: 0.8rem;
+    line-height: 1.45;
+}
+
+.close-effects li::before {
+    position: absolute;
+    top: 0.55em;
+    left: 4px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--danger);
+    content: "";
+}
+
+.close-effects b {
+    color: var(--text);
+}
+
+.close-notice {
+    margin: 0 0 10px;
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    background: var(--danger-soft);
+    color: var(--danger-text);
+    font-size: 0.8rem;
+}
+
+.close-account .form-stack {
+    margin: 14px 0;
+}
+
+.close-account .form-stack label {
+    display: block;
+    margin-bottom: 6px;
+}
+
+.btn.close-danger {
+    border-color: var(--danger);
+    background: var(--danger);
+    color: #ffffff;
+}
+
+.btn.close-danger:hover:not(:disabled) {
+    filter: brightness(0.95);
+}
+
+.btn.close-danger:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.close-account [data-step="clave"] .pin-boxes {
+    margin-bottom: 18px;
+}
+
+.close-account .flow-link {
+    padding: 8px 0;
+    border: 0;
+    background: none;
+}

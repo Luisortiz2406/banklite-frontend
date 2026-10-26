@@ -155,6 +155,8 @@ const BlApi = (function () {
             const msg = Array.isArray(data.message) ? data.message.join(", ") : data.message || "Error";
             const e = new Error(msg);
             e.status = res.status;
+            // Cuerpo completo: algunos errores traen datos (p. ej. los pendientes de un 409).
+            e.data = data;
             throw e;
         }
         return data;

@@ -65,7 +65,15 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch (err) {
             pinBoxes.error();
             pinBoxes.clear();
-            showMessage("No pudimos ingresar", err.message || "Credenciales inválidas.", "!");
+            // auth responde 403 "Tu cuenta fue cancelada el …" si el cliente ya canceló.
+            const cancelled = err.status === 403 && /cancelada/i.test(err.message || "");
+            showMessage(
+                cancelled ? "Cuenta cancelada" : "No pudimos ingresar",
+                cancelled
+                    ? `${err.message} (ayuda@banklite.co o Línea Banklite 601 000 0000)`
+                    : err.message || "Credenciales inválidas.",
+                "!"
+            );
             setLoading(submitBtn, false, submitLabel);
         }
     });
@@ -296,11 +304,13 @@ function showSessionNotice() {
         inactividad: "Tu sesión se cerró por inactividad. Ingresa de nuevo para continuar.",
         expirada: "Tu sesión venció. Ingresa de nuevo para continuar.",
         cerrada: "Cerraste tu sesión de forma segura.",
+        cancelada:
+            "Tu cuenta Banklite quedó cancelada. Te enviamos la confirmación a tu correo. Gracias por haber estado con nosotros.",
         "sin-autorizacion":
             "Para usar Banklite necesitas aceptar la política de privacidad. Puedes volver a ingresar cuando quieras.",
     };
     const notice = document.createElement("div");
-    notice.className = `session-notice${reason !== "cerrada" ? " is-warning" : ""}`;
+    notice.className = `session-notice${reason !== "cerrada" && reason !== "cancelada" ? " is-warning" : ""}`;
     notice.setAttribute("role", "status");
     notice.innerHTML =
         '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2"/></svg><span></span>';

@@ -509,7 +509,11 @@ document.addEventListener("DOMContentLoaded", () => {
     loadAccount();
 
     // transferir.html?breb=1 abre Bre-B; ?llave=... además escribe la llave (desde Mis llaves).
+    // ?monto=... deja escrito el valor (desde Cancelar mi cuenta: enviar el saldo).
     const params = new URLSearchParams(window.location.search);
+    const presetAmount = Number(params.get("monto"));
+    if (Number.isFinite(presetAmount) && presetAmount > 0)
+        byId("transferAmount").value = String(Math.floor(presetAmount));
     if (params.get("breb") === "1" || params.get("llave")) {
         setMode("breb");
         goTo(2);
