@@ -5645,6 +5645,8 @@ button:focus-visible {
 
 .settings-link span:nth-of-type(1) {
     flex: 1;
+    /* Los botones centran el texto por defecto: alineado a la izquierda como las demás opciones */
+    text-align: left;
 }
 
 .settings-link span:last-child {
