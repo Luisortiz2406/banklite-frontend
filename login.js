@@ -296,6 +296,8 @@ function showSessionNotice() {
         inactividad: "Tu sesión se cerró por inactividad. Ingresa de nuevo para continuar.",
         expirada: "Tu sesión venció. Ingresa de nuevo para continuar.",
         cerrada: "Cerraste tu sesión de forma segura.",
+        "sin-autorizacion":
+            "Para usar Banklite necesitas aceptar la política de privacidad. Puedes volver a ingresar cuando quieras.",
     };
     const notice = document.createElement("div");
     notice.className = `session-notice${reason !== "cerrada" ? " is-warning" : ""}`;

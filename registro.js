@@ -6,12 +6,6 @@
 // /auth/register (con la versión de la política aceptada). Usa BlApi (api.js) y las utilidades visuales de comun.js.
 // =========================================================
 
-// Versión de la política de privacidad que acepta la casilla del registro: la fecha de
-// "Última actualización" de privacidad.html. auth-service guarda la aceptación y
-// rechaza (400) una versión que no sea la vigente; al cambiar la política se
-// actualiza aquí, en privacidad.html y en auth-service (src/auth/consentimientos.ts).
-const POLITICA_PRIVACIDAD_VERSION = "2026-10-25";
-
 document.addEventListener("DOMContentLoaded", () => {
     const flow = document.getElementById("registerForm");
     if (!flow) return;
@@ -692,7 +686,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 email: state.email,
                 username: state.username,
                 password: BlApi.passwordFromPin(pin),
-                politicaVersion: POLITICA_PRIVACIDAD_VERSION,
+                politicaVersion: BlApi.politicaPrivacidadVersion,
             });
             // La cuenta ya está protegida por identidad, correo y teléfono: al login con el usuario escrito.
             try {

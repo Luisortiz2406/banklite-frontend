@@ -581,7 +581,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.querySelectorAll(".modal").forEach(modal => {
         modal.addEventListener("click", event => {
-            if (event.target === modal) {
+            // Los modales bloqueados (autorización de datos) no se cierran con clic afuera.
+            if (event.target === modal && !modal.dataset.locked) {
                 modal.classList.remove("active");
             }
         });
@@ -593,6 +594,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (event.key !== "Escape") return;
 
         document.querySelectorAll(".modal.active").forEach(modal => {
+            if (modal.dataset.locked) return; // ni con Escape
             if (modal.id === "confirmModal") {
                 modal.querySelector("[data-close]")?.click();
             } else {
