@@ -267,9 +267,9 @@ const ACCESS = {
     active: ["Activo", "b-good"],
     locked: ["Bloqueo temporal", "b-warn"],
     disabled: ["Suspendido", "b-bad"],
+    // Canceló su cuenta desde la app (auth: closed_at). Cada cliente cae en un solo filtro.
+    closed: ["Cancelado", "b-gray"],
 };
-// Para la etiqueta: auth también devuelve "closed" (el cliente canceló su cuenta). No es un filtro del listado.
-const ACCESS_BADGE = { ...ACCESS, closed: ["Cancelado", "b-gray"] };
 const ACC_STATUS = {
     pending: ["Pendiente", "b-gray"],
     active: ["Activa", "b-good"],
@@ -1014,7 +1014,7 @@ async function renderCustomers(el) {
                 <tr class="clickable" data-user="${esc(id)}">
                     <td>${who(kycName(r.kyc) || "Sin datos de identidad", `<span class="mono">${short(id)}</span>`)}</td>
                     <td>${esc(r.auth?.email || "—")}</td>
-                    <td>${r.auth ? badge(ACCESS_BADGE, r.auth.access) : '<span class="badge b-gray">Sin credenciales</span>'}</td>
+                    <td>${r.auth ? badge(ACCESS, r.auth.access) : '<span class="badge b-gray">Sin credenciales</span>'}</td>
                     <td>${r.kyc ? badge(KYC, r.kyc.status) : '<span class="badge b-gray">Sin KYC</span>'}</td>
                     <td>${fdate(r.auth?.createdAt || r.kyc?.createdAt, "day")}</td>
                 </tr>`
@@ -1114,7 +1114,7 @@ function openCustomer(idUser) {
                     <div style="flex:1;min-width:0"><h2>${esc(name)}</h2><p class="muted mono">${esc(idUser)}</p></div>
                 </div>
                 <div class="actions" style="margin-top:14px">
-                    ${auth ? badge(ACCESS_BADGE, auth.access) : '<span class="badge b-gray">Sin credenciales</span>'} ${kyc ? badge(KYC, kyc.status) : '<span class="badge b-gray">Sin KYC</span>'}
+                    ${auth ? badge(ACCESS, auth.access) : '<span class="badge b-gray">Sin credenciales</span>'} ${kyc ? badge(KYC, kyc.status) : '<span class="badge b-gray">Sin KYC</span>'}
                 </div>
                 ${auth?.access === "disabled" ? `<div class="alert alert-error" style="margin-top:14px">Acceso suspendido el ${fdate(auth.disabledAt)}. Motivo: ${esc(auth.disabledReason || "—")}</div>` : ""}
                 ${auth?.access === "locked" ? `<div class="alert alert-warn" style="margin-top:14px">Bloqueo temporal por intentos fallidos hasta ${fdate(auth.lockedUntil)}.</div>` : ""}
