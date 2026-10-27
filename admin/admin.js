@@ -268,12 +268,17 @@ const ACCESS = {
     locked: ["Bloqueo temporal", "b-warn"],
     disabled: ["Suspendido", "b-bad"],
 };
+// Para la etiqueta: auth también devuelve "closed" (el cliente canceló su cuenta). No es un filtro del listado.
+const ACCESS_BADGE = { ...ACCESS, closed: ["Cancelado", "b-gray"] };
 const ACC_STATUS = {
     pending: ["Pendiente", "b-gray"],
     active: ["Activa", "b-good"],
     blocked: ["Bloqueada", "b-bad"],
     closed: ["Cerrada", "b-gray"],
 };
+// Quién cerró la cuenta (account-service; solo lo reciben cumplimiento y admin).
+const CLOSED_BY = { cliente: "por el cliente", banco: "por el banco" };
+const closedByText = a => (a.closedAt ? `${fdate(a.closedAt, "day")} ${CLOSED_BY[a.cerradaPor] || ""}`.trim() : "—");
 const ACC_TYPE = { savings: "Ahorros", checking: "Corriente", merchant: "Comercio" };
 const KYC = { verified: ["Verificado", "b-teal"], rejected: ["Rechazado", "b-bad"] };
 const TX = {
@@ -310,6 +315,12 @@ const ACTIONS = {
     "sar.filed": "Radicó un SAR",
     "sar.dismissed": "Descartó un SAR",
     "report.generate": "Generó un reporte AML",
+    "closure.list_viewed": "Consultó los cierres de cuenta",
+    "closure.viewed": "Consultó un cierre de cuenta",
+    "closure.reviewed": "Marcó revisado un cierre de cuenta",
+    "closure_alert.resolved": "Resolvió una alerta de cuenta cerrada con saldo",
+    "account_closure.list_viewed": "Consultó cuentas cerradas",
+    "account_closure.viewed": "Consultó el cierre de una cuenta",
     "kyc.view": "Abrió los datos de identidad",
     "kyc.manual_approve": "Aprobó a mano una verificación",
     "staff.document_registered": "Registró el documento de un administrador (consola)",
@@ -1003,7 +1014,7 @@ async function renderCustomers(el) {
                 <tr class="clickable" data-user="${esc(id)}">
                     <td>${who(kycName(r.kyc) || "Sin datos de identidad", `<span class="mono">${short(id)}</span>`)}</td>
                     <td>${esc(r.auth?.email || "—")}</td>
-                    <td>${r.auth ? badge(ACCESS, r.auth.access) : '<span class="badge b-gray">Sin credenciales</span>'}</td>
+                    <td>${r.auth ? badge(ACCESS_BADGE, r.auth.access) : '<span class="badge b-gray">Sin credenciales</span>'}</td>
                     <td>${r.kyc ? badge(KYC, r.kyc.status) : '<span class="badge b-gray">Sin KYC</span>'}</td>
                     <td>${fdate(r.auth?.createdAt || r.kyc?.createdAt, "day")}</td>
                 </tr>`
@@ -1076,6 +1087,15 @@ async function loadCustomerConsents(idUser, box) {
     }`;
 }
 
+/** Cancelación desde la app (account-service). Solo cumplimiento y admin; la consulta queda en la auditoría. */
+async function loadCustomerClosure(idUser, auth, box) {
+    const closure = await tryApi("GET", `/accounts/admin/closures/${idUser}`);
+    const cuentas = closure?.cuentas?.length ? ` Cuentas cerradas: ${closure.cuentas.map(esc).join(", ")}.` : "";
+    box.innerHTML = closure
+        ? `<div class="alert alert-info">Cuenta cancelada el ${esc(fdate(closure.cerradaEn))} por el cliente, desde la app.${cuentas} Ya no puede ingresar.</div>`
+        : `<div class="alert alert-info">Acceso cerrado el ${esc(fdate(auth.closedAt))} por cancelación de la cuenta. No se pudo consultar el detalle del cierre.</div>`;
+}
+
 function openCustomer(idUser) {
     openDrawer("Ficha del cliente", async body => {
         const [auth, kyc, accounts, cards, notifs] = await Promise.all([
@@ -1094,13 +1114,14 @@ function openCustomer(idUser) {
                     <div style="flex:1;min-width:0"><h2>${esc(name)}</h2><p class="muted mono">${esc(idUser)}</p></div>
                 </div>
                 <div class="actions" style="margin-top:14px">
-                    ${auth ? badge(ACCESS, auth.access) : '<span class="badge b-gray">Sin credenciales</span>'} ${kyc ? badge(KYC, kyc.status) : '<span class="badge b-gray">Sin KYC</span>'}
+                    ${auth ? badge(ACCESS_BADGE, auth.access) : '<span class="badge b-gray">Sin credenciales</span>'} ${kyc ? badge(KYC, kyc.status) : '<span class="badge b-gray">Sin KYC</span>'}
                 </div>
                 ${auth?.access === "disabled" ? `<div class="alert alert-error" style="margin-top:14px">Acceso suspendido el ${fdate(auth.disabledAt)}. Motivo: ${esc(auth.disabledReason || "—")}</div>` : ""}
                 ${auth?.access === "locked" ? `<div class="alert alert-warn" style="margin-top:14px">Bloqueo temporal por intentos fallidos hasta ${fdate(auth.lockedUntil)}.</div>` : ""}
+                ${auth?.access === "closed" && canCompliance() ? '<div id="cClosure" style="margin-top:14px"></div>' : ""}
                 <div class="actions" style="margin-top:14px">
                     ${
-                        isAdmin() && auth
+                        isAdmin() && auth && auth.access !== "closed"
                             ? auth.access === "disabled"
                                 ? `<button class="btn btn-sm btn-primary" id="cEnable">${svg("check")} Reactivar acceso</button>`
                                 : `<button class="btn btn-sm btn-danger" id="cDisable">${svg("lock")} Suspender acceso</button>${auth.access === "locked" ? ` <button class="btn btn-sm" id="cEnable">${svg("check")} Quitar bloqueo temporal</button>` : ""}`
@@ -1168,6 +1189,7 @@ function openCustomer(idUser) {
         bindKycActions(idUser, name, kyc);
 
         $("cConsentsLoad")?.addEventListener("click", () => loadCustomerConsents(idUser, $("cConsents")));
+        if ($("cClosure")) loadCustomerClosure(idUser, auth, $("cClosure"));
         $("cDisable")?.addEventListener("click", () =>
             formModal({
                 title: "Suspender acceso del cliente",
@@ -1348,6 +1370,10 @@ const accountFilters = { q: "", status: "", page: 1 };
 
 async function renderAccounts(el) {
     const f = accountFilters;
+    // Las cuentas cerradas (filtro, fecha y quién la cerró) solo las ven cumplimiento y admin; cada consulta queda en la auditoría.
+    const seeClosed = canCompliance();
+    if (!seeClosed && f.status === "closed") f.status = "";
+    const statuses = Object.entries(ACC_STATUS).filter(([k]) => seeClosed || k !== "closed");
 
     el.innerHTML =
         pageHead(
@@ -1358,16 +1384,14 @@ async function renderAccounts(el) {
         `
         <form class="filters" id="af">
             <div class="grow"><label for="aq">Buscar</label><div class="search-input">${svg("search")}<input id="aq" value="${esc(f.q)}" placeholder="Número de cuenta o ID de usuario"></div></div>
-            <div><label for="as">Estado</label><select id="as"><option value="">Todos</option>${Object.entries(
-                ACC_STATUS
-            )
+            <div><label for="as">Estado</label><select id="as"><option value="">Todos</option>${statuses
                 .map(([k, [t]]) => `<option value="${k}" ${f.status === k ? "selected" : ""}>${t}</option>`)
                 .join("")}</select></div>
             <button class="btn btn-primary" type="submit">Buscar</button>
         </form>
         <div class="chips">
             <span class="chip ${!f.status ? "active" : ""}" data-status="">Todas</span>
-            ${Object.entries(ACC_STATUS)
+            ${statuses
                 .map(
                     ([k, [t]]) => `<span class="chip ${f.status === k ? "active" : ""}" data-status="${k}">${t}s</span>`
                 )
@@ -1395,7 +1419,7 @@ async function renderAccounts(el) {
         );
         $("ares").innerHTML = data.items.length
             ? `<div class="table-wrap"><table>
-            <thead><tr><th>Número</th><th>Cliente</th><th>Tipo</th><th>Estado</th><th class="amount">Límite diario</th><th class="amount">Límite mensual</th><th>Apertura</th></tr></thead>
+            <thead><tr><th>Número</th><th>Cliente</th><th>Tipo</th><th>Estado</th><th class="amount">Límite diario</th><th class="amount">Límite mensual</th><th>Apertura</th>${seeClosed ? "<th>Cerrada el</th>" : ""}</tr></thead>
             <tbody>${data.items
                 .map(
                     a => `
@@ -1407,6 +1431,7 @@ async function renderAccounts(el) {
                     <td class="amount">${money(a.dailyLimit, a.currency)}</td>
                     <td class="amount">${money(a.monthlyLimit, a.currency)}</td>
                     <td>${fdate(a.createdAt, "day")}</td>
+                    ${seeClosed ? `<td>${a.status === "closed" ? esc(closedByText(a)) : "—"}</td>` : ""}
                 </tr>`
                 )
                 .join("")}
@@ -1422,7 +1447,17 @@ async function renderAccounts(el) {
         $("exportA").disabled = !data.items.length;
         $("exportA").onclick = () =>
             downloadCSV("cuentas-banklite.csv", [
-                ["Cuenta", "ID cliente", "Tipo", "Moneda", "Estado", "Límite diario", "Límite mensual", "Apertura"],
+                [
+                    "Cuenta",
+                    "ID cliente",
+                    "Tipo",
+                    "Moneda",
+                    "Estado",
+                    "Límite diario",
+                    "Límite mensual",
+                    "Apertura",
+                    ...(seeClosed ? ["Cerrada el", "Cerrada por"] : []),
+                ],
                 ...data.items.map(a => [
                     a.accountNumber,
                     a.idUser,
@@ -1432,6 +1467,7 @@ async function renderAccounts(el) {
                     a.dailyLimit,
                     a.monthlyLimit,
                     fdate(a.createdAt, "day"),
+                    ...(seeClosed ? [a.closedAt ? fdate(a.closedAt, "day") : "", a.cerradaPor || ""] : []),
                 ]),
             ]);
     } catch (err) {
@@ -1464,7 +1500,15 @@ function openAccount(id) {
             </div>
             <div class="card">
                 <div class="actions">${badge(ACC_STATUS, acc.status, blockedBy(acc, true))}</div>
-                ${acc.status === "closed" ? '<div class="alert alert-info" style="margin-top:12px">Cuenta cerrada. No se puede reabrir ni modificar.</div>' : ""}
+                ${
+                    acc.status === "closed"
+                        ? `<div class="alert alert-info" style="margin-top:12px">${
+                              acc.closedAt
+                                  ? `Cerrada el ${esc(fdate(acc.closedAt))} ${esc(CLOSED_BY[acc.cerradaPor] || "")}${acc.cerradaPor === "cliente" ? " (canceló su cuenta desde la app)" : ""}.`
+                                  : "Cuenta cerrada."
+                          } No se puede reabrir ni modificar.</div>`
+                        : ""
+                }
                 ${
                     canEdit
                         ? `<div class="actions" style="margin-top:14px">
@@ -2480,7 +2524,29 @@ async function loadLoginContexts(idUser, box) {
 const SAR_STATUS = { open: ["Abierto", "b-warn"], filed: ["Radicado", "b-bad"], dismissed: ["Descartado", "b-gray"] };
 const SAR_SEVERITY = { low: ["Baja", "b-gray"], medium: ["Media", "b-warn"], high: ["Alta", "b-bad"] };
 
-const complianceFilters = { status: "", severity: "", page: 1, alerts: "open" };
+const complianceFilters = {
+    status: "",
+    severity: "",
+    page: 1,
+    alerts: "open",
+    closures: "por_revisar",
+    closuresPage: 1,
+};
+
+// Cierres de cuenta (compliance-service, evento account.closed). Si el cliente tuvo alertas de
+// fraude desde 30 días antes del cierre (o llegan después), queda por revisar; no se crea un SAR.
+// Cumplimiento lo revisa y lo marca como revisado con un motivo. Cada consulta queda en la auditoría.
+const CLOSURE_FILTERS = [
+    ["por_revisar", "Por revisar"],
+    ["revisados", "Revisados"],
+    ["todos", "Todos"],
+];
+const closureReviewBadge = c =>
+    !c.requiresReview
+        ? '<span class="badge b-gray">Sin alertas</span>'
+        : c.reviewedAt
+          ? '<span class="badge b-good">Revisado</span>'
+          : '<span class="badge b-warn">Por revisar</span>';
 
 // Alertas «cuenta cerrada con saldo» (account-service): después de que un cliente
 // cancela su cuenta, el sistema vuelve a revisar el saldo; si llegó dinero, se abre
@@ -2501,11 +2567,20 @@ async function renderCompliance(el) {
     el.innerHTML =
         pageHead(
             "Cumplimiento",
-            "KPIs de negocio, cuentas cerradas con saldo, reportes de actividad sospechosa (SAR) y reportes AML.",
+            "KPIs de negocio, cierres de cuenta, cuentas cerradas con saldo, reportes de actividad sospechosa (SAR) y reportes AML.",
             `<button class="btn btn-sm btn-primary" id="newReport">${svg("plus")} Generar reporte</button>`
         ) +
         `
-        <div class="grid g4" id="kpis">${loadingBox}</div>
+        <div class="grid g3" id="kpis">${loadingBox}</div>
+
+        <div class="section-title" style="margin:22px 0 12px"><h3>Cierres de cuenta</h3></div>
+        <form class="filters" id="clf">
+            <div><label for="clfs">Estado</label><select id="clfs">${CLOSURE_FILTERS.map(
+                ([k, t]) => `<option value="${k}" ${f.closures === k ? "selected" : ""}>${t}</option>`
+            ).join("")}</select></div>
+            <button class="btn btn-primary" type="submit">Filtrar</button>
+        </form>
+        <div id="cclosures">${loadingBox}</div>
 
         <div class="section-title" style="margin:22px 0 12px"><h3>Cuentas cerradas con saldo</h3></div>
         <form class="filters" id="caf">
@@ -2549,7 +2624,13 @@ async function renderCompliance(el) {
         f.alerts = $("cafs").value;
         renderCompliance(el);
     };
+    $("clf").onsubmit = e => {
+        e.preventDefault();
+        Object.assign(f, { closures: $("clfs").value, closuresPage: 1 });
+        renderClosures($("cclosures"));
+    };
     renderClosureAlerts($("calerts"), f.alerts);
+    renderClosures($("cclosures"));
 
     tryApi("GET", "/compliance/admin/kpis" + qs({ from: period.from, to: period.to })).then(k => {
         $("kpis").innerHTML = k
@@ -2557,7 +2638,9 @@ async function renderCompliance(el) {
             <div class="card stat"><div class="stat-top"><span class="label">Transacciones (30 días)</span><span class="stat-icon">${svg("movements")}</span></div><div class="value">${esc(k.totalTransactions)}</div><div class="sub">${esc(period.from)} a ${esc(period.to)}</div></div>
             <div class="card stat"><div class="stat-top"><span class="label">Volumen (30 días)</span><span class="stat-icon">${svg("money")}</span></div><div class="value">${compact(k.totalVolume)}</div><div class="sub">Salidas + ingresos externos</div></div>
             <div class="card stat"><div class="stat-top"><span class="label">Cuentas nuevas</span><span class="stat-icon">${svg("customers")}</span></div><div class="value">${esc(k.newAccounts)}</div><div class="sub">Tasa de aprobación KYC: ${k.kycApprovalRate !== null ? esc(k.kycApprovalRate) + "%" : "—"}</div></div>
-            <div class="card stat"><div class="stat-top"><span class="label">SAR abiertos</span><span class="stat-icon">${svg("compliance")}</span></div><div class="value" style="color:${k.openSars ? "var(--warn)" : "inherit"}">${esc(k.openSars)}</div><div class="sub">${esc(k.sarCount)} generados en el periodo</div></div>`
+            <div class="card stat"><div class="stat-top"><span class="label">SAR abiertos</span><span class="stat-icon">${svg("compliance")}</span></div><div class="value" style="color:${k.openSars ? "var(--warn)" : "inherit"}">${esc(k.openSars)}</div><div class="sub">${esc(k.sarCount)} generados en el periodo</div></div>
+            <div class="card stat"><div class="stat-top"><span class="label">Cuentas cerradas (30 días)</span><span class="stat-icon">${svg("accounts")}</span></div><div class="value">${esc(k.closedAccounts ?? "—")}</div><div class="sub">Clientes que cancelaron desde la app</div></div>
+            <div class="card stat"><div class="stat-top"><span class="label">Cierres por revisar</span><span class="stat-icon">${svg("compliance")}</span></div><div class="value" style="color:${k.closuresPendingReview ? "var(--warn)" : "inherit"}">${esc(k.closuresPendingReview ?? "—")}</div><div class="sub">Con alertas de fraude recientes</div></div>`
             : emptyBox("No disponible", "compliance-service no respondió.", "server");
     });
 
@@ -2626,6 +2709,134 @@ async function renderCompliance(el) {
                 refreshAll();
             },
         });
+}
+
+async function renderClosures(box) {
+    const f = complianceFilters;
+    let data;
+    try {
+        data = await api(
+            "GET",
+            "/compliance/admin/closures" + qs({ estado: f.closures, page: f.closuresPage, limit: 25 })
+        );
+    } catch (err) {
+        box.innerHTML = errorBox(err);
+        return;
+    }
+    if (!data.items.length) {
+        box.innerHTML = emptyBox(
+            f.closures === "por_revisar" ? "Sin cierres por revisar" : "Sin cierres",
+            "Los clientes que cancelan su cuenta aparecen aquí. Quedan por revisar si tuvieron alertas de fraude en los 30 días anteriores al cierre.",
+            "compliance"
+        );
+        return;
+    }
+    box.innerHTML = `
+        <div class="table-wrap"><table>
+        <thead><tr><th>Cancelada</th><th>Cliente</th><th>Cuentas</th><th>Alertas recientes</th><th>Estado</th><th>Revisión</th><th></th></tr></thead>
+        <tbody>${data.items
+            .map(
+                c => `
+            <tr>
+                <td>${fdate(c.closedAt)}</td>
+                <td><a href="#" class="mono" data-customer="${esc(c.idUser)}">${short(c.idUser)}</a></td>
+                <td class="mono">${(c.accounts || []).map(esc).join("<br>") || "—"}</td>
+                <td>${esc(c.recentAlerts)}</td>
+                <td>${closureReviewBadge(c)}</td>
+                <td>${c.reviewedAt ? `@${esc(c.reviewedBy)} — ${fdate(c.reviewedAt)}<br><small>${esc((c.reviewNote || "").slice(0, 80))}</small>` : "—"}</td>
+                <td class="actions">
+                    ${c.recentAlerts ? `<button class="btn btn-sm" data-closure="${esc(c.idUser)}">Ver alertas</button>` : ""}
+                    ${c.requiresReview && !c.reviewedAt ? `<button class="btn btn-sm btn-primary" data-review="${esc(c.idUser)}">Marcar revisado</button>` : ""}
+                </td>
+            </tr>`
+            )
+            .join("")}
+        </tbody></table></div>${pager(data, p => {
+            f.closuresPage = p;
+            renderClosures(box);
+        })}`;
+
+    box.querySelectorAll("[data-customer]").forEach(
+        a =>
+            (a.onclick = e => {
+                e.preventDefault();
+                openCustomer(a.dataset.customer);
+            })
+    );
+    box.querySelectorAll("[data-closure]").forEach(b => (b.onclick = () => openClosure(b.dataset.closure)));
+    box.querySelectorAll("[data-review]").forEach(
+        b => (b.onclick = () => reviewClosure(data.items.find(c => c.idUser === b.dataset.review)))
+    );
+}
+
+function reviewClosure(c) {
+    const alertas = c.recentAlerts === 1 ? "alerta de fraude reciente" : "alertas de fraude recientes";
+    formModal({
+        title: "Marcar cierre como revisado",
+        confirm: "Marcar revisado",
+        icon: "compliance",
+        desc: `Cliente <span class="mono">${esc(c.idUser)}</span>, cuenta cancelada el ${esc(fdate(c.closedAt))} con ${esc(c.recentAlerts)} ${alertas}. Si hay que reportar algo, se hace desde los SAR: marcar revisado no crea un reporte.`,
+        fields: [
+            {
+                name: "note",
+                label: "Qué se revisó (queda en la auditoría)",
+                type: "textarea",
+                required: true,
+                max: 300,
+                placeholder: "Ej.: Alertas revisadas con el equipo de fraude; sin hallazgos.",
+            },
+        ],
+        onSubmit: async v => {
+            if (v.note.trim().length < 5) throw new Error("Escribe el motivo (mínimo 5 caracteres).");
+            await api("PATCH", `/compliance/admin/closures/${encodeURIComponent(c.idUser)}`, { note: v.note.trim() });
+            toast("Cierre marcado como revisado.");
+            refreshAll();
+        },
+    });
+}
+
+/** Un cierre con las alertas de fraude de la ventana (cada consulta queda en la auditoría). */
+function openClosure(idUser) {
+    openDrawer("Cierre de cuenta", async body => {
+        let c;
+        try {
+            c = await api("GET", `/compliance/admin/closures/${encodeURIComponent(idUser)}`);
+        } catch (err) {
+            body.innerHTML = errorBox(err);
+            return;
+        }
+        body.innerHTML = `
+            <div class="card">
+                <div class="actions">${closureReviewBadge(c)}</div>
+                <dl class="kv" style="margin-top:12px">
+                    <dt>Cliente</dt><dd><a href="#" id="clCustomer" class="mono">${esc(c.idUser)}</a></dd>
+                    <dt>Cancelada</dt><dd>${fdate(c.closedAt)}</dd>
+                    <dt>Cuentas</dt><dd class="mono">${(c.accounts || []).map(esc).join(", ") || "—"}</dd>
+                    <dt>Alertas recientes</dt><dd>${esc(c.recentAlerts)} (desde 30 días antes del cierre)</dd>
+                    ${c.reviewedAt ? `<dt>Revisado</dt><dd>@${esc(c.reviewedBy)} — ${fdate(c.reviewedAt)}<br><small>${esc(c.reviewNote || "")}</small></dd>` : ""}
+                </dl>
+                ${c.requiresReview && !c.reviewedAt ? '<div class="actions" style="margin-top:14px"><button class="btn btn-sm btn-primary" id="clReview">Marcar revisado</button></div>' : ""}
+            </div>
+            <div class="section-title"><h3>Alertas de fraude</h3></div>
+            ${
+                c.alerts?.length
+                    ? `<div class="table-wrap"><table class="mini-table">
+                <thead><tr><th>Fecha</th><th>Severidad</th><th>Motivo</th><th>SAR</th></tr></thead>
+                <tbody>${c.alerts
+                    .map(
+                        a =>
+                            `<tr class="clickable" data-sar="${esc(a.id)}"><td>${fdate(a.createdAt)}</td><td>${badge(SAR_SEVERITY, a.severity)}</td><td>${esc((a.reason || "").slice(0, 80))}</td><td>${badge(SAR_STATUS, a.status)}</td></tr>`
+                    )
+                    .join("")}</tbody></table></div>`
+                    : '<div class="card"><p class="muted">Sin alertas en la ventana.</p></div>'
+            }`;
+        $("clCustomer").onclick = e => {
+            e.preventDefault();
+            openCustomer(c.idUser);
+        };
+        $("clReview")?.addEventListener("click", () => reviewClosure(c));
+        body.querySelectorAll("tr[data-sar]").forEach(tr => (tr.onclick = () => openSar(tr.dataset.sar)));
+    });
 }
 
 async function renderClosureAlerts(box, status) {
