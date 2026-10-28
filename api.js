@@ -491,3 +491,6 @@ const BlApi = (function () {
         protectPage,
     };
 })();
+
+// DEMO (no mergear): "var" prohibido por ESLint (no-var) para que falle el pipeline.
+var variableSinUsar = "falla a propósito";
