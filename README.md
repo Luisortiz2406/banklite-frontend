@@ -66,9 +66,11 @@ detecta solo. `qr-lib.js` y los `.html` no se formatean.
 
 ## Pruebas
 
-El CI (`.github/workflows/ci.yml`) corre lint y formato, construye la imagen de nginx
-y comprueba que sirva la app, el panel `/admin/` y la CSP, y que no publique
-archivos de configuración (`Dockerfile`, `nginx.conf`, `package.json`).
+El pipeline (`.github/workflows/deploy.yml`, job **test**) corre lint y formato y luego
+`scripts/probar-imagen.sh`: construye la imagen de nginx y comprueba que sirva la app,
+el panel `/admin/` y la CSP, y que no publique archivos de configuración (`Dockerfile`,
+`nginx.conf`, `package.json`). En local se corre igual con `sh scripts/probar-imagen.sh`
+(necesita Docker).
 
 ## Despliegue
 
