@@ -19,6 +19,9 @@
 
 <body class="app" data-page="transferir">
 
+    <!-- Aviso permanente: proyecto académico, no es un banco real (no quitar) -->
+    <div class="demo-banner" role="note"><strong>Proyecto académico de la Universidad Cooperativa de Colombia.</strong> BankLite no es un banco real: no ingreses contraseñas, tarjetas ni datos reales.</div>
+
     <!-- Encabezado y menú lateral: los arma layout.js -->
 
 
@@ -45,10 +48,10 @@
             <!-- PASO 1: ENTIDAD -->
             <section class="transfer-step active" data-step="1">
 
-                <button type="button" class="breb-option" data-bank="Bre-B">
-                    <span class="breb-logo" aria-hidden="true">Bre-B</span>
+                <button type="button" class="breb-option" data-bank="llave">
+                    <span class="breb-logo" aria-hidden="true">Llave</span>
                     <span class="breb-option-text">
-                        <b>Enviar con llave Bre-B</b>
+                        <b>Enviar con llave Banklite</b>
                         <small>Usa el celular, correo, cédula o @llave de quien recibe. Llega en segundos, sin su número de cuenta.</small>
                     </span>
                     <span class="breb-option-arrow" aria-hidden="true">→</span>
@@ -76,15 +79,15 @@
                 <h2>Datos del destinatario</h2>
                 <p id="recipientHelp">Pídele a la persona el número de su cuenta Banklite. Lo encuentra en su inicio, en «Recibir».</p>
 
-                <!-- Llave Bre-B -->
+                <!-- Llave Banklite -->
                 <div class="breb-box" id="brebBox" hidden>
-                    <label for="brebKey">Llave Bre-B de quien recibe</label>
+                    <label for="brebKey">Llave Banklite de quien recibe</label>
                     <div class="breb-input">
                         <input id="brebKey" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Celular, correo, cédula o @llave">
                         <span class="breb-chip" id="brebType" hidden></span>
                     </div>
                     <div class="breb-result" id="brebResult" hidden></div>
-                    <p class="breb-help">Pídele a la persona su llave. Con Bre-B no necesitas su número de cuenta. Por ahora, solo llaves registradas en Banklite.</p>
+                    <p class="breb-help">Pídele a la persona su llave. Con una llave no necesitas su número de cuenta. Por ahora, solo llaves registradas en Banklite.</p>
                 </div>
 
                 <div class="two" id="accountFields">

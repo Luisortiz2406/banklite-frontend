@@ -391,6 +391,23 @@ button {
         radial-gradient(700px 500px at 100% 100%, rgba(38, 71, 78, 0.16), transparent 60%), var(--bg);
 }
 
+/* Aviso permanente de proyecto académico (igual al de la app). */
+.demo-banner {
+    width: min(100%, 960px);
+    padding: 8px 16px;
+    border: 1px solid #e3c04f;
+    border-radius: 10px;
+    background: #fff4cc;
+    color: #4a3700;
+    font-size: 13px;
+    line-height: 1.45;
+    text-align: center;
+}
+
+.demo-banner strong {
+    font-weight: 700;
+}
+
 .login-card {
     width: min(920px, 100%);
     display: grid;

@@ -1,5 +1,5 @@
 // =========================================================
-// BANKLITE - LLAVES BRE-B: utilidades compartidas
+// BANKLITE - LLAVES: utilidades compartidas
 // Tipos de llave, su ícono y cómo se reconoce cada una (mismas reglas que
 // account-service). Lo usan llaves.js y transferir.js.
 // =========================================================
