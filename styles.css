@@ -87,6 +87,24 @@ body {
     display: none !important;
 }
 
+/* Aviso permanente de proyecto académico (todas las páginas). Ocupa todo el ancho
+   también en las páginas con grid (login y registro). Mismos colores en claro y oscuro. */
+.demo-banner {
+    grid-column: 1 / -1;
+    width: 100%;
+    padding: 8px 16px;
+    background: #fff4cc;
+    color: #4a3700;
+    border-bottom: 1px solid #e3c04f;
+    font-size: 13px;
+    line-height: 1.45;
+    text-align: center;
+}
+
+.demo-banner strong {
+    font-weight: 700;
+}
+
 ::selection {
     background: var(--primary-pale);
     color: var(--on-primary);

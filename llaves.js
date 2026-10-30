@@ -1,5 +1,5 @@
 // =========================================================
-// BANKLITE - MIS LLAVES BRE-B (llaves.html)
+// BANKLITE - MIS LLAVES (llaves.html)
 // Mismo diseño y comportamiento que la versión simulada, contra el directorio
 // de llaves de account-service (/accounts/keys). Registrar y eliminar exige la
 // clave dinámica (la app la adjunta sola). Solo se pueden registrar el celular,

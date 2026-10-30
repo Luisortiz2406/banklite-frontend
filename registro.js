@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
         info: {
             step: 1,
             label: "Tus datos",
-            title: "Tu banco digital, sin filas ni papeleo",
+            title: "Tu cuenta de práctica, sin filas ni papeleo",
             sub: "Abre tu cuenta 100% en línea, en minutos y desde donde estés.",
         },
         identity: {

@@ -716,7 +716,7 @@ const FEATURE_SLIDES = [
     },
     {
         eyebrow: "Nuevo",
-        title: "Llaves Bre-B",
+        title: "Llaves Banklite",
         text: "Recibir plata con tu celular o correo, sin dar tu número de cuenta.",
         cta: "Mis llaves",
         href: "llaves.html",

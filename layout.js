@@ -56,7 +56,7 @@ const BlLayout = (() => {
                 { spy: "transferir", label: "Transferir", href: "transferir.html" },
                 { spy: "pagos", label: "Pagos", href: "pagos.html" },
                 { spy: "qr", label: "Pagar con QR", href: "qr.html" },
-                { spy: "llaves", label: "Llaves Bre-B", href: "llaves.html" },
+                { spy: "llaves", label: "Llaves Banklite", href: "llaves.html" },
             ],
         },
         {
