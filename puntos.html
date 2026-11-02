@@ -36,9 +36,22 @@
         <!-- Resumen de puntos y nivel -->
         <section class="points-hero" aria-labelledby="pointsTotal">
             <div class="points-hero-main">
-                <span class="points-level" id="pointsLevel">Nivel Bronce</span>
-                <strong id="pointsTotal">0</strong>
-                <small>puntos disponibles · equivalen a <b id="pointsValue">$ 0</b></small>
+                <!-- Medalla del nivel: cambia de metal con el nivel y se inclina con el puntero -->
+                <div class="medal-wrap" aria-hidden="true">
+                    <div class="medal" id="pointsMedal">
+                        <span class="medal-rim"></span>
+                        <span class="medal-face">
+                            <svg viewBox="0 0 24 24"><path d="m12 3.2 2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.5l-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/></svg>
+                            <small id="pointsMedalLabel">BRONCE</small>
+                        </span>
+                        <span class="medal-shine"></span>
+                    </div>
+                </div>
+                <div class="points-hero-text">
+                    <span class="points-level" id="pointsLevel">Nivel Bronce</span>
+                    <strong id="pointsTotal">0</strong>
+                    <small>puntos disponibles · equivalen a <b id="pointsValue">$ 0</b></small>
+                </div>
             </div>
             <div class="points-hero-progress">
                 <div class="points-progress-top">
@@ -153,6 +166,7 @@
     <script src="banki.js"></script>
     <script src="api.js"></script>
     <script src="layout.js"></script>
+    <script src="efectos-3d.js"></script>
     <script src="puntos.js"></script>
 
 </body>

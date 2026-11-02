@@ -226,7 +226,7 @@
                         <span class="eyebrow">Producto</span>
                         <h2>Tarjeta débito virtual</h2>
                     </div>
-                    <button class="btn soft" id="toggleCardNumber" type="button" hidden>Mostrar número</button>
+                    <button class="btn soft" id="toggleCardNumber" type="button" aria-pressed="false" hidden>Ver datos</button>
                 </div>
 
                 <!-- Sin tarjeta -->
@@ -237,33 +237,53 @@
 
                 <div class="card-layout" id="cardLayout" hidden>
                     <div>
-                        <div class="real-card" id="realCard">
-                            <span class="card-locked-badge" aria-hidden="true"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>CONGELADA</span>
-                            <div class="card-top">
-                                <div>
-                                    banklite
-                                    <span>DÉBITO VIRTUAL</span>
-                                </div>
-                            </div>
+                        <!-- La tarjeta se inclina con el puntero y gira para mostrar el reverso -->
+                        <div class="card-tilt" id="cardTilt">
+                            <div class="card-flip" id="cardFlip">
+                                <div class="real-card" id="realCard">
+                                    <span class="card-locked-badge" aria-hidden="true"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>CONGELADA</span>
+                                    <div class="card-top">
+                                        <div>
+                                            banklite
+                                            <span>DÉBITO VIRTUAL</span>
+                                        </div>
+                                    </div>
 
-                            <div class="card-mid">
-                                <div class="chip"></div>
-                            </div>
+                                    <div class="card-mid">
+                                        <div class="chip"></div>
+                                    </div>
 
-                            <div class="card-number" id="cardNumber">•••• •••• •••• ••••</div>
+                                    <div class="card-number" id="cardNumber">•••• •••• •••• ••••</div>
 
-                            <div class="card-bottom">
-                                <div>
-                                    <small>TITULAR</small>
-                                    <strong id="cardHolder">—</strong>
+                                    <div class="card-bottom">
+                                        <div>
+                                            <small>TITULAR</small>
+                                            <strong id="cardHolder">—</strong>
+                                        </div>
+                                        <div>
+                                            <small>VENCE</small>
+                                            <strong id="cardExp">--/--</strong>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div>
-                                    <small>VENCE</small>
-                                    <strong id="cardExp">--/--</strong>
-                                </div>
-                                <div>
-                                    <small>CVV</small>
-                                    <strong id="cardCvv">•••</strong>
+
+                                <!-- Reverso: número completo, vencimiento y CVV -->
+                                <div class="real-card card-back" id="cardBack" aria-hidden="true">
+                                    <span class="card-stripe"></span>
+                                    <div class="card-back-body">
+                                        <small>NÚMERO DE TARJETA</small>
+                                        <div class="card-number card-rv" id="cardNumberFull">•••• •••• •••• ••••</div>
+                                    </div>
+                                    <div class="card-bottom">
+                                        <div>
+                                            <small>VENCE</small>
+                                            <strong class="card-rv" id="cardExpBack">--/--</strong>
+                                        </div>
+                                        <div>
+                                            <small>CVV</small>
+                                            <strong class="card-rv card-cvv" id="cardCvv">•••</strong>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -852,6 +872,7 @@
     <script src="layout.js"></script>
     <script src="comprobantes.js"></script>
     <script src="dynamic-key.js"></script>
+    <script src="efectos-3d.js"></script>
     <script src="dashboard.js"></script>
     <script src="tarjeta-controles.js"></script>
     <script src="subscriptions.js"></script>

@@ -44,6 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
         setText("pointsTotal", formatPoints(data.balance));
         setText("pointsValue", formatMoney(data.value));
         setText("pointsLevel", `Nivel ${level.name}`);
+        setText("pointsMedalLabel", String(level.name).toUpperCase());
         setText("pointsMultiplier", `x${String(level.multiplier).replace(".", ",")} puntos`);
         setText(
             "pointsNextText",
@@ -215,5 +216,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    tiltOnPointer(document.querySelector(".medal"), 16);
     load();
 });

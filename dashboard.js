@@ -20,6 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initSidebar();
     initDashboardViews();
     initFeatureCarousel();
+    tiltOnPointer(byId("cardTilt"), 12);
 
     const state = {
         kyc: null,
@@ -32,6 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
         card: null,
         issued: {}, // CVV y número completo de la tarjeta recién emitida (solo en memoria)
         revealed: null, // número completo revelado (se oculta solo)
+        flipped: false, // la tarjeta está girada mostrando el reverso
         showAccount: false,
     };
 
@@ -304,22 +306,28 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         const issued = state.issued[card.id];
         const full = issued?.cardNumber || state.revealed;
-        byId("cardNumber").textContent = full
-            ? full.replace(/\s/g, "").replace(/(\d{4})(?=\d)/g, "$1 ")
-            : `•••• •••• •••• ${card.lastFour}`;
-        byId("cardExp").textContent =
-            `${String(card.expiryMonth).padStart(2, "0")}/${String(card.expiryYear).slice(-2)}`;
+        const masked = `•••• •••• •••• ${card.lastFour}`;
+        const expiry = `${String(card.expiryMonth).padStart(2, "0")}/${String(card.expiryYear).slice(-2)}`;
+        // El frente siempre va enmascarado; el número completo y el CVV viven en el reverso.
+        byId("cardNumber").textContent = masked;
+        byId("cardNumberFull").textContent = full ? full.replace(/\s/g, "").replace(/(\d{4})(?=\d)/g, "$1 ") : masked;
+        byId("cardExp").textContent = expiry;
+        byId("cardExpBack").textContent = expiry;
         byId("cardCvv").textContent = issued?.cvv || "•••";
         byId("cardStatusNote").textContent = issued
             ? "Guarda el CVV ahora: solo se muestra en esta sesión y no se guarda."
             : "El CVV solo se muestra al emitir la tarjeta y no se guarda.";
         const frozen = card.status !== "active";
         byId("realCard").classList.toggle("is-locked", frozen);
+        byId("cardBack").classList.toggle("is-locked", frozen);
+        byId("cardFlip").classList.toggle("is-flipped", state.flipped);
+        byId("realCard").setAttribute("aria-hidden", String(state.flipped));
+        byId("cardBack").setAttribute("aria-hidden", String(!state.flipped));
         byId("cardStateChip").textContent = frozen ? "Congelada" : "Activa";
         byId("cardLockSwitch").checked = frozen;
         byId("cardAccount").textContent = `Cuenta ····${String(card.accountNumber).slice(-4)} · ${card.currency}`;
-        byId("toggleCardNumber").textContent = full && !issued ? "Ocultar número" : "Mostrar número";
-        byId("toggleCardNumber").hidden = !!issued;
+        byId("toggleCardNumber").textContent = state.flipped ? "Ocultar datos" : "Ver datos";
+        byId("toggleCardNumber").setAttribute("aria-pressed", String(state.flipped));
         // Los controles (internet, límite, compras) los maneja tarjeta-controles.js.
         document.dispatchEvent(new CustomEvent("banklite:card", { detail: { ...card, justIssued: !!issued } }));
     }
@@ -332,6 +340,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const result = await send(config.cardApi, "POST", "/cards", { accountId: state.account.id });
             if (result.cardNumber && result.cvv) {
                 state.issued[result.id] = { cardNumber: result.cardNumber, cvv: result.cvv };
+                state.flipped = true; // la giramos sola para que se vea el CVV
                 toast("Tarjeta emitida. Guarda el CVV: solo se muestra ahora.", "ok", 6000);
             } else {
                 toast("Ya habías emitido tu tarjeta virtual.", "info");
@@ -344,25 +353,41 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    // La tarjeta gira para mostrar el reverso. Al volver, el número se borra del DOM
+    // recién cuando termina el giro, para que no desaparezca de golpe mientras gira.
     let hideTimer = null;
+    let wipeTimer = null;
+
+    function hideCardData() {
+        clearTimeout(hideTimer);
+        clearTimeout(wipeTimer);
+        state.flipped = false;
+        renderCards();
+        wipeTimer = setTimeout(() => {
+            if (state.flipped) return;
+            state.revealed = null;
+            renderCards();
+        }, 600);
+    }
+
     byId("toggleCardNumber").addEventListener("click", async () => {
         const card = state.card;
         if (!card) return;
-        if (state.revealed) {
-            state.revealed = null;
-            clearTimeout(hideTimer);
+        if (state.flipped) return hideCardData();
+        clearTimeout(wipeTimer);
+        // Recién emitida: el número y el CVV ya están en memoria, no hace falta pedirlos.
+        if (state.issued[card.id]) {
+            state.flipped = true;
             return renderCards();
         }
         try {
             const details = await get(config.cardApi, `/cards/${card.id}/reveal`);
             state.revealed = details.cardNumber;
+            state.flipped = true;
             renderCards();
-            // Por seguridad, el número se oculta solo a los 20 segundos.
+            // Por seguridad, la tarjeta se da vuelta sola a los 20 segundos.
             clearTimeout(hideTimer);
-            hideTimer = setTimeout(() => {
-                state.revealed = null;
-                renderCards();
-            }, 20000);
+            hideTimer = setTimeout(hideCardData, 20000);
         } catch (err) {
             fail(err, "No se pudo mostrar el número de la tarjeta.");
         }
