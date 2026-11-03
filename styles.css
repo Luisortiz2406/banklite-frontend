@@ -8940,30 +8940,6 @@ html[data-theme="dark"] .ent-vnum {
     line-height: 1.6;
 }
 
-.hm-social {
-    display: flex;
-    gap: 8px;
-}
-
-.hm-social button {
-    width: 38px;
-    height: 38px;
-    display: grid;
-    place-items: center;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.08);
-    color: var(--on-dark);
-    cursor: pointer;
-    transition:
-        background var(--transition),
-        color var(--transition);
-}
-
-.hm-social button:hover {
-    background: var(--primary);
-    color: var(--on-primary);
-}
-
 .hm-footer-col {
     display: grid;
     align-content: start;
