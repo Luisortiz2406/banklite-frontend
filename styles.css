@@ -26,6 +26,7 @@
     --text-muted: #8a9b9e;
 
     /* Colores de marca que NO cambian con el modo oscuro */
+    --aviso-h: 28px; /* alto de la franja del aviso académico */
     --brand: #26474e;
     --brand-2: #1d3a40;
     --brand-3: #172f34;
@@ -76,6 +77,7 @@ html {
 }
 
 body {
+    padding-top: var(--aviso-h);
     font-family: "Inter", sans-serif;
     background: var(--white);
     color: var(--text);
@@ -89,20 +91,59 @@ body {
 
 /* Aviso permanente de proyecto académico (todas las páginas). Ocupa todo el ancho
    también en las páginas con grid (login y registro). Mismos colores en claro y oscuro. */
+/* Aviso académico: franja delgada fija arriba, siempre visible y sin botón para
+   cerrarla. --aviso-h es su alto: el body y los elementos pegados arriba lo dejan libre. */
 .demo-banner {
-    grid-column: 1 / -1;
-    width: 100%;
-    padding: 8px 16px;
-    background: #fff4cc;
-    color: #4a3700;
-    border-bottom: 1px solid #e3c04f;
-    font-size: 13px;
-    line-height: 1.45;
-    text-align: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 10000;
+    height: var(--aviso-h);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 0 16px;
+    /* Paleta de BankLite fija: la franja se ve igual en tema claro y oscuro. */
+    background: #172f34;
+    color: #e8f8f8;
+    border-bottom: 2px solid #2cced2;
+    font-size: 12px;
+    line-height: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .demo-banner strong {
     font-weight: 700;
+    color: #ffffff;
+}
+
+.demo-banner-short {
+    display: none;
+}
+
+/* Pantallas medianas: sin el nombre de la universidad. Celular: texto corto. */
+@media (max-width: 1100px) {
+    .demo-banner-uni {
+        display: none;
+    }
+}
+
+@media (max-width: 720px) {
+    .demo-banner {
+        font-size: 11px;
+    }
+
+    .demo-banner-long {
+        display: none;
+    }
+
+    .demo-banner-short {
+        display: inline;
+    }
 }
 
 ::selection {
@@ -432,8 +473,8 @@ ul {
 
 .register-visual {
     position: sticky;
-    top: 0;
-    height: 100vh;
+    top: var(--aviso-h);
+    height: calc(100vh - var(--aviso-h));
     min-height: 600px;
     display: flex;
     flex-direction: column;
@@ -1335,7 +1376,7 @@ ul {
 
 .sidebar {
     position: sticky;
-    top: 22px;
+    top: calc(22px + var(--aviso-h));
     align-self: start;
     min-height: calc(100vh - 125px);
     display: flex;
@@ -3476,7 +3517,7 @@ button:focus-visible {
 
 .toast-stack {
     position: fixed;
-    top: 18px;
+    top: calc(18px + var(--aviso-h));
     right: 18px;
     z-index: 3000;
     display: flex;
@@ -4890,7 +4931,7 @@ button:focus-visible {
 
 .legal-header {
     position: sticky;
-    top: 0;
+    top: var(--aviso-h);
     z-index: 50;
     backdrop-filter: blur(8px);
 }
@@ -4966,7 +5007,7 @@ button:focus-visible {
 
 .legal-toc {
     position: sticky;
-    top: 96px;
+    top: calc(96px + var(--aviso-h));
     display: grid;
     gap: 12px;
     padding: 20px;
@@ -5880,7 +5921,7 @@ body.home {
 
 .hm-header {
     position: sticky;
-    top: 0;
+    top: var(--aviso-h);
     z-index: 1000;
     background: var(--header-bg);
     backdrop-filter: blur(10px);
@@ -10824,7 +10865,7 @@ a.badge-item:hover {
 
 .help-side {
     position: sticky;
-    top: 90px;
+    top: calc(90px + var(--aviso-h));
     display: grid;
     gap: 20px;
 }
@@ -13432,7 +13473,7 @@ html[data-theme="dark"] .sidebar .side.active::before {
 
     body.app:has(.sidebar) .app-header {
         position: sticky;
-        top: 0;
+        top: var(--aviso-h);
         z-index: 50;
         backdrop-filter: blur(8px);
     }
@@ -13443,8 +13484,8 @@ html[data-theme="dark"] .sidebar .side.active::before {
 
     .layout > .sidebar {
         position: sticky;
-        top: calc(var(--app-header-h, 72px) + 28px);
-        height: calc(100vh - var(--app-header-h, 72px) - 84px);
+        top: calc(var(--app-header-h, 72px) + 28px + var(--aviso-h));
+        height: calc(100vh - var(--app-header-h, 72px) - 84px - var(--aviso-h));
         min-height: 0;
         overflow-y: auto;
         overscroll-behavior: contain;
@@ -16664,10 +16705,10 @@ body.qr-presenting {
     /* El menú deja de ser una franja horizontal: es un panel que se abre con ☰ */
     .layout > .sidebar {
         position: fixed;
-        inset: 0 auto 0 0;
+        inset: var(--aviso-h) auto 0 0;
         z-index: 120;
         width: min(300px, 86vw);
-        height: 100dvh;
+        height: calc(100dvh - var(--aviso-h));
         min-height: 0;
         flex-direction: column;
         gap: 4px;
