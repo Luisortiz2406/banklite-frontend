@@ -316,7 +316,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 [
                     transfer?.destinationAccountType
                         ? `Cuenta de ${transfer.destinationAccountType.toLowerCase()}`
-                        : /^Billetera Demo /.test(bank || "")
+                        : /^Billetera (Pulso|Brío)$/.test(bank || "")
                           ? "Celular"
                           : "Cuenta",
                     transfer ? `···· ${transfer.destinationAccountLast4}` : null,
