@@ -159,6 +159,8 @@ const BlApi = (function () {
             e.data = data;
             throw e;
         }
+        // Movimientos viejos con marcas reales: se muestran con el nombre vigente (nombres-demo.js).
+        if (path.startsWith("/ledger/") && window.BlNombres) return window.BlNombres.apply(data);
         return data;
     }
 

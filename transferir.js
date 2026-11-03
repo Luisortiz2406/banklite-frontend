@@ -104,7 +104,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Banklite (número de cuenta), llave Banklite u otro banco / billetera.
     const isBreb = () => state.mode === "breb";
     const isExternal = () => state.mode === "external";
-    const isWallet = () => isExternal() && /^(Nequi|DaviPlata)$/.test(state.bank);
+    const isWallet = () => isExternal() && /^Billetera Demo /.test(state.bank);
     const bankliteOption = form.querySelector('.bank-option[data-bank="Banklite"]');
     const brebOption = form.querySelector('.breb-option[data-bank="llave"]');
     const bankOptions = [...form.querySelectorAll(".bank-option")];

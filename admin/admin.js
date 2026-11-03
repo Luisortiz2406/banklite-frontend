@@ -248,7 +248,9 @@ async function api(method, path, body) {
         err.status = res.status;
         throw err;
     }
-    return data;
+    // Registros viejos con marcas reales (movimientos, cuentas de comercio, compras):
+    // se muestran con el nombre vigente (/nombres-demo.js).
+    return window.BlNombres ? window.BlNombres.apply(data) : data;
 }
 
 // Igual que api() pero devuelve null si falla (para tarjetas que toleran un servicio caído).
