@@ -260,7 +260,7 @@ const BOT_TOPICS = [
         faq: "¿Cómo recibo plata en mi cuenta?",
         cat: "cuenta",
         answer: () => ({
-            text: "Te pueden enviar plata de tres formas: a tu **número de cuenta** (11 dígitos), a una de tus **llaves Bre-B** (celular, correo, cédula o @llave) o pagándote con tu **código QR de cobro**. Entre cuentas Banklite llega al instante y te avisamos en la campana. También puedes **recargar saldo** tú mismo desde el inicio con **tarjeta, PSE o Nequi** a través de Wompi (hoy en modo de pruebas: no se cobra dinero real), o cambiar tus **Puntos Banklite** por plata a tu cuenta.",
+            text: "Te pueden enviar plata de tres formas: a tu **número de cuenta** (11 dígitos), a una de tus **llaves Banklite** (celular, correo, cédula o @llave) o pagándote con tu **código QR de cobro**. Entre cuentas Banklite llega al instante y te avisamos en la campana. También puedes **recargar saldo** tú mismo desde el inicio con **tarjeta, PSE o Nequi** a través de Wompi (hoy en modo de pruebas: no se cobra dinero real), o cambiar tus **Puntos Banklite** por plata a tu cuenta.",
             links: [
                 { label: "Mis llaves", href: "llaves.html" },
                 { label: "Mi QR de cobro", href: "qr.html" },
@@ -387,11 +387,11 @@ const BOT_TOPICS = [
     },
     {
         id: "otrosbancos",
-        keys: ["otro banco", "otros bancos", "bancolombia", "nequi", "daviplata", "davivienda", "billetera"],
+        keys: ["otro banco", "otros bancos", "otra entidad", "billetera"],
         faq: "¿Puedo transferir a otros bancos?",
         cat: "transferencias",
         answer: () => ({
-            text: "Sí. En **Transferir** eliges el banco (Bancolombia, Banco de Bogotá, Davivienda, BBVA, Banco de Occidente u otra entidad) o la billetera (Nequi o DaviPlata), escribes el tipo y número de cuenta (en billeteras, el celular) y el nombre de quien recibe, y confirmas con tu clave dinámica. El dinero sale de tu cuenta de inmediato. Banklite no está conectado a la red interbancaria, así que la llegada al otro banco es de demostración.",
+            text: "Sí. En **Transferir** eliges el banco o la billetera de la lista, escribes el tipo y número de cuenta (en billeteras, el celular) y el nombre de quien recibe, y confirmas con tu clave dinámica. El dinero sale de tu cuenta de inmediato. Banklite no está conectado a la red interbancaria, así que la llegada al otro banco es de demostración.",
             links: [{ label: "Transferir", href: "transferir.html" }],
         }),
     },
@@ -431,7 +431,7 @@ const BOT_TOPICS = [
         faq: "¿Cuánto tarda en llegar una transferencia?",
         cat: "transferencias",
         answer: () => ({
-            text: "Entre cuentas Banklite (por número de cuenta, llave Bre-B o QR) llega **al instante**, a cualquier hora. A otros bancos y billeteras la plata sale de tu cuenta de inmediato, pero la llegada es de demostración: Banklite no está conectado a la red interbancaria. Si no ves un movimiento, revisa **Movimientos**.",
+            text: "Entre cuentas Banklite (por número de cuenta, llave Banklite o QR) llega **al instante**, a cualquier hora. A otros bancos y billeteras la plata sale de tu cuenta de inmediato, pero la llegada es de demostración: Banklite no está conectado a la red interbancaria. Si no ves un movimiento, revisa **Movimientos**.",
             links: [{ label: "Ver movimientos", href: "movimientos.html" }],
         }),
     },
@@ -470,7 +470,7 @@ const BOT_TOPICS = [
         faq: "¿Cuánto cuesta transferir?",
         cat: "transferencias",
         answer: () => ({
-            text: "Nada. Banklite **no cobra comisión** por transferir: ni entre cuentas Banklite, ni con llave Bre-B, ni a otros bancos o billeteras. Tampoco por pagar con QR, pagar facturas o recargar.",
+            text: "Nada. Banklite **no cobra comisión** por transferir: ni entre cuentas Banklite, ni con llave Banklite, ni a otros bancos o billeteras. Tampoco por pagar con QR, pagar facturas o recargar.",
         }),
     },
     {
@@ -505,7 +505,7 @@ const BOT_TOPICS = [
         faq: "¿Qué es la clave dinámica?",
         cat: "seguridad",
         answer: () => ({
-            text: "Es un código de **6 dígitos que cambia cada 60 segundos** y confirma que eres tú al mover plata. La ves arriba en el inicio (tócala para copiarla). Se usa al transferir, pagar, pagar con QR, registrar o eliminar llaves Bre-B y cambiar el límite de tu tarjeta. Si la escribes mal 5 veces, se bloquea 15 minutos. **Nunca la compartas.**",
+            text: "Es un código de **6 dígitos que cambia cada 60 segundos** y confirma que eres tú al mover plata. La ves arriba en el inicio (tócala para copiarla). Se usa al transferir, pagar, pagar con QR, registrar o eliminar llaves Banklite y cambiar el límite de tu tarjeta. Si la escribes mal 5 veces, se bloquea 15 minutos. **Nunca la compartas.**",
             links: [{ label: "Ir al inicio", href: "dashboard.html" }],
         }),
     },
@@ -597,7 +597,6 @@ const BOT_TOPICS = [
         keys: [
             "tarjeta",
             "tarjeta debito",
-            "visa",
             "cvv",
             "vencimiento",
             "datos de la tarjeta",
@@ -848,10 +847,10 @@ const BOT_TOPICS = [
     {
         id: "breb",
         keys: ["bre b", "breb", "que es bre", "pagos inmediatos", "llave", "llaves"],
-        faq: "¿Banklite tiene llaves Bre-B?",
+        faq: "¿Banklite tiene llaves?",
         cat: "transferencias",
         answer: () => ({
-            text: "Sí. **Bre-B** es el sistema de pagos inmediatos de Colombia: con una llave te envían plata sin tu número de cuenta. En **Llaves Bre-B** registras tu celular, correo y cédula (los que verificaste en Banklite) y una @llave personalizada; registrar o eliminar una llave se confirma con tu clave dinámica. Para enviar, en **Transferir** eliges Bre-B, escribes la llave y te mostramos a nombre de quién está. Por ahora funciona entre cuentas Banklite.",
+            text: "Sí. Con una **llave Banklite** te envían plata sin tu número de cuenta (es una simulación inspirada en las llaves de pagos inmediatos; por ahora solo entre cuentas Banklite). En **Llaves Banklite** registras tu celular, correo y cédula (los que verificaste en Banklite) y una @llave personalizada; registrar o eliminar una llave se confirma con tu clave dinámica. Para enviar, en **Transferir** eliges «Enviar con llave», escribes la llave y te mostramos a nombre de quién está.",
             links: [
                 { label: "Mis llaves", href: "llaves.html" },
                 { label: "Enviar con llave", href: "transferir.html?breb=1" },
@@ -864,7 +863,7 @@ const BOT_TOPICS = [
         faq: "¿Puedo pagar con QR?",
         cat: "transferencias",
         answer: () => ({
-            text: "Sí. En **Pagar con QR** creas tu código de cobro (con o sin valor) con una de tus llaves Bre-B o tu número de cuenta, o escaneas con la cámara (o subiendo una foto) el QR de otra persona o de un comercio para pagarle. Se descuenta de tu saldo, se confirma con tu clave dinámica y te queda el comprobante en PDF. Por ahora funciona entre cuentas Banklite.",
+            text: "Sí. En **Pagar con QR** creas tu código de cobro (con o sin valor) con una de tus llaves Banklite o tu número de cuenta, o escaneas con la cámara (o subiendo una foto) el QR de otra persona o de un comercio para pagarle. Se descuenta de tu saldo, se confirma con tu clave dinámica y te queda el comprobante en PDF. Por ahora funciona entre cuentas Banklite.",
             links: [{ label: "Ir a QR", href: "qr.html" }],
         }),
     },
@@ -887,7 +886,7 @@ const BOT_TOPICS = [
         faq: "¿Puedo pagar facturas o recargar el celular?",
         cat: "transferencias",
         answer: () => ({
-            text: `Sí. En **Pagos y recargas** pagas facturas de servicios públicos, internet y administración con la referencia del recibo, o recargas tu celular Claro, Movistar, Tigo, WOM o Virgin Mobile${BL_CATALOG?.payments ? ` (de ${catalogText("topupMin")} a ${catalogText("topupMax")})` : ""}. Se descuenta de tu saldo, se confirma con tu clave dinámica y te queda el comprobante en PDF. Las facturas son de demostración: Banklite no está conectado a los convenios reales.`,
+            text: `Sí. En **Pagos y recargas** pagas facturas de servicios públicos, internet y administración con la referencia del recibo, o recargas un celular prepago${BL_CATALOG?.payments ? ` (de ${catalogText("topupMin")} a ${catalogText("topupMax")})` : ""}. Se descuenta de tu saldo, se confirma con tu clave dinámica y te queda el comprobante en PDF. Las facturas son de demostración: Banklite no está conectado a los convenios reales.`,
             links: [{ label: "Ir a pagos", href: "pagos.html" }],
         }),
     },
@@ -1069,8 +1068,6 @@ const BOT_TOPICS = [
         keys: [
             "suscripcion",
             "suscripciones",
-            "netflix",
-            "spotify",
             "cobro recurrente",
             "cobros automaticos",
             "pausar",
@@ -1079,7 +1076,7 @@ const BOT_TOPICS = [
         faq: "¿Cómo funcionan las suscripciones?",
         cat: "tarjeta",
         answer: () => ({
-            text: "En el inicio, sección **Suscripciones**, inscribes servicios como Netflix o Spotify a tu tarjeta. Pagas el primer mes al inscribir y luego se cobra solo cada mes el mismo día; te avisamos 3 días antes. Si un cobro falla (tarjeta congelada, compras por internet desactivadas, límite diario o sin saldo) lo reintentamos 3 días y después se suspende. Puedes **pausar**, **reanudar** o **cancelar** cuando quieras.",
+            text: "En el inicio, sección **Suscripciones**, inscribes servicios de streaming, música o juegos (de demostración) a tu tarjeta. Pagas el primer mes al inscribir y luego se cobra solo cada mes el mismo día; te avisamos 3 días antes. Si un cobro falla (tarjeta congelada, compras por internet desactivadas, límite diario o sin saldo) lo reintentamos 3 días y después se suspende. Puedes **pausar**, **reanudar** o **cancelar** cuando quieras.",
             links: [{ label: "Mis suscripciones", href: "dashboard.html#suscripciones" }],
         }),
     },
@@ -1132,7 +1129,7 @@ const BOT_TOPICS = [
         faq: "¿Banklite ofrece créditos?",
         cat: "cuenta",
         answer: () => ({
-            text: "Banklite no ofrece créditos, tarjetas de crédito, criptomonedas ni cambio de divisas. Hoy tienes cuenta de ahorros o corriente, tarjeta débito, transferencias (a Banklite, con llave Bre-B y a otros bancos), pagos con QR, pago de facturas y recargas.",
+            text: "Banklite no ofrece créditos, tarjetas de crédito, criptomonedas ni cambio de divisas. Hoy tienes cuenta de ahorros o corriente, tarjeta débito, transferencias (a Banklite, con llave Banklite y a otros bancos), pagos con QR, pago de facturas y recargas.",
         }),
     },
 ];

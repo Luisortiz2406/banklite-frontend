@@ -1,6 +1,6 @@
 // =========================================================
 // BANKLITE - TRANSFERIR (transferir.html)
-// Entre cuentas Banklite (número de cuenta o llave Bre-B) o a otros bancos y
+// Entre cuentas Banklite (número de cuenta o llave Banklite) o a otros bancos y
 // billeteras (el dinero sale por la cuenta de compensación; la llegada al otro
 // banco es de demostración):
 // POST /transfers/prepare → /:id/confirm (o /:id/cancel). Con llave, la
@@ -101,12 +101,12 @@ document.addEventListener("DOMContentLoaded", () => {
         if (step === 4) paintReview();
     }
 
-    // Banklite (número de cuenta), Bre-B (llave) u otro banco / billetera.
+    // Banklite (número de cuenta), llave Banklite u otro banco / billetera.
     const isBreb = () => state.mode === "breb";
     const isExternal = () => state.mode === "external";
-    const isWallet = () => isExternal() && /^(Nequi|DaviPlata)$/.test(state.bank);
+    const isWallet = () => isExternal() && /^Billetera (Pulso|Brío)$/.test(state.bank);
     const bankliteOption = form.querySelector('.bank-option[data-bank="Banklite"]');
-    const brebOption = form.querySelector('.breb-option[data-bank="Bre-B"]');
+    const brebOption = form.querySelector('.breb-option[data-bank="llave"]');
     const bankOptions = [...form.querySelectorAll(".bank-option")];
 
     function setMode(mode, bank = null) {
@@ -157,7 +157,7 @@ document.addEventListener("DOMContentLoaded", () => {
         goTo(2);
     });
 
-    // ---------- llave Bre-B: a nombre de quién está ----------
+    // ---------- llave Banklite: a nombre de quién está ----------
     const brebInput = byId("brebKey");
     const brebResult = byId("brebResult");
     let brebTimer = null;
@@ -260,7 +260,7 @@ document.addEventListener("DOMContentLoaded", () => {
         } else if (isBreb()) {
             byId("recipientInitials").textContent = initials(state.breb.holderName.replace(/•/g, "")) || "?";
             byId("recipientPreview").textContent = state.breb.holderName;
-            byId("recipientAccountPreview").textContent = `Llave Bre-B ${state.breb.maskedKey}`;
+            byId("recipientAccountPreview").textContent = `Llave Banklite ${state.breb.maskedKey}`;
         } else {
             byId("recipientInitials").textContent = "B";
             byId("recipientPreview").textContent = "Cuenta Banklite";
@@ -294,7 +294,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 return "El número de cuenta debe tener entre 6 y 16 dígitos.";
             if (byId("recipientName").value.trim().length < 3) return "Escribe el nombre de quien recibe.";
         } else if (step === 2 && isBreb()) {
-            if (!state.breb) return "Escribe una llave Bre-B registrada en Banklite.";
+            if (!state.breb) return "Escribe una llave Banklite registrada en Banklite.";
             if (state.breb.own) return "Esta llave es tuya. Escribe la llave de la persona que va a recibir.";
         } else if (step === 2) {
             if (!/^\d{11}$/.test(destination())) return "El número de cuenta destino debe tener 11 dígitos.";
@@ -388,7 +388,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         if (request.destinationKey) {
             return [
-                ["Llave Bre-B", state.breb?.maskedKey || request.destinationKey],
+                ["Llave Banklite", state.breb?.maskedKey || request.destinationKey],
                 ["Titular", request.recipientName || "—"],
             ];
         }
@@ -508,7 +508,7 @@ document.addEventListener("DOMContentLoaded", () => {
     goTo(1);
     loadAccount();
 
-    // transferir.html?breb=1 abre Bre-B; ?llave=... además escribe la llave (desde Mis llaves).
+    // transferir.html?breb=1 abre el envío con llave; ?llave=... además escribe la llave (desde Mis llaves).
     // ?monto=... deja escrito el valor (desde Cancelar mi cuenta: enviar el saldo).
     const params = new URLSearchParams(window.location.search);
     const presetAmount = Number(params.get("monto"));

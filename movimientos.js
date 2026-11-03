@@ -259,7 +259,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const ownProduct = () =>
         `${ACCOUNT_TYPES[state.account?.accountType] || "Cuenta"} ···· ${String(state.account?.accountNumber || "").slice(-4)}`;
     const last4 = m => (m.counterpartyAccountLast4 ? `···· ${m.counterpartyAccountLast4}` : null);
-    // La llave del destinatario se muestra a medias, como en Bre-B (la @llave sí completa).
+    // La llave del destinatario se muestra a medias (la @llave sí completa).
     function maskKey(key) {
         const value = String(key || "");
         if (value.startsWith("@")) return value;
@@ -316,7 +316,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 [
                     transfer?.destinationAccountType
                         ? `Cuenta de ${transfer.destinationAccountType.toLowerCase()}`
-                        : /^(Nequi|DaviPlata)$/.test(bank || "")
+                        : /^Billetera (Pulso|Brío)$/.test(bank || "")
                           ? "Celular"
                           : "Cuenta",
                     transfer ? `···· ${transfer.destinationAccountLast4}` : null,
@@ -331,13 +331,13 @@ document.addEventListener("DOMContentLoaded", () => {
             sub = isQR
                 ? "Pago con QR"
                 : transfer?.destinationKey
-                  ? "Envío con llave Bre-B"
+                  ? "Envío con llave Banklite"
                   : "Transferencia a Banklite";
             rows = [
                 ["Para", transfer?.recipientName || "Cliente Banklite"],
                 ["Entidad", "Banklite"],
                 transfer?.destinationKey
-                    ? ["Llave Bre-B", maskKey(transfer.destinationKey)]
+                    ? ["Llave Banklite", maskKey(transfer.destinationKey)]
                     : ["Cuenta Banklite", last4(m)],
                 ["Concepto", concept || "Transferencia"],
             ];

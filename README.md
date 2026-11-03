@@ -1,6 +1,6 @@
 # Frontend (`banklite-frontend`)
 
-[![CI](https://github.com/Luisortiz2406/banklite-frontend/actions/workflows/ci.yml/badge.svg)](https://github.com/Luisortiz2406/banklite-frontend/actions/workflows/ci.yml)
+[![Despliegue](https://github.com/Luisortiz2406/banklite-frontend/actions/workflows/deploy.yml/badge.svg?branch=main)](https://github.com/Luisortiz2406/banklite-frontend/actions/workflows/deploy.yml)
 
 Aplicación web de **BankLite** (banco digital académico) y panel administrativo de
 empleados. Sitio estático (HTML, JavaScript y CSS sin framework) servido con nginx;
@@ -66,15 +66,27 @@ detecta solo. `qr-lib.js` y los `.html` no se formatean.
 
 ## Pruebas
 
-El CI (`.github/workflows/ci.yml`) corre lint y formato, construye la imagen de nginx
-y comprueba que sirva la app, el panel `/admin/` y la CSP, y que no publique
-archivos de configuración (`Dockerfile`, `nginx.conf`, `package.json`).
+El pipeline (`.github/workflows/deploy.yml`, job **test**) corre lint y formato y luego
+`scripts/probar-imagen.sh`: construye la imagen de nginx y comprueba que sirva la app,
+el panel `/admin/` y la CSP, y que no publique archivos de configuración (`Dockerfile`,
+`nginx.conf`, `package.json`). En local se corre igual con `sh scripts/probar-imagen.sh`
+(necesita Docker).
 
 ## Despliegue
 
-Desplegado en Railway **desde este repositorio** (rama `main`): `railway.json` en la
-raíz define el build por `Dockerfile` (nginx) y el health check en `/`; cada push a
-`main` redespliega el sitio.
+Lo despliega **GitHub Actions** (`.github/workflows/deploy.yml`, que usa el workflow
+reutilizable de [banklite-pipelines](https://github.com/Luisortiz2406/banklite-pipelines)):
+
+1. **test**: lint, formato y prueba de la imagen de nginx (`scripts/probar-imagen.sh`: rutas de la app y del panel, archivos de configuración no publicados y CSP) (también en cada pull request).
+2. **docker** (solo `main`): imagen en GHCR `ghcr.io/luisortiz2406/banklite-frontend`,
+   etiquetada con el SHA del commit y `latest` (se guardan las últimas 5).
+3. **deploy** (solo `main`): `railway up --ci` sube el commit a Railway, que lo
+   construye con el `Dockerfile` y aplica `railway.json` (health check en `/`);
+   el job espera a que el despliegue quede activo.
+
+El repositorio está desconectado del autodeploy de Railway: un push a `main` despliega
+solo a través de este pipeline, y únicamente si las pruebas pasan. Rollback: panel de
+Railway → *Deployments* → versión anterior → *Rollback*.
 
 - Aplicación web: [https://frontend-production-eff3c.up.railway.app](https://frontend-production-eff3c.up.railway.app)
 - Panel administrativo: [https://frontend-production-eff3c.up.railway.app/admin/](https://frontend-production-eff3c.up.railway.app/admin/)

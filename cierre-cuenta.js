@@ -134,7 +134,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <li>Se cierran <b>todas tus cuentas</b> y ya no podrás ingresar a Banklite ni abrir otra cuenta con este usuario.</li>
                 <li>Tu <b>tarjeta virtual se cancela</b> de forma definitiva, junto con sus suscripciones.</li>
                 <li>Tus <b>Puntos Banklite</b> dejan de estar disponibles.</li>
-                <li>Tus <b>llaves Bre-B</b> se liberan: nadie podrá enviarte dinero con ellas.</li>
+                <li>Tus <b>llaves Banklite</b> se liberan: nadie podrá enviarte dinero con ellas.</li>
                 <li>Por obligación legal conservamos la información de tus cuentas y movimientos durante <b>10 años</b> (plazo referencial del Código de Comercio); no la usamos para nada más.</li>
                 <li>Te enviaremos la confirmación a tu correo.</li>
             </ul>

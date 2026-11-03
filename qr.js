@@ -1,7 +1,7 @@
 // =========================================================
 // BANKLITE - COBRAR Y PAGAR CON QR (qr.html)
 // Mismo diseño y comportamiento que la versión simulada, pero con dinero real.
-// El QR lleva una llave Bre-B o el número de cuenta Banklite de quien cobra:
+// El QR lleva una llave Banklite o el número de cuenta Banklite de quien cobra:
 //   banklite:pagar?llave=@laura&valor=10000&nota=...
 //   banklite:pagar?cuenta=12345678901&valor=10000&nombre=Laura%20G.&nota=...
 // Con llave, el titular se busca en el directorio (nombre enmascarado) y se paga
@@ -22,7 +22,7 @@ function qrPayload({ account, key, amount, name, note }) {
     return "banklite:pagar?" + params.toString();
 }
 
-// Lee un QR de Banklite, o un texto que solo tenga una llave Bre-B o un número de cuenta.
+// Lee un QR de Banklite, o un texto que solo tenga una llave Banklite o un número de cuenta.
 function qrParse(text) {
     const raw = String(text || "").trim();
     let params = null;
@@ -221,7 +221,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let chargeCanvas = null;
     let presenting = false;
 
-    // Opciones de cobro: tus llaves Bre-B (primero, como en Bre-B) y tus cuentas.
+    // Opciones de cobro: tus llaves Banklite (primero) y tus cuentas.
     // value = "llave:<llave>" o "cuenta:<número>".
     const accountLabel = a => `${ACCOUNT_TYPES[a.accountType] || "Cuenta"} ···· ${last4(a.accountNumber)}`;
     function selectedTarget() {
@@ -280,7 +280,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        // Con llave no hace falta el nombre: quien paga lo ve en el directorio Bre-B.
+        // Con llave no hace falta el nombre: quien paga lo ve en el directorio de llaves.
         // En pantalla completa se dibuja más grande para que se vea nítido.
         chargeCanvas = drawQR(
             qrPayload({ account: target.account, key: target.key, amount, name: target.key ? "" : shortName(), note }),
@@ -515,7 +515,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        // QR con llave Bre-B: el titular sale del directorio (nombre enmascarado).
+        // QR con llave Banklite: el titular sale del directorio (nombre enmascarado).
         let holder = null;
         if (data.key) {
             setStatus("Buscando la llave…");
@@ -674,7 +674,7 @@ document.addEventListener("DOMContentLoaded", () => {
             ],
             [current.store ? "Comercio" : "Destinatario", current.display],
             current.key
-                ? ["Llave Bre-B", current.where.replace(/^llave /, "")]
+                ? ["Llave Banklite", current.where.replace(/^llave /, "")]
                 : ["Cuenta", `Banklite ···· ${last4(current.account)}`],
             ["Valor pagado", formatMoney(amount)],
             ["Concepto", note],
