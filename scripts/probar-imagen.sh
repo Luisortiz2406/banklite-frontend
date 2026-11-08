@@ -129,3 +129,19 @@ if curl -s -H "$c" "$base/nginx-seguridad.conf" | grep -q 'add_header'; then ech
 if curl -s -H "$c" "$base/package.json" | grep -q 'devDependencies'; then echo "package.json publicado"; exit 1; fi
 if curl -s -H "$c" "$base/eslint.config.mjs" | grep -q 'defineConfig'; then echo "eslint.config.mjs publicado"; exit 1; fi
 if curl -s -H "$c" "$base/scripts/entrypoint.sh" | grep -q 'EVAL_CODE'; then echo "entrypoint.sh publicado"; exit 1; fi
+
+# Fotos de destinos de Beneficios: se publican, pero detrás del código como el resto del sitio.
+fotos=$(ls img/destinos/*.webp)
+[ -n "$fotos" ] || { echo "No hay fotos en img/destinos/"; exit 1; }
+for foto in $fotos; do
+  redirige_a_acceso "sin cookie" "/$foto"
+  r=$(curl -s -o /dev/null -w '%{http_code} %{content_type}' -H "$c" "$base/$foto")
+  echo "/$foto (con cookie) -> $r"
+  [ "$r" = "200 image/webp" ] || { echo "se esperaba 200 image/webp"; exit 1; }
+done
+redirige_a_acceso "sin cookie" /fotos-destinos.js
+esperar 200 "con cookie" /fotos-destinos.js -H "$c"
+# El listado de créditos en texto queda en el repo; en la página salen de fotos-destinos.js.
+if curl -s -H "$c" "$base/img/destinos/CREDITOS.md" | grep -q 'Créditos de las fotos de destinos'; then
+  echo "CREDITOS.md publicado"; exit 1
+fi
