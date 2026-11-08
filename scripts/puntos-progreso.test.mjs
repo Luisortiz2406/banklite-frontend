@@ -4,6 +4,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
+import { URL } from "node:url";
 import vm from "node:vm";
 
 // puntos-progreso.js es un script de navegador (sin módulos): se evalúa aparte.
