@@ -22,3 +22,9 @@ if curl -s http://localhost:8080/nginx.conf | grep -q 'try_files'; then echo "ng
 if curl -s http://localhost:8080/package.json | grep -q 'devDependencies'; then echo "package.json publicado"; exit 1; fi
 if curl -s http://localhost:8080/eslint.config.mjs | grep -q 'defineConfig'; then echo "eslint.config.mjs publicado"; exit 1; fi
 curl -fsI http://localhost:8080/ | grep -i "content-security-policy"
+# Verificación de Google Search Console (archivo HTML en la raíz). Si deja de copiarse,
+# try_files responde index.html con 200, así que se revisa el contenido exacto.
+verif=googlec275dac7ffdbde9a.html
+if ! curl -fs "http://localhost:8080/$verif" | grep -qx "google-site-verification: $verif"; then
+  echo "/$verif no se publica: se pierde la verificación de Search Console"; exit 1
+fi
