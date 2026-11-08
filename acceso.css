@@ -1,0 +1,262 @@
+/* =========================================================
+   BANKLITE - ACCESO.CSS
+   Página pública de acceso de evaluación (acceso.html). Es independiente de styles.css,
+   que pide el código: repite solo la paleta y lo que esta página necesita.
+   Paleta: #26474E · #2CCED2 · #B9EDED · #FFFFFF
+   ========================================================= */
+
+:root {
+    --primary: #2cced2;
+    --primary-dark: #1fb4b8;
+    --primary-pale: #b9eded;
+    --primary-text: #137c81;
+    --on-primary: #26474e;
+
+    --brand: #26474e;
+    --brand-2: #1d3a40;
+    --on-dark: #ffffff;
+
+    --dark: #26474e;
+    --text: #22393e;
+    --text-light: #5e7377;
+    --text-muted: #8a9b9e;
+
+    --white: #ffffff;
+    --background: #f4fafa;
+    --background-2: #eaf6f6;
+    --border: #d5e5e6;
+
+    --danger-soft: #fdeeee;
+    --danger-text: #b23b3b;
+
+    --shadow-lg: 0 25px 60px rgba(38, 71, 78, 0.16);
+    --ring: 0 0 0 3px rgba(44, 206, 210, 0.22);
+    --radius-sm: 10px;
+    --radius-lg: 24px;
+    --aviso-h: 28px;
+}
+
+html[data-theme="dark"] {
+    color-scheme: dark;
+
+    --primary-text: #5ed9dc;
+    --dark: #e4f3f3;
+    --text: #d2e2e3;
+    --text-light: #9bb2b5;
+    --text-muted: #7c9497;
+
+    --white: #15272b;
+    --background: #0d1b1e;
+    --background-2: #122427;
+    --border: #2a4449;
+
+    --danger-soft: #3a2022;
+    --danger-text: #f28b8b;
+
+    --shadow-lg: 0 25px 60px rgba(0, 0, 0, 0.45);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    min-height: 100vh;
+    padding-top: var(--aviso-h);
+    font-family:
+        "Inter",
+        system-ui,
+        -apple-system,
+        "Segoe UI",
+        sans-serif;
+    color: var(--text);
+    background:
+        radial-gradient(circle at 15% 10%, rgba(44, 206, 210, 0.18), transparent 45%),
+        radial-gradient(circle at 85% 90%, rgba(185, 237, 237, 0.35), transparent 40%), var(--background);
+}
+
+html[data-theme="dark"] body {
+    background: radial-gradient(circle at 15% 10%, rgba(44, 206, 210, 0.12), transparent 45%), var(--background);
+}
+
+/* Franja del aviso académico: igual en tema claro y oscuro */
+.acceso-aviso {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    min-height: var(--aviso-h);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 16px;
+    font-size: 12.5px;
+    line-height: 1.3;
+    text-align: center;
+    color: var(--on-dark);
+    background: var(--brand);
+}
+
+.acceso-aviso strong {
+    color: var(--primary);
+    margin-right: 4px;
+}
+
+.acceso {
+    min-height: calc(100vh - var(--aviso-h));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding: 40px 16px;
+}
+
+.acceso-card {
+    width: 100%;
+    max-width: 440px;
+    padding: 36px 32px;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+}
+
+.acceso-marca {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 24px;
+    font-family: "Manrope", "Inter", sans-serif;
+    font-weight: 800;
+    font-size: 22px;
+    color: var(--dark);
+}
+
+.acceso-logo {
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    background: var(--primary);
+    color: var(--on-primary);
+    font-size: 22px;
+}
+
+.acceso-card h1 {
+    font-family: "Manrope", "Inter", sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    line-height: 1.2;
+    color: var(--dark);
+}
+
+.acceso-card h1 span {
+    display: block;
+    margin-top: 6px;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--primary-text);
+}
+
+.acceso-texto {
+    margin: 14px 0 24px;
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--text-light);
+}
+
+.acceso-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.acceso-form label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--dark);
+}
+
+.acceso-form input {
+    width: 100%;
+    padding: 14px 16px;
+    font: inherit;
+    font-size: 16px;
+    color: var(--text);
+    background: var(--background);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.acceso-form input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: var(--ring);
+}
+
+.acceso-form input[aria-invalid="true"] {
+    border-color: var(--danger-text);
+}
+
+.acceso-mensaje {
+    padding: 12px 14px;
+    font-size: 14px;
+    line-height: 1.45;
+    color: var(--danger-text);
+    background: var(--danger-soft);
+    border-radius: var(--radius-sm);
+}
+
+.acceso-form button {
+    margin-top: 8px;
+    padding: 14px 20px;
+    font: inherit;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--on-primary);
+    background: var(--primary);
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+.acceso-form button:hover {
+    background: var(--primary-dark);
+}
+
+.acceso-form button:focus-visible {
+    outline: none;
+    box-shadow: var(--ring);
+}
+
+.acceso-form button:disabled {
+    opacity: 0.7;
+    cursor: wait;
+}
+
+.acceso-pie {
+    font-size: 13px;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+@media (max-width: 480px) {
+    .acceso-card {
+        padding: 28px 20px;
+    }
+
+    .acceso-card h1 {
+        font-size: 23px;
+    }
+}
