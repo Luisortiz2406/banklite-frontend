@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+    <meta name="theme-color" content="#26474E">
+
+    <title>Acceso de evaluación | BankLite (proyecto académico)</title>
+
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%232CCED2'/%3E%3Ctext x='32' y='44' font-family='Arial' font-size='34' font-weight='800' text-anchor='middle' fill='%2326474E'%3EB%3C/text%3E%3C/svg%3E">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="theme-init.js"></script>
+
+    <!-- Página pública: solo usa acceso.css y acceso.js (styles.css y el resto piden el código). -->
+    <link rel="stylesheet" href="acceso.css">
+</head>
+
+<body>
+
+    <!-- Aviso permanente: proyecto académico, no es un banco real (no quitar) -->
+    <div class="acceso-aviso" role="note"><strong>Proyecto académico</strong> · BankLite no es un banco real: no ingreses contraseñas, tarjetas ni datos reales.</div>
+
+    <main class="acceso">
+        <section class="acceso-card" aria-labelledby="acceso-titulo">
+
+            <div class="acceso-marca">
+                <span class="acceso-logo" aria-hidden="true">B</span>
+                <span class="acceso-nombre">banklite</span>
+            </div>
+
+            <h1 id="acceso-titulo">
+                BankLite
+                <span>· Proyecto académico de la Universidad Cooperativa de Colombia</span>
+            </h1>
+
+            <p class="acceso-texto">
+                Este sitio es de acceso restringido para la evaluación del curso.
+                Ingresa el código de evaluación que te compartió el equipo del proyecto.
+            </p>
+
+            <form id="acceso-form" class="acceso-form" novalidate>
+                <label for="acceso-codigo">Código de evaluación</label>
+                <input id="acceso-codigo" name="codigo" type="password" autocomplete="off" autocapitalize="off"
+                    spellcheck="false" required aria-describedby="acceso-mensaje">
+
+                <p id="acceso-mensaje" class="acceso-mensaje" role="alert" aria-live="polite" hidden></p>
+
+                <button id="acceso-boton" type="submit">Entrar</button>
+            </form>
+
+        </section>
+
+        <p class="acceso-pie">Simulador académico · Modelamiento de Software</p>
+    </main>
+
+    <script src="acceso.js"></script>
+</body>
+
+</html>

@@ -50,24 +50,27 @@ Con Docker (igual que en producción, con los encabezados de nginx):
 
 ```bash
 docker build -t banklite-frontend .
-docker run -e EVAL_USER=evaluador -e EVAL_PASSWORD=una-clave-local -p 5500:80 banklite-frontend
+docker run -e EVAL_CODE=codigo-local-1234 -p 5500:80 banklite-frontend   # luego abre /acceso.html
 ```
 
-### Acceso de evaluación (autenticación básica)
+### Acceso de evaluación (página de acceso)
 
-Todo el sitio, incluido `/admin/`, pide usuario y clave (`auth_basic` de nginx). El
-contenedor genera el `htpasswd` al arrancar (`scripts/entrypoint.sh`) a partir de dos
-variables de entorno; las credenciales **no** están en el repositorio ni en la imagen:
+Todo el sitio, incluido `/admin/`, pide un **código de evaluación**. Sin él, nginx redirige
+a `/acceso.html`: la persona escribe el código, `acceso.js` lo manda a `POST /acceso/entrar`
+y nginx lo compara con la variable de entorno `EVAL_CODE`. Si coincide, deja la cookie
+`banklite_eval` (`HttpOnly`, `Secure`, `SameSite=Lax`, 7 días); si no, la página muestra
+un mensaje. El código **no** está en el repositorio, ni en la imagen, ni en el JavaScript:
+`scripts/entrypoint.sh` genera la configuración de nginx al arrancar el contenedor.
 
-| Variable        | Uso                                   |
-| --------------- | ------------------------------------- |
-| `EVAL_USER`     | usuario de evaluación                 |
-| `EVAL_PASSWORD` | clave de evaluación                   |
+| Variable    | Uso                                                                    |
+| ----------- | ---------------------------------------------------------------------- |
+| `EVAL_CODE` | código de evaluación: 12 a 128 caracteres, solo `A-Z a-z 0-9 - _`       |
 
-En Railway se definen en el servicio del frontend (*Variables*). Si falta alguna, el
-contenedor no arranca y lo dice en el log, para no publicar el sitio sin protección.
-Quedan abiertos sin credenciales solo `/robots.txt` (también es el health check de
-Railway) y `/googlec275dac7ffdbde9a.html` (verificación de Google Search Console).
+En Railway se define en el servicio del frontend (*Variables*). Si falta o no cumple el
+formato, el contenedor no arranca y lo dice en el log, para no publicar el sitio sin protección.
+Públicos sin código: `/acceso.html`, `/acceso.css`, `/acceso.js`, `/theme-init.js`,
+`/acceso/entrar`, `/robots.txt` (también es el health check de Railway) y
+`/googlec275dac7ffdbde9a.html` (verificación de Google Search Console).
 
 ## Estilo de código
 
@@ -84,9 +87,10 @@ detecta solo. `qr-lib.js` y los `.html` no se formatean.
 
 El pipeline (`.github/workflows/deploy.yml`, job **test**) corre lint y formato y luego
 `scripts/probar-imagen.sh`: construye la imagen de nginx y comprueba que no arranque sin
-`EVAL_USER`/`EVAL_PASSWORD`, que sin credenciales responda 401 (salvo `robots.txt` y la
-verificación de Google), que con credenciales sirva la app, el panel `/admin/` y la CSP,
-y que no publique archivos de configuración (`Dockerfile`, `nginx.conf`, `package.json`). En local se corre igual con `sh scripts/probar-imagen.sh`
+`EVAL_CODE` válido, que sin la cookie de acceso todo redirija a `/acceso.html` (salvo las
+rutas públicas), que `/acceso/entrar` deje la cookie solo con el código correcto, que con
+la cookie sirva la app, el panel `/admin/` y la CSP, y que no publique el código ni
+archivos de configuración (`Dockerfile`, `nginx.conf`, `package.json`). En local se corre igual con `sh scripts/probar-imagen.sh`
 (necesita Docker).
 
 ## Despliegue

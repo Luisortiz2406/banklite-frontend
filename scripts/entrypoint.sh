@@ -1,31 +1,31 @@
 #!/bin/sh
-# Entrypoint de la imagen: genera /etc/nginx/htpasswd con la cuenta de evaluación
-# (variables de entorno EVAL_USER y EVAL_PASSWORD, definidas en Railway) y sigue con
-# el entrypoint oficial de nginx. Sin esas variables el contenedor NO arranca: así el
-# sitio nunca queda publicado sin la autenticación básica por un olvido.
-# Las credenciales no están en el repositorio ni en la imagen, solo en el entorno.
+# Entrypoint de la imagen: genera /etc/nginx/banklite-codigo.conf con el código de
+# evaluación (variable de entorno EVAL_CODE, definida en Railway) y sigue con el
+# entrypoint oficial de nginx. Sin un EVAL_CODE válido el contenedor NO arranca: así el
+# sitio nunca queda publicado sin la página de acceso por un olvido.
+# El código no está en el repositorio, ni en la imagen, ni en el JavaScript.
 set -eu
 
-if [ -z "${EVAL_USER:-}" ] || [ -z "${EVAL_PASSWORD:-}" ]; then
-  echo "ERROR: faltan las variables de entorno EVAL_USER y/o EVAL_PASSWORD." >&2
-  echo "El frontend no arranca sin ellas para no publicar el sitio sin autenticación básica." >&2
-  echo "Defínelas en Railway (servicio frontend -> Variables) o en local con:" >&2
-  echo "  docker run -e EVAL_USER=... -e EVAL_PASSWORD=... -p 5500:80 banklite-frontend" >&2
+if [ -z "${EVAL_CODE:-}" ]; then
+  echo "ERROR: falta la variable de entorno EVAL_CODE (código de evaluación)." >&2
+  echo "El frontend no arranca sin ella para no publicar el sitio sin la página de acceso." >&2
+  echo "Defínela en Railway (servicio frontend -> Variables) o en local con:" >&2
+  echo "  docker run -e EVAL_CODE=... -p 5500:80 banklite-frontend" >&2
   exit 1
 fi
-case "$EVAL_USER" in
-  *:*)
-    echo "ERROR: EVAL_USER no puede contener ':' (separa usuario y hash en el htpasswd)." >&2
-    exit 1
-    ;;
-esac
+# Solo letras sin tilde, números, '-' y '_', de 12 a 128 caracteres: el valor entra tal
+# cual en la configuración de nginx, en una cookie y en un encabezado HTTP.
+if ! printf '%s' "$EVAL_CODE" | grep -Eqx '[A-Za-z0-9_-]{12,128}'; then
+  echo "ERROR: EVAL_CODE no es válido: usa de 12 a 128 caracteres, solo letras sin tilde," >&2
+  echo "números, '-' y '_' (sin espacios). El frontend no arranca con ese valor." >&2
+  exit 1
+fi
 
-# Hash SHA-512 crypt ($6$), que nginx valida con crypt() de musl. La clave entra por stdin.
-hash=$(printf '%s\n' "$EVAL_PASSWORD" | openssl passwd -6 -stdin)
-umask 027
-printf '%s:%s\n' "$EVAL_USER" "$hash" > /etc/nginx/htpasswd
-chown root:nginx /etc/nginx/htpasswd
-chmod 640 /etc/nginx/htpasswd
-unset EVAL_PASSWORD
+umask 077
+{
+  printf 'map $cookie_banklite_eval $banklite_eval_ok { default 0; "%s" 1; }\n' "$EVAL_CODE"
+  printf 'map $http_x_codigo_evaluacion $banklite_codigo_ok { default 0; "%s" 1; }\n' "$EVAL_CODE"
+} > /etc/nginx/banklite-codigo.conf
+unset EVAL_CODE
 
 exec /docker-entrypoint.sh "$@"
