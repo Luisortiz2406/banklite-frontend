@@ -41,7 +41,10 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!data) return;
         const level = data.level;
         const next = data.next;
-        const progress = next ? Math.min(100, ((data.earned - level.min) / (next.min - level.min)) * 100) : 100;
+        // Barra de nivel en tramos iguales, alineada con las marcas Bronce · Plata · Oro
+        // (puntos-progreso.js). Usa los puntos ganados, no los disponibles.
+        const levelCount = document.querySelectorAll(".points-levels [data-level]").length || 3;
+        const progress = pointsProgress(data.earned, level, next, levelCount);
 
         setText("pointsTotal", formatPoints(data.balance));
         setText("pointsValue", formatMoney(data.value));
@@ -58,6 +61,12 @@ document.addEventListener("DOMContentLoaded", () => {
         const bar = byId("pointsBar");
         bar.querySelector("span").style.width = `${progress}%`;
         bar.setAttribute("aria-valuenow", Math.round(progress));
+        bar.setAttribute(
+            "aria-valuetext",
+            next
+                ? `${formatPoints(data.earned)} de ${formatPoints(next.min)} puntos ganados para ${next.name}`
+                : `${formatPoints(data.earned)} puntos ganados: nivel ${level.name}, el más alto`
+        );
 
         const hero = document.querySelector(".points-hero");
         hero.classList.remove(...levelNames);

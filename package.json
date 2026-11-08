@@ -6,7 +6,8 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"**/*.{js,css,mjs}\"",
-    "format:check": "prettier --check \"**/*.{js,css,mjs}\""
+    "format:check": "prettier --check \"**/*.{js,css,mjs}\"",
+    "test": "node --test scripts/puntos-progreso.test.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
