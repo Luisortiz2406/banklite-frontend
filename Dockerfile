@@ -10,6 +10,8 @@ COPY scripts/entrypoint.sh /usr/local/bin/banklite-entrypoint.sh
 RUN chmod 755 /usr/local/bin/banklite-entrypoint.sh
 COPY *.html *.js *.css /usr/share/nginx/html/
 COPY admin/*.html admin/*.js admin/*.css /usr/share/nginx/html/admin/
+# Fotos de destinos de Beneficios (créditos en fotos-destinos.js e img/destinos/CREDITOS.md)
+COPY img/destinos/*.webp /usr/share/nginx/html/img/destinos/
 EXPOSE 80
 # Definir ENTRYPOINT borra el CMD de la imagen base: se repite el de nginx.
 ENTRYPOINT ["/usr/local/bin/banklite-entrypoint.sh"]

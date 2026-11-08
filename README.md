@@ -72,6 +72,15 @@ Públicos sin código: `/acceso.html`, `/acceso.css`, `/acceso.js`, `/theme-init
 `/acceso/entrar`, `/robots.txt` (también es el health check de Railway) y
 `/googlec275dac7ffdbde9a.html` (verificación de Google Search Console).
 
+### Fotos de destinos (Beneficios > Viajes)
+
+Fotos reales de [Wikimedia Commons](https://commons.wikimedia.org/) (CC0, CC BY, CC BY-SA o dominio
+público), guardadas en `img/destinos/` como WebP de 800×450: nada se carga desde afuera y la CSP no
+cambia. Quedan detrás del código de evaluación, como el resto del sitio. Los créditos que exige cada
+licencia (autor, licencia y enlace) están en `fotos-destinos.js`, que es la fuente del pie *Créditos
+de las fotos*, y en `img/destinos/CREDITOS.md`. Al cambiar una foto hay que actualizar los dos:
+`npm test` comprueba que coincidan.
+
 ## Estilo de código
 
 ```bash

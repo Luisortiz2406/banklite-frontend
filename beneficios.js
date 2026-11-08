@@ -479,6 +479,37 @@ function benefitLogo(logo) {
         </div>`;
 }
 
+// Foto real del destino (fotos-destinos.js, servida desde img/destinos/ del propio sitio).
+// Si un destino no tiene foto, queda la ilustración en SVG.
+function benefitArt(item) {
+    const foto = typeof FOTOS_DESTINOS !== "undefined" ? FOTOS_DESTINOS[item.id] : null;
+    if (!foto) return benefitScene(item);
+    return `<img class="bf-photo" src="${escapeHTML(foto.src)}" alt="${escapeHTML(foto.alt)}" width="800" height="450" loading="lazy" decoding="async">`;
+}
+
+// Pie "Créditos de las fotos": autor, licencia y enlace al original de cada foto, como
+// exigen sus licencias (CC BY / CC BY-SA). Los datos salen de fotos-destinos.js.
+function benefitPhotoCredits(items) {
+    if (typeof FOTOS_DESTINOS === "undefined") return "";
+    const link = (url, text) => `<a href="${escapeHTML(url)}" target="_blank" rel="noopener noreferrer">${text}</a>`;
+    const creditos = items
+        .filter(item => FOTOS_DESTINOS[item.id])
+        .map(item => {
+            const foto = FOTOS_DESTINOS[item.id];
+            const licencia = foto.licenciaUrl
+                ? link(foto.licenciaUrl, escapeHTML(foto.licencia))
+                : escapeHTML(foto.licencia);
+            return `<li>${escapeHTML(item.name)}: ${link(foto.fuente, "foto")} de ${escapeHTML(foto.autor)}, ${licencia}</li>`;
+        });
+    if (!creditos.length) return "";
+    return `
+        <footer class="bf-credits">
+            <h3>Créditos de las fotos</h3>
+            <p>Fotos de Wikimedia Commons, recortadas y convertidas a WebP.</p>
+            <ul>${creditos.join("")}</ul>
+        </footer>`;
+}
+
 // Ilustración del destino dibujada en SVG (no necesita internet)
 function benefitScene(item) {
     const [top, bottom] = item.sky;
@@ -559,7 +590,7 @@ function benefitItemHTML(key, item) {
         const before = Math.round(item.price / 0.85 / 1000) * 1000;
         return `
             <article class="bf-item bf-trip" data-bf-tag="${item.tag}">
-                <div class="bf-trip-art">${benefitScene(item)}<span class="bf-pill">${item.tag}</span></div>
+                <div class="bf-trip-art">${benefitArt(item)}<span class="bf-pill">${item.tag}</span></div>
                 <div class="bf-trip-body">
                     <strong>${item.name}</strong>
                     <small>${item.where}</small>
@@ -622,6 +653,7 @@ function openBenefit(key) {
         <div class="bf-grid${key === "viajes" ? " is-trips" : ""}">
             ${data.items.map(item => benefitItemHTML(key, item)).join("")}
         </div>
+        ${key === "viajes" ? benefitPhotoCredits(data.items) : ""}
     `;
 
     openModal("benefitModal");
