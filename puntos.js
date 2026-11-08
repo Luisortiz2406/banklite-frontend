@@ -14,6 +14,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const { config } = BlApi;
     const api = config.rewardsApi || config.transferApi;
     const levelNames = ["is-bronze", "is-silver", "is-gold"];
+    // Metal de la medalla por nivel (índice de rewards-service: 0 Bronce, 1 Plata, 2 Oro).
+    const medalNames = ["medal-bronze", "medal-silver", "medal-gold"];
     const state = { data: null, busy: false };
 
     const formatPoints = v => Number(v || 0).toLocaleString("es-CO");
@@ -44,6 +46,7 @@ document.addEventListener("DOMContentLoaded", () => {
         setText("pointsTotal", formatPoints(data.balance));
         setText("pointsValue", formatMoney(data.value));
         setText("pointsLevel", `Nivel ${level.name}`);
+        setText("pointsMedalLabel", String(level.name).toUpperCase());
         setText("pointsMultiplier", `x${String(level.multiplier).replace(".", ",")} puntos`);
         setText(
             "pointsNextText",
@@ -59,6 +62,15 @@ document.addEventListener("DOMContentLoaded", () => {
         const hero = document.querySelector(".points-hero");
         hero.classList.remove(...levelNames);
         hero.classList.add(levelNames[level.index]);
+
+        // La medalla lleva su propio nivel (no depende solo de la etiqueta ni del hero).
+        const medal = byId("pointsMedal");
+        if (medal) {
+            const metal = medalNames[Math.min(Math.max(Number(level.index) || 0, 0), medalNames.length - 1)];
+            medal.classList.remove(...medalNames);
+            medal.classList.add(metal);
+            medal.dataset.level = String(level.index);
+        }
         document.querySelectorAll(".points-levels [data-level]").forEach(el => {
             el.classList.toggle("reached", Number(el.dataset.level) <= level.index);
         });
@@ -215,5 +227,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    tiltOnPointer(document.querySelector(".medal"), 16);
     load();
 });
