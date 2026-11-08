@@ -1,12 +1,11 @@
 # Sirve el frontend de BankLite (páginas, scripts y estilos) y el panel admin
 # (admin/, publicado en /admin/) como sitio estático. Contexto de build: raíz del repo.
-# Solo se copian .html, .js y .css: el Dockerfile y nginx.conf no quedan publicados.
-# Todo el sitio pide usuario y clave de evaluación (auth_basic): scripts/entrypoint.sh
-# genera el htpasswd al arrancar desde EVAL_USER y EVAL_PASSWORD, y sin ellas no arranca.
+# Solo se copian .html, .js y .css: el Dockerfile y los .conf no quedan publicados.
+# Todo el sitio pide el código de evaluación (acceso.html + cookie): scripts/entrypoint.sh
+# genera la configuración desde EVAL_CODE al arrancar, y sin ella no arranca.
 FROM nginx:1.27-alpine
-# openssl calcula el hash de la clave de evaluación al arrancar.
-RUN apk add --no-cache openssl
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx-seguridad.conf /etc/nginx/banklite-seguridad.conf
 COPY scripts/entrypoint.sh /usr/local/bin/banklite-entrypoint.sh
 RUN chmod 755 /usr/local/bin/banklite-entrypoint.sh
 COPY *.html *.js *.css /usr/share/nginx/html/
