@@ -4,13 +4,13 @@
 // responde 204 y deja la cookie banklite_eval (HttpOnly), y si no, 401.
 // El código correcto nunca está en este archivo ni en el repositorio.
 (function () {
-    var form = document.getElementById("acceso-form");
-    var campo = document.getElementById("acceso-codigo");
-    var boton = document.getElementById("acceso-boton");
-    var mensaje = document.getElementById("acceso-mensaje");
+    const form = document.getElementById("acceso-form");
+    const campo = document.getElementById("acceso-codigo");
+    const boton = document.getElementById("acceso-boton");
+    const mensaje = document.getElementById("acceso-mensaje");
 
     // Mismo formato que exige el contenedor para EVAL_CODE.
-    var FORMATO = /^[A-Za-z0-9_-]{1,128}$/;
+    const FORMATO = /^[A-Za-z0-9_-]{1,128}$/;
 
     function mostrar(texto) {
         mensaje.textContent = texto;
@@ -37,7 +37,7 @@
 
     form.addEventListener("submit", function (evento) {
         evento.preventDefault();
-        var codigo = campo.value.trim();
+        const codigo = campo.value.trim();
 
         if (!codigo) {
             mostrar("Escribe el código de evaluación para continuar.");
