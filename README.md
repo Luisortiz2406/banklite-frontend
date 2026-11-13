@@ -40,6 +40,31 @@ todos los datos vienen de la API a través del **api-gateway**.
 se sirva desde `localhost`/`127.0.0.1`. Servida desde `localhost`, apunta al gateway
 local (`http://localhost:8080`).
 
+## Variables de entorno
+
+El frontend es un sitio estático: el JavaScript del navegador **no lee variables de entorno**
+(la URL de la API la decide `api.js` según el host, como se explica arriba). La única variable
+es la del contenedor de nginx. El archivo [`.env.example`](.env.example) la lista con un valor de
+ejemplo.
+
+| Variable    | Obligatoria | Qué es | Valor de ejemplo |
+| ----------- | ----------- | ------ | ---------------- |
+| `EVAL_CODE` | Sí | Código de evaluación de la página de acceso (`/acceso.html`). `scripts/entrypoint.sh` lo usa al arrancar para generar la configuración de nginx que lo compara con el código que escribe la persona; si coincide, se entrega la cookie `banklite_eval`. Formato: 12 a 128 caracteres, solo `A-Z a-z 0-9 - _`. Sin ella, o con un formato inválido, el contenedor **no arranca** y lo dice en el log (así el sitio nunca queda publicado sin la página de acceso). | `codigo-local-ejemplo-1234` |
+
+- **En Railway** se define en el servicio del frontend, pestaña *Variables*. El valor real nunca
+  se escribe en el repositorio, la imagen ni el JavaScript.
+- **En local** copia el ejemplo y úsalo con Docker (el valor de ejemplo es solo para tu máquina;
+  en Railway usa un código propio):
+
+  ```bash
+  cp .env.example .env
+  docker run --env-file .env -p 5500:80 banklite-frontend   # luego abre /acceso.html
+  ```
+
+- `.env` y los archivos con llaves (`*.pem`, `*.key`, `*.p12`, `*.pfx`) están en `.gitignore` y en
+  `.dockerignore`: no se suben al repositorio ni entran en la imagen. Solo se versiona
+  `.env.example`, que no lleva nada real.
+
 ## Ejecutar en local
 
 ```bash
